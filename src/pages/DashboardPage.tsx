@@ -1,23 +1,16 @@
-import { Link } from "react-router-dom"
+import { RootLayout } from "@/components/root-layout"
 
 export default function DashboardPage() {
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-6 py-12">
-      <section className="w-full max-w-lg rounded-2xl border bg-card p-8 shadow-sm">
-        <p className="text-sm font-medium tracking-[0.2em] text-muted-foreground uppercase">
-          Signed in
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold">Welcome to Mirai</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          This is a placeholder route to confirm routing is wired up.
-        </p>
-        <Link
-          to="/"
-          className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-        >
-          Back to login
-        </Link>
-      </section>
-    </main>
+    <RootLayout>
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div className="aspect-video rounded-xl bg-muted/50" />
+          <div className="aspect-video rounded-xl bg-muted/50" />
+          <div className="aspect-video rounded-xl bg-muted/50" />
+        </div>
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+      </div>
+    </RootLayout>
   )
 }

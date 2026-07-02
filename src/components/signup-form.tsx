@@ -5,11 +5,10 @@ import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { login } from "@/api/auth"
-import type { LoginCredentials } from "@/types/auth"
+import { register } from "@/api/auth"
+import type { RegisterCredentials } from "@/types/auth"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import {
   Field,
   FieldDescription,
@@ -19,41 +18,57 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 
-const loginSchema = z.object({
-  email: z.email("Enter a valid email address."),
-  password: z.string().min(1, "Password is required."),
-})
+const signupSchema = z
+  .object({
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+    email: z.email("Enter a valid email address."),
+    name: z.string().min(2, "Name must be at least 2 characters."),
+    password: z.string().min(8, "Must be at least 8 characters long."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  })
 
-export function LoginForm({
+type SignupFormValues = RegisterCredentials & {
+  confirmPassword: string
+}
+
+export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const navigate = useNavigate()
-
-  const form = useForm<LoginCredentials>({
+  const form = useForm<SignupFormValues>({
     defaultValues: {
+      confirmPassword: "",
       email: "",
+      name: "",
       password: "",
     },
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(signupSchema),
   })
 
-  const loginMutation = useMutation({
-    mutationFn: login,
+  const signupMutation = useMutation({
+    mutationFn: register,
     onError: (error) => {
-      toast.error("Login request failed.", {
+      toast.error("Sign up failed.", {
         description:
           error instanceof Error ? error.message : "Something went wrong.",
       })
     },
     onSuccess: () => {
-      navigate("/dashboard")
+      toast.success("Account created successfully.")
+      navigate("/")
     },
   })
 
-  async function handleSubmit(values: LoginCredentials) {
-    await loginMutation.mutateAsync(values)
+  async function handleSubmit(values: SignupFormValues) {
+    const { email, name, password } = values
+
+    await signupMutation.mutateAsync({ email, name, password })
   }
 
   return (
@@ -64,11 +79,24 @@ export function LoginForm({
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Login to your account</h1>
+          <h1 className="text-2xl font-bold">Create your account</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            Enter your email below to login to your account
+            Fill in the form below to create your account
           </p>
         </div>
+        <Field>
+          <FieldLabel htmlFor="name">Full Name</FieldLabel>
+          <Input
+            id="name"
+            type="text"
+            placeholder="John Doe"
+            required
+            className="bg-background"
+            aria-invalid={!!form.formState.errors.name}
+            {...form.register("name")}
+          />
+          <FieldError errors={[form.formState.errors.name]} />
+        </Field>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
@@ -81,17 +109,13 @@ export function LoginForm({
             {...form.register("email")}
           />
           <FieldError errors={[form.formState.errors.email]} />
+          <FieldDescription>
+            We&apos;ll use this to contact you. We will not share your email
+            with anyone else.
+          </FieldDescription>
         </Field>
         <Field>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
-          </div>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
           <Input
             id="password"
             type="password"
@@ -101,13 +125,29 @@ export function LoginForm({
             {...form.register("password")}
           />
           <FieldError errors={[form.formState.errors.password]} />
+          <FieldDescription>
+            Must be at least 8 characters long.
+          </FieldDescription>
         </Field>
         <Field>
-          <Button type="submit" disabled={loginMutation.isPending}>
-            {loginMutation.isPending ? (
+          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
+          <Input
+            id="confirm-password"
+            type="password"
+            required
+            className="bg-background"
+            aria-invalid={!!form.formState.errors.confirmPassword}
+            {...form.register("confirmPassword")}
+          />
+          <FieldError errors={[form.formState.errors.confirmPassword]} />
+          <FieldDescription>Please confirm your password.</FieldDescription>
+        </Field>
+        <Field>
+          <Button type="submit" disabled={signupMutation.isPending}>
+            {signupMutation.isPending ? (
               <Spinner data-icon="inline-end" />
             ) : null}
-            Login
+            Create Account
           </Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
@@ -119,13 +159,10 @@ export function LoginForm({
                 fill="currentColor"
               />
             </svg>
-            Login with GitHub
+            Sign up with GitHub
           </Button>
-          <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="underline underline-offset-4">
-              Sign up
-            </Link>
+          <FieldDescription className="px-6 text-center">
+            Already have an account? <Link to="/">Sign in</Link>
           </FieldDescription>
         </Field>
       </FieldGroup>
