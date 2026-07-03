@@ -7,30 +7,32 @@ import {
 
 export default [
   layout("./components/layout/protected-layout.tsx", [
-    route("login", "./pages/LoginPage.tsx"),
-    route("signup", "./pages/SignupPage.tsx"),
+    route("login", "./pages/auth/LoginPage.tsx"),
+    route("signup", "./pages/auth/SignupPage.tsx"),
 
     layout("./components/layout/root-layout.tsx", [
       index("./pages/HomeRedirectPage.tsx", { id: "home" }),
 
-      route("organizations", "./pages/OrganizationsPage.tsx"),
+      route("organizations", "./pages/organizations/OrganizationsPage.tsx"),
       route(
         "organizations/:organizationId/projects",
-        "./pages/OrganizationProjectsPage.tsx"
+        "./pages/organizations/OrganizationProjectsPage.tsx"
       ),
       route(
         "organizations/:organizationId/settings",
-        "./pages/OrganizationSettingsPage.tsx"
+        "./pages/organizations/OrganizationSettingsPage.tsx"
       ),
 
       route("projects/:projectId", "./components/layout/project-layout.tsx", [
-        route("summary", "./pages/ProjectSummaryPage.tsx"),
-        route("dashboards", "./pages/ProjectDashboardsPage.tsx"),
+        route("summary", "./pages/projects/ProjectSummaryPage.tsx"),
+        route("dashboards", "./pages/projects/ProjectDashboardsPage.tsx"),
         route("wiki-pages", "./components/wiki-pages/wiki-pages-layout.tsx", [
-          index("./pages/WikiPagesPage.tsx", { id: "wiki-pages-index" }),
-          route("new", "./pages/WikiPageNewPage.tsx"),
-          route(":wikiPageId", "./pages/WikiPageViewPage.tsx"),
-          route(":wikiPageId/edit", "./pages/WikiPageEditPage.tsx"),
+          index("./pages/wiki-pages/WikiPagesPage.tsx", {
+            id: "wiki-pages-index",
+          }),
+          route("new", "./pages/wiki-pages/WikiPageNewPage.tsx"),
+          route(":wikiPageId", "./pages/wiki-pages/WikiPageViewPage.tsx"),
+          route(":wikiPageId/edit", "./pages/wiki-pages/WikiPageEditPage.tsx"),
         ]),
         route("work-items", "./pages/WorkItemsPage.tsx"),
         route("boards", "./pages/BoardsPage.tsx"),
@@ -41,10 +43,10 @@ export default [
           "retrospectives/:retrospectiveId?",
           "./pages/RetrospectivesPage.tsx"
         ),
-        route("tags", "./pages/TagsPage.tsx"),
-        route("tags/import", "./pages/TagsImportPage.tsx"),
+        route("tags", "./pages/tags/TagsPage.tsx"),
+        route("tags/import", "./pages/tags/TagsImportPage.tsx"),
         route("wisdom-extractor", "./pages/WisdomExtractorPage.tsx"),
-        route("settings", "./pages/ProjectSettingsPage.tsx"),
+        route("settings", "./pages/projects/ProjectSettingsPage.tsx"),
       ]),
     ]),
 
