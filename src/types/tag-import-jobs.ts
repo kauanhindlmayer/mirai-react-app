@@ -18,4 +18,5 @@ export const TagImportJobStatus = {
   Failed: "Failed",
 } as const
 
-export type TagImportJobStatus = (typeof TagImportJobStatus)[keyof typeof TagImportJobStatus]
+export type TagImportJobStatus =
+  (typeof TagImportJobStatus)[keyof typeof TagImportJobStatus]

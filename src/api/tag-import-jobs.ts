@@ -1,5 +1,9 @@
 import { get, post } from "@/lib/api-client"
-import type { HateoasResponse, PaginatedList, PaginationFilter } from "@/types/common"
+import type {
+  HateoasResponse,
+  PaginatedList,
+  PaginationFilter,
+} from "@/types/common"
 import type { TagImportJob } from "@/types/tag-import-jobs"
 
 export function listTagImportJobs(
@@ -18,7 +22,10 @@ export function listTagImportJobs(
   })
 }
 
-export function createTagImportJob(projectId: string, file: File): Promise<string> {
+export function createTagImportJob(
+  projectId: string,
+  file: File
+): Promise<string> {
   const formData = new FormData()
   formData.append("file", file)
   return post(`/projects/${projectId}/tags/import`, formData)
