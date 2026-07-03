@@ -150,7 +150,13 @@ function ProjectOverviewForm({ project }: { project: Project }) {
 }
 
 function ProjectTeamsTab({ projectId }: { projectId: string }) {
-  const teamsQuery = useQuery({
+  const {
+    data: teams = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["teams", projectId],
     queryFn: () => listTeams(projectId),
     staleTime: 60_000,
@@ -163,20 +169,20 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
         <h2 className="text-sm font-medium">Teams</h2>
         <CreateTeamDialog projectId={projectId} />
       </div>
-      {teamsQuery.isError ? (
+      {isError ? (
         <ErrorState
-          error={teamsQuery.error}
+          error={error}
           title="Failed to load teams"
-          onRetry={() => teamsQuery.refetch()}
+          onRetry={() => refetch()}
         />
-      ) : teamsQuery.isLoading ? (
+      ) : isLoading ? (
         <div className="flex flex-col gap-2">
           <Skeleton className="h-9 w-full" />
           <Skeleton className="h-9 w-full" />
         </div>
-      ) : teamsQuery.data && teamsQuery.data.length > 0 ? (
+      ) : teams.length > 0 ? (
         <ul className="flex flex-col divide-y rounded-md border">
-          {teamsQuery.data.map((team) => (
+          {teams.map((team) => (
             <li key={team.id} className="px-4 py-2 text-sm">
               {team.name}
             </li>

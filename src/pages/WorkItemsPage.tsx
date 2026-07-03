@@ -110,7 +110,7 @@ export default function WorkItemsPage() {
   const sort =
     sorting.length > 0 ? `${sorting[0].desc ? "-" : ""}${sorting[0].id}` : ""
 
-  const workItemsQuery = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: [...workItemsQueryKey(projectId!), page, sort],
     queryFn: () =>
       listWorkItems(projectId!, {
@@ -125,7 +125,7 @@ export default function WorkItemsPage() {
   })
 
   const table = useReactTable({
-    data: workItemsQuery.data?.items ?? [],
+    data: data?.items ?? [],
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -179,24 +179,22 @@ export default function WorkItemsPage() {
             ))}
           </TableHeader>
           <TableBody>
-            {workItemsQuery.isError ? (
+            {isError ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24">
                   <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                    <span className="text-sm">
-                      {getErrorMessage(workItemsQuery.error)}
-                    </span>
+                    <span className="text-sm">{getErrorMessage(error)}</span>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => workItemsQuery.refetch()}
+                      onClick={() => refetch()}
                     >
                       Try again
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : workItemsQuery.isLoading ? (
+            ) : isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -251,23 +249,23 @@ export default function WorkItemsPage() {
           </TableBody>
         </Table>
       </div>
-      {workItemsQuery.data && workItemsQuery.data.totalPages > 1 ? (
+      {data && data.totalPages > 1 ? (
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
             size="sm"
-            disabled={!workItemsQuery.data.hasPreviousPage}
+            disabled={!data.hasPreviousPage}
             onClick={() => setPage((p) => p - 1)}
           >
             Previous
           </Button>
           <span className="text-xs text-muted-foreground">
-            Page {workItemsQuery.data.page} of {workItemsQuery.data.totalPages}
+            Page {data.page} of {data.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={!workItemsQuery.data.hasNextPage}
+            disabled={!data.hasNextPage}
             onClick={() => setPage((p) => p + 1)}
           >
             Next

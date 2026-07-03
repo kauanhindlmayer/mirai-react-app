@@ -28,7 +28,7 @@ export default function TagsPage() {
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const tagsQuery = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["tags", projectId, page],
     queryFn: () =>
       listTags(projectId!, {
@@ -41,7 +41,7 @@ export default function TagsPage() {
     staleTime: 30_000,
     placeholderData: (previous) => previous,
   })
-  const tags = tagsQuery.data?.items ?? []
+  const tags = data?.items ?? []
 
   const updateTagMutation = useMutation({
     mutationFn: ({
@@ -157,24 +157,22 @@ export default function TagsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tagsQuery.isError ? (
+            {isError ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24">
                   <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                    <span className="text-sm">
-                      {getErrorMessage(tagsQuery.error)}
-                    </span>
+                    <span className="text-sm">{getErrorMessage(error)}</span>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => tagsQuery.refetch()}
+                      onClick={() => refetch()}
                     >
                       Try again
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : tagsQuery.isLoading ? (
+            ) : isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -242,23 +240,23 @@ export default function TagsPage() {
         </Table>
       </div>
 
-      {tagsQuery.data && tagsQuery.data.totalPages > 1 ? (
+      {data && data.totalPages > 1 ? (
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
             size="sm"
-            disabled={!tagsQuery.data.hasPreviousPage}
+            disabled={!data.hasPreviousPage}
             onClick={() => setPage((p) => p - 1)}
           >
             Previous
           </Button>
           <span className="text-xs text-muted-foreground">
-            Page {tagsQuery.data.page} of {tagsQuery.data.totalPages}
+            Page {data.page} of {data.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={!tagsQuery.data.hasNextPage}
+            disabled={!data.hasNextPage}
             onClick={() => setPage((p) => p + 1)}
           >
             Next

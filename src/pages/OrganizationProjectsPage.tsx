@@ -12,14 +12,19 @@ import { Skeleton } from "@/components/ui/skeleton"
 export default function OrganizationProjectsPage() {
   const { organizationId, organization } = useOrganizationContext()
 
-  const projectsQuery = useQuery({
+  const {
+    data: projects = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["projects", organizationId],
     queryFn: () => listProjects(organizationId!),
     enabled: !!organizationId,
     staleTime: 60_000,
     placeholderData: [],
   })
-  const projects = projectsQuery.data ?? []
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -34,13 +39,13 @@ export default function OrganizationProjectsPage() {
           />
         ) : null}
       </div>
-      {projectsQuery.isError ? (
+      {isError ? (
         <ErrorState
-          error={projectsQuery.error}
+          error={error}
           title="Failed to load projects"
-          onRetry={() => projectsQuery.refetch()}
+          onRetry={() => refetch()}
         />
-      ) : projectsQuery.isLoading ? (
+      ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-24 rounded-xl" />

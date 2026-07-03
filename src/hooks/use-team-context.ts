@@ -25,7 +25,7 @@ export function useTeamContext(projectId: string | undefined) {
     getStoredTeamId()
   )
 
-  const teamsQuery = useQuery({
+  const { data: teams = [], isLoading } = useQuery({
     queryKey: ["teams", projectId],
     queryFn: () => listTeams(projectId!),
     enabled: !!projectId,
@@ -33,7 +33,6 @@ export function useTeamContext(projectId: string | undefined) {
     placeholderData: [],
   })
 
-  const teams = teamsQuery.data ?? []
   const currentTeamExists = teams.some((team) => team.id === selectedTeamId)
   const team: Team | null =
     (currentTeamExists
@@ -49,7 +48,7 @@ export function useTeamContext(projectId: string | undefined) {
     team,
     teamId: team?.id,
     teams,
-    isLoadingTeams: teamsQuery.isLoading,
+    isLoadingTeams: isLoading,
     selectTeam,
   }
 }

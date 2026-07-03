@@ -38,15 +38,18 @@ export default function ProjectDashboardsPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { team, teams, isLoadingTeams, selectTeam } = useTeamContext(projectId)
 
-  const dashboardQuery = useQuery({
+  const {
+    data: dashboard,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["dashboard", team?.id],
     queryFn: () => getDashboardData(team!.id),
     enabled: !!team?.id,
     staleTime: 60_000,
   })
-
-  const dashboard = dashboardQuery.data
-  const isLoading = dashboardQuery.isLoading
 
   const cycleTimePoints = (dashboard?.cycleTimeData ?? []).map((point) => ({
     x: new Date(point.completedDate).getTime(),
@@ -110,9 +113,9 @@ export default function ProjectDashboardsPage() {
         <ChartCard
           title="Burndown"
           isLoading={isLoading}
-          isError={dashboardQuery.isError}
-          error={dashboardQuery.error}
-          onRetry={() => dashboardQuery.refetch()}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
           isEmpty={dashboard?.burndownData.length === 0}
         >
           <BurndownChart data={dashboard?.burndownData ?? []} />
@@ -121,9 +124,9 @@ export default function ProjectDashboardsPage() {
         <ChartCard
           title="Burnup"
           isLoading={isLoading}
-          isError={dashboardQuery.isError}
-          error={dashboardQuery.error}
-          onRetry={() => dashboardQuery.refetch()}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
           isEmpty={dashboard?.burnupData.length === 0}
         >
           <BurnupChart data={dashboard?.burnupData ?? []} />
@@ -132,9 +135,9 @@ export default function ProjectDashboardsPage() {
         <ChartCard
           title="Cycle Time"
           isLoading={isLoading}
-          isError={dashboardQuery.isError}
-          error={dashboardQuery.error}
-          onRetry={() => dashboardQuery.refetch()}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
           isEmpty={cycleTimePoints.length === 0}
         >
           <WorkItemScatterChart points={cycleTimePoints} yLabel="Cycle time" />
@@ -143,9 +146,9 @@ export default function ProjectDashboardsPage() {
         <ChartCard
           title="Lead Time"
           isLoading={isLoading}
-          isError={dashboardQuery.isError}
-          error={dashboardQuery.error}
-          onRetry={() => dashboardQuery.refetch()}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
           isEmpty={leadTimePoints.length === 0}
         >
           <WorkItemScatterChart points={leadTimePoints} yLabel="Lead time" />
@@ -154,9 +157,9 @@ export default function ProjectDashboardsPage() {
         <ChartCard
           title="Velocity"
           isLoading={isLoading}
-          isError={dashboardQuery.isError}
-          error={dashboardQuery.error}
-          onRetry={() => dashboardQuery.refetch()}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
           isEmpty={dashboard?.velocityData.length === 0}
         >
           <VelocityChart data={dashboard?.velocityData ?? []} />

@@ -36,7 +36,7 @@ export function WorkItemTagsEditor({
   const addTag = useAddWorkItemTag(projectId, workItemId)
   const removeTag = useRemoveWorkItemTag(projectId, workItemId)
 
-  const availableTagsQuery = useQuery({
+  const { data } = useQuery({
     queryKey: ["tags", projectId],
     queryFn: () =>
       listTags(projectId, { page: 1, pageSize: 100, sort: "", searchTerm: "" }),
@@ -81,7 +81,7 @@ export function WorkItemTagsEditor({
             <CommandList>
               <CommandEmpty>No tags found.</CommandEmpty>
               <CommandGroup>
-                {(availableTagsQuery.data?.items ?? []).map((tag) => {
+                {(data?.items ?? []).map((tag) => {
                   const isAdded = tagNames.has(tag.name)
                   return (
                     <CommandItem

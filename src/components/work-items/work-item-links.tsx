@@ -107,7 +107,7 @@ function AddLinkPopover({
   )
   const createLink = useCreateWorkItemLink(projectId, workItemId)
 
-  const candidatesQuery = useQuery({
+  const { data } = useQuery({
     queryKey: ["work-items", projectId, "search", search],
     queryFn: () =>
       listWorkItems(projectId, {
@@ -155,7 +155,7 @@ function AddLinkPopover({
           <CommandList>
             <CommandEmpty>No work items found.</CommandEmpty>
             <CommandGroup>
-              {(candidatesQuery.data?.items ?? [])
+              {(data?.items ?? [])
                 .filter((item) => item.id !== workItemId)
                 .map((item) => (
                   <CommandItem

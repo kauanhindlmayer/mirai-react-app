@@ -26,14 +26,12 @@ export function ProjectSwitcher() {
   const navigate = useNavigate()
   const { project } = useProjectContext()
 
-  const projectsQuery = useQuery({
+  const { data: projects = [] } = useQuery({
     queryKey: ["projects", project?.organizationId],
     queryFn: () => listProjects(project!.organizationId),
     enabled: !!project,
     staleTime: 60_000,
   })
-
-  const projects = projectsQuery.data ?? []
 
   if (!project) {
     return (

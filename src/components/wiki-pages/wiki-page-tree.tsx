@@ -43,7 +43,7 @@ export function WikiPageTree() {
   const queryClient = useQueryClient()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  const pagesQuery = useQuery({
+  const { data: pages = [] } = useQuery({
     queryKey: ["wiki-pages", projectId],
     queryFn: () => listWikiPages(projectId!),
     enabled: !!projectId,
@@ -51,10 +51,7 @@ export function WikiPageTree() {
     placeholderData: [],
   })
 
-  const nodes = useMemo(
-    () => toTreeNodes(pagesQuery.data ?? []),
-    [pagesQuery.data]
-  )
+  const nodes = useMemo(() => toTreeNodes(pages), [pages])
 
   const moveMutation = useMutation({
     mutationFn: ({

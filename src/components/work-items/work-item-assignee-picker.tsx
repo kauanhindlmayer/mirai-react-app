@@ -38,7 +38,7 @@ export function WorkItemAssigneePicker({
   const { project } = useProjectContext()
   const updateWorkItem = useUpdateWorkItem(projectId, workItemId)
 
-  const usersQuery = useQuery({
+  const { data } = useQuery({
     queryKey: ["project-users", project?.organizationId, projectId, search],
     queryFn: () => getProjectUsers(project!.organizationId, projectId, search),
     enabled: open && !!project,
@@ -93,7 +93,7 @@ export function WorkItemAssigneePicker({
                   Unassign
                 </CommandItem>
               ) : null}
-              {(usersQuery.data?.items ?? []).map((user) => (
+              {(data?.items ?? []).map((user) => (
                 <CommandItem key={user.id} onSelect={() => handleSelect(user)}>
                   <Avatar className="size-5">
                     <AvatarImage src={user.imageUrl} alt={user.fullName} />

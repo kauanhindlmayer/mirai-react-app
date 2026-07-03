@@ -83,7 +83,7 @@ export default function OrganizationSettingsPage() {
   const { organizationId, organization } = useOrganizationContext()
   const [page, setPage] = useState(1)
 
-  const usersQuery = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["organization-users", organizationId, page],
     queryFn: () =>
       getOrganizationUsers(organizationId!, {
@@ -98,7 +98,7 @@ export default function OrganizationSettingsPage() {
   })
 
   const table = useReactTable({
-    data: usersQuery.data?.items ?? [],
+    data: data?.items ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -133,24 +133,22 @@ export default function OrganizationSettingsPage() {
             ))}
           </TableHeader>
           <TableBody>
-            {usersQuery.isError ? (
+            {isError ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24">
                   <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                    <span className="text-sm">
-                      {getErrorMessage(usersQuery.error)}
-                    </span>
+                    <span className="text-sm">{getErrorMessage(error)}</span>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => usersQuery.refetch()}
+                      onClick={() => refetch()}
                     >
                       Try again
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : usersQuery.isLoading ? (
+            ) : isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -186,23 +184,23 @@ export default function OrganizationSettingsPage() {
         </Table>
       </div>
 
-      {usersQuery.data && usersQuery.data.totalPages > 1 ? (
+      {data && data.totalPages > 1 ? (
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
             size="sm"
-            disabled={!usersQuery.data.hasPreviousPage}
+            disabled={!data.hasPreviousPage}
             onClick={() => setPage((p) => p - 1)}
           >
             Previous
           </Button>
           <span className="text-xs text-muted-foreground">
-            Page {usersQuery.data.page} of {usersQuery.data.totalPages}
+            Page {data.page} of {data.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={!usersQuery.data.hasNextPage}
+            disabled={!data.hasNextPage}
             onClick={() => setPage((p) => p + 1)}
           >
             Next

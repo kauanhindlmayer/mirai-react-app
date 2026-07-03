@@ -25,7 +25,7 @@ export function GlobalSearch() {
   const { projectId } = useParams<{ projectId?: string }>()
   const navItems = useNavMainItems()
 
-  const workItemsQuery = useQuery({
+  const { data } = useQuery({
     queryKey: ["work-items", projectId, "search", query],
     queryFn: () =>
       listWorkItems(projectId!, {
@@ -63,7 +63,7 @@ export function GlobalSearch() {
     )
   }
 
-  const workItems = workItemsQuery.data?.items ?? []
+  const workItems = data?.items ?? []
 
   return (
     <>

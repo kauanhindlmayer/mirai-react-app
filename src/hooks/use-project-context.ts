@@ -6,7 +6,7 @@ import { getProject } from "@/api/projects"
 export function useProjectContext() {
   const { projectId } = useParams<{ projectId: string }>()
 
-  const projectQuery = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => getProject(projectId!),
     enabled: !!projectId,
@@ -15,10 +15,10 @@ export function useProjectContext() {
 
   return {
     projectId,
-    project: projectQuery.data,
-    isLoading: projectQuery.isLoading,
-    isError: projectQuery.isError,
-    error: projectQuery.error,
-    refetch: projectQuery.refetch,
+    project: data,
+    isLoading,
+    isError,
+    error,
+    refetch,
   }
 }

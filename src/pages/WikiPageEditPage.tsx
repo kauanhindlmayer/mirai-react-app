@@ -18,22 +18,28 @@ export default function WikiPageEditPage() {
     wikiPageId: string
   }>()
 
-  const wikiPageQuery = useQuery({
+  const {
+    data: wikiPage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["wiki-page", projectId, wikiPageId],
     queryFn: () => getWikiPage(projectId!, wikiPageId!),
     enabled: !!projectId && !!wikiPageId,
   })
-  if (wikiPageQuery.isError) {
+  if (isError) {
     return (
       <ErrorState
-        error={wikiPageQuery.error}
+        error={error}
         title="Failed to load wiki page"
-        onRetry={() => wikiPageQuery.refetch()}
+        onRetry={() => refetch()}
       />
     )
   }
 
-  if (wikiPageQuery.isLoading || !wikiPageQuery.data) {
+  if (isLoading || !wikiPage) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Skeleton className="h-8 w-64" />
@@ -44,10 +50,10 @@ export default function WikiPageEditPage() {
 
   return (
     <WikiPageEditForm
-      key={wikiPageQuery.data.id}
+      key={wikiPage.id}
       projectId={projectId!}
       wikiPageId={wikiPageId!}
-      wikiPage={wikiPageQuery.data}
+      wikiPage={wikiPage}
     />
   )
 }

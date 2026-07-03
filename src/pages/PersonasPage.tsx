@@ -12,14 +12,19 @@ import { Skeleton } from "@/components/ui/skeleton"
 export default function PersonasPage() {
   const { projectId } = useParams<{ projectId: string }>()
 
-  const personasQuery = useQuery({
+  const {
+    data: personas = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["personas", projectId],
     queryFn: () => listPersonas(projectId!),
     enabled: !!projectId,
     staleTime: 60_000,
     placeholderData: [],
   })
-  const personas = personasQuery.data ?? []
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -28,13 +33,13 @@ export default function PersonasPage() {
         {projectId ? <CreatePersonaSheet projectId={projectId} /> : null}
       </div>
 
-      {personasQuery.isError ? (
+      {isError ? (
         <ErrorState
-          error={personasQuery.error}
+          error={error}
           title="Failed to load personas"
-          onRetry={() => personasQuery.refetch()}
+          onRetry={() => refetch()}
         />
-      ) : personasQuery.isLoading ? (
+      ) : isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-40 rounded-xl" />

@@ -50,7 +50,7 @@ export default function TagsImportPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [page, setPage] = useState(1)
 
-  const jobsQuery = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["tag-import-jobs", projectId, page],
     queryFn: () =>
       listTagImportJobs(projectId!, {
@@ -93,7 +93,7 @@ export default function TagsImportPage() {
     uploadMutation.mutate(file)
   }
 
-  const links = jobsQuery.data?._links ?? []
+  const links = data?._links ?? []
   const nextLink = links.find((link: Link) => link.rel === "next-page")
   const previousLink = links.find((link: Link) => link.rel === "previous-page")
 
@@ -103,7 +103,7 @@ export default function TagsImportPage() {
     if (nextPage) setPage(nextPage)
   }
 
-  const jobs = jobsQuery.data?.items ?? []
+  const jobs = data?.items ?? []
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -138,24 +138,22 @@ export default function TagsImportPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {jobsQuery.isError ? (
+            {isError ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24">
                   <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                    <span className="text-sm">
-                      {getErrorMessage(jobsQuery.error)}
-                    </span>
+                    <span className="text-sm">{getErrorMessage(error)}</span>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => jobsQuery.refetch()}
+                      onClick={() => refetch()}
                     >
                       Try again
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : jobsQuery.isLoading ? (
+            ) : isLoading ? (
               Array.from({ length: 3 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell colSpan={6}>
@@ -219,7 +217,7 @@ export default function TagsImportPage() {
             Previous
           </Button>
           <span className="text-xs text-muted-foreground">
-            Page {jobsQuery.data?.page}
+            Page {data?.page}
           </span>
           <Button
             variant="outline"

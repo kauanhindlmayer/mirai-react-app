@@ -47,7 +47,13 @@ export default function BacklogsPage() {
   )
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  const backlogQuery = useQuery({
+  const {
+    data: items = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["backlog", team?.id, backlogLevel],
     queryFn: () => getBacklog(team!.id, undefined, backlogLevel),
     enabled: !!team?.id,
@@ -55,11 +61,7 @@ export default function BacklogsPage() {
     placeholderData: [],
   })
 
-  const items = backlogQuery.data ?? []
-  const nodes = useMemo(
-    () => toTreeNodes(backlogQuery.data ?? []),
-    [backlogQuery.data]
-  )
+  const nodes = useMemo(() => toTreeNodes(items), [items])
 
   function toggle(id: string) {
     setExpandedIds((prev) => {
@@ -138,13 +140,13 @@ export default function BacklogsPage() {
       </div>
 
       <div className="rounded-md border p-2">
-        {backlogQuery.isError ? (
+        {isError ? (
           <ErrorState
-            error={backlogQuery.error}
+            error={error}
             title="Failed to load backlog"
-            onRetry={() => backlogQuery.refetch()}
+            onRetry={() => refetch()}
           />
-        ) : backlogQuery.isLoading ? (
+        ) : isLoading ? (
           <div className="flex flex-col gap-2 p-1">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-6 w-full" />
