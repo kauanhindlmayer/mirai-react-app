@@ -1,8 +1,10 @@
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { useMutation } from "@tanstack/react-query"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
+import { CheckIcon, CircleIcon } from "lucide-react"
 import { z } from "zod"
 
 import { registerUser } from "@/api/users"
@@ -65,6 +67,7 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<"form">) {
   const navigate = useNavigate()
+  const [passwordFocused, setPasswordFocused] = useState(false)
   const form = useForm<SignupFormValues>({
     defaultValues: {
       confirmPassword: "",
@@ -91,6 +94,14 @@ export function SignupForm({
     },
   })
 
+  const password = form.watch("password")
+  const passwordRules = [
+    { label: "At least 8 characters", met: password.length >= 8 },
+    { label: "One uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "One lowercase letter", met: /[a-z]/.test(password) },
+    { label: "One number", met: /[0-9]/.test(password) },
+  ]
+
   async function handleSubmit(values: SignupFormValues) {
     const { email, firstName, lastName, password, hasAcceptedTerms } = values
 
@@ -116,32 +127,34 @@ export function SignupForm({
             Fill in the form below to create your account
           </p>
         </div>
-        <Field>
-          <FieldLabel htmlFor="first-name">First Name</FieldLabel>
-          <Input
-            id="first-name"
-            type="text"
-            placeholder="John"
-            required
-            className="bg-background"
-            aria-invalid={!!form.formState.errors.firstName}
-            {...form.register("firstName")}
-          />
-          <FieldError errors={[form.formState.errors.firstName]} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="last-name">Last Name</FieldLabel>
-          <Input
-            id="last-name"
-            type="text"
-            placeholder="Doe"
-            required
-            className="bg-background"
-            aria-invalid={!!form.formState.errors.lastName}
-            {...form.register("lastName")}
-          />
-          <FieldError errors={[form.formState.errors.lastName]} />
-        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field>
+            <FieldLabel htmlFor="first-name">First Name</FieldLabel>
+            <Input
+              id="first-name"
+              type="text"
+              placeholder="John"
+              required
+              className="bg-background"
+              aria-invalid={!!form.formState.errors.firstName}
+              {...form.register("firstName")}
+            />
+            <FieldError errors={[form.formState.errors.firstName]} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="last-name">Last Name</FieldLabel>
+            <Input
+              id="last-name"
+              type="text"
+              placeholder="Doe"
+              required
+              className="bg-background"
+              aria-invalid={!!form.formState.errors.lastName}
+              {...form.register("lastName")}
+            />
+            <FieldError errors={[form.formState.errors.lastName]} />
+          </Field>
+        </div>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
@@ -168,12 +181,35 @@ export function SignupForm({
             className="bg-background"
             aria-invalid={!!form.formState.errors.password}
             {...form.register("password")}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={(event) => {
+              form.register("password").onBlur(event)
+              setPasswordFocused(false)
+            }}
           />
           <FieldError errors={[form.formState.errors.password]} />
-          <FieldDescription>
-            At least 8 characters, with an uppercase letter, a lowercase letter,
-            and a number.
-          </FieldDescription>
+          {passwordFocused || password ? (
+            <ul className="flex flex-col gap-0.5">
+              {passwordRules.map((rule) => (
+                <li
+                  key={rule.label}
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs/relaxed",
+                    rule.met
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {rule.met ? (
+                    <CheckIcon className="size-3" />
+                  ) : (
+                    <CircleIcon className="size-3" />
+                  )}
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </Field>
         <Field>
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
@@ -186,7 +222,6 @@ export function SignupForm({
             {...form.register("confirmPassword")}
           />
           <FieldError errors={[form.formState.errors.confirmPassword]} />
-          <FieldDescription>Please confirm your password.</FieldDescription>
         </Field>
         <Field orientation="horizontal">
           <Controller
