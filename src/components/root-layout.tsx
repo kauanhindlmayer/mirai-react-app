@@ -1,6 +1,11 @@
-import type { ReactNode } from "react"
+import { Fragment } from "react"
+import { Outlet, Link } from "react-router"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { GlobalSearch } from "@/components/global-search"
+import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog"
+import { RouteErrorBoundary } from "@/components/route-error-boundary"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   SidebarInset,
   SidebarProvider,
@@ -16,18 +21,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { useBreadcrumbs } from "@/hooks/use-breadcrumbs"
 
-type RootLayoutProps = {
-  children: ReactNode
-}
+export default function RootLayout() {
+  const breadcrumbs = useBreadcrumbs()
 
-export function RootLayout({ children }: RootLayoutProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator
@@ -36,20 +40,36 @@ export function RootLayout({ children }: RootLayoutProps) {
               />
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Build Your Application
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                  </BreadcrumbItem>
+                  {breadcrumbs.map((crumb, index) => (
+                    <Fragment key={crumb.label}>
+                      {index > 0 ? (
+                        <BreadcrumbSeparator className="hidden md:block" />
+                      ) : null}
+                      <BreadcrumbItem className={index === 0 ? "hidden md:block" : undefined}>
+                        {crumb.href && index < breadcrumbs.length - 1 ? (
+                          <BreadcrumbLink asChild>
+                            <Link to={crumb.href}>{crumb.label}</Link>
+                          </BreadcrumbLink>
+                        ) : (
+                          <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                        )}
+                      </BreadcrumbItem>
+                    </Fragment>
+                  ))}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
+            <div className="flex items-center gap-2 px-4">
+              <GlobalSearch />
+              <KeyboardShortcutsDialog />
+              <ThemeToggle />
+            </div>
           </header>
-          <div className="flex flex-1 flex-col">{children}</div>
+          <div className="flex flex-1 flex-col">
+            <RouteErrorBoundary>
+              <Outlet />
+            </RouteErrorBoundary>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
