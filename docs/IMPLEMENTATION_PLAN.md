@@ -42,57 +42,57 @@ Everything downstream depends on this. Verify each task against the login/signup
 
 ### 0.1 HTTP client
 
-- [ ] `src/lib/api-client.ts`: `fetch` wrapper (not axios — keeps the existing `error instanceof Error` handling in `login-form.tsx`/`signup-form.tsx` working unchanged), base URL `${import.meta.env.VITE_API_URL}/api`.
-- [ ] Add `.env.example` with `VITE_API_URL`.
-- [ ] Request path: attach `Authorization: Bearer <token>` from `localStorage` to every call except `/users/login` and `/users/register`.
-- [ ] `ApiError extends Error` class: `.message` = `body.title` (ProblemDetails `{ type, title, status, traceId }`), `.status` = HTTP status.
-- [ ] Response path: on `401`, toast "session expired", clear `localStorage`, redirect to `/login`.
-- [ ] Support per-call header overrides (needed later for Tag Import Jobs' `accept: application/vnd.mirai.hateoas+json`).
-- [ ] Update `vite.config.ts` dev proxy target to read Aspire service-discovery env vars (`services__mirai-api__https__0` / `...http__0`), fallback to current hardcoded `https://localhost:5000`.
+- [x] `src/lib/api-client.ts`: `fetch` wrapper (not axios — keeps the existing `error instanceof Error` handling in `login-form.tsx`/`signup-form.tsx` working unchanged), base URL `${import.meta.env.VITE_API_URL}/api`.
+- [x] Add `.env.example` with `VITE_API_URL`.
+- [x] Request path: attach `Authorization: Bearer <token>` from `localStorage` to every call except `/users/login` and `/users/register`.
+- [x] `ApiError extends Error` class: `.message` = `body.title` (ProblemDetails `{ type, title, status, traceId }`), `.status` = HTTP status.
+- [x] Response path: on `401`, toast "session expired", clear `localStorage`, redirect to `/login`.
+- [x] Support per-call header overrides (needed later for Tag Import Jobs' `accept: application/vnd.mirai.hateoas+json`).
+- [x] Update `vite.config.ts` dev proxy target to read Aspire service-discovery env vars (`services__mirai-api__https__0` / `...http__0`), fallback to current hardcoded `https://localhost:5000`.
 
 ### 0.2 Types
 
-- [ ] Port `src/types/*.ts` from `mirai-app` into `mirai-react-app/src/types/`, one file per domain: `boards`, `dashboards`, `organizations`, `personas`, `projects`, `retrospectives`, `sprints`, `tags`, `tag-import-jobs`, `teams`, `wiki-pages`, `wisdom-extractor`, `work-items`.
-- [ ] `src/types/common.ts`: `PaginatedList<T>`, `PaginationFilter`, `ApiErrorResponse`, `Comment`/`Author`, `HateoasResponse`/`Link`.
-- [ ] Fix `src/types/auth.ts`: `RegisterCredentials` → `firstName`/`lastName` (not `name`) + terms acceptance boolean; add `rememberMe` to `LoginCredentials`.
+- [x] Port `src/types/*.ts` from `mirai-app` into `mirai-react-app/src/types/`, one file per domain: `boards`, `dashboards`, `organizations`, `personas`, `projects`, `retrospectives`, `sprints`, `tags`, `tag-import-jobs`, `teams`, `wiki-pages`, `wisdom-extractor`, `work-items`.
+- [x] `src/types/common.ts`: `PaginatedList<T>`, `PaginationFilter`, `ApiErrorResponse`, `Comment`/`Author`, `HateoasResponse`/`Link`.
+- [x] Fix `src/types/auth.ts`: `RegisterCredentials` → `firstName`/`lastName` (not `name`) + terms acceptance boolean; add `rememberMe` to `LoginCredentials`.
 
 ### 0.3 API modules
 
-- [ ] Rename `src/api/auth.ts` → `src/api/users.ts`, covering all `/users/*` endpoints from the catalog (`registerUser`, `loginUser`, `getCurrentUser`, `updateUserProfile`, `updateAvatar`).
-- [ ] `src/api/boards.ts` — `createBoard`, `getBoard`, `listBoards`, `deleteBoard`, `moveCard`, `createColumn`, `deleteColumn`, `getColumnCards`.
-- [ ] `src/api/dashboards.ts` — `getDashboardData`.
-- [ ] `src/api/organizations.ts` — `createOrganization`, `listOrganizations`, `getOrganizationUsers`, `addUserToOrganization`.
-- [ ] `src/api/personas.ts` — `createPersona`, `getPersona`, `listPersonas`, `updatePersona`, `deletePersona`.
-- [ ] `src/api/projects.ts` — `createProject`, `getProject`, `listProjects`, `updateProject`, `deleteProject`, `getProjectUsers`, `addUserToProject`.
-- [ ] `src/api/retrospectives.ts` — `createRetrospective`, `getRetrospective`, `listRetrospectives`, `createRetrospectiveItem`, `updateRetrospective`, `deleteRetrospectiveItem`, `deleteRetrospective`.
-- [ ] `src/api/sprints.ts` — `createSprint`, `listSprints`, `addWorkItemToSprint`.
-- [ ] `src/api/tag-import-jobs.ts` — `listTagImportJobs`, `createTagImportJob`.
-- [ ] `src/api/tags.ts` — `listTags`, `createTag`, `deleteTag`, `deleteTags`, `updateTag`.
-- [ ] `src/api/teams.ts` — `createTeam`, `listTeams`, `getBacklog`.
-- [ ] `src/api/wiki-pages.ts` — `createWikiPage`, `updateWikiPage`, `moveWikiPage`, `getWikiPage`, `getWikiPageStats`, `listWikiPages`, `deleteWikiPage`, `addWikiPageComment`, `updateWikiPageComment`, `deleteWikiPageComment`.
-- [ ] `src/api/wisdom-extractor.ts` — `extractWisdom`.
-- [ ] `src/api/work-items.ts` — full catalog: `createWorkItem`, `listWorkItems`, `deleteWorkItem`, `getWorkItemsStats`, `getWorkItem`, comments CRUD, `updateWorkItem` (maps `assignee` → `assigneeId`), tags add/remove, links add/remove, attachments upload/download/delete.
+- [x] Rename `src/api/auth.ts` → `src/api/users.ts`, covering all `/users/*` endpoints from the catalog (`registerUser`, `loginUser`, `getCurrentUser`, `updateUserProfile`, `updateAvatar`).
+- [x] `src/api/boards.ts` — `createBoard`, `getBoard`, `listBoards`, `deleteBoard`, `moveCard`, `createColumn`, `deleteColumn`, `getColumnCards`.
+- [x] `src/api/dashboards.ts` — `getDashboardData`.
+- [x] `src/api/organizations.ts` — `createOrganization`, `listOrganizations`, `getOrganizationUsers`, `addUserToOrganization`.
+- [x] `src/api/personas.ts` — `createPersona`, `getPersona`, `listPersonas`, `updatePersona`, `deletePersona`.
+- [x] `src/api/projects.ts` — `createProject`, `getProject`, `listProjects`, `updateProject`, `deleteProject`, `getProjectUsers`, `addUserToProject`.
+- [x] `src/api/retrospectives.ts` — `createRetrospective`, `getRetrospective`, `listRetrospectives`, `createRetrospectiveItem`, `updateRetrospective`, `deleteRetrospectiveItem`, `deleteRetrospective`.
+- [x] `src/api/sprints.ts` — `createSprint`, `listSprints`, `addWorkItemToSprint`.
+- [x] `src/api/tag-import-jobs.ts` — `listTagImportJobs`, `createTagImportJob`.
+- [x] `src/api/tags.ts` — `listTags`, `createTag`, `deleteTag`, `deleteTags`, `updateTag`.
+- [x] `src/api/teams.ts` — `createTeam`, `listTeams`, `getBacklog`.
+- [x] `src/api/wiki-pages.ts` — `createWikiPage`, `updateWikiPage`, `moveWikiPage`, `getWikiPage`, `getWikiPageStats`, `listWikiPages`, `deleteWikiPage`, `addWikiPageComment`, `updateWikiPageComment`, `deleteWikiPageComment`.
+- [x] `src/api/wisdom-extractor.ts` — `extractWisdom`.
+- [x] `src/api/work-items.ts` — full catalog: `createWorkItem`, `listWorkItems`, `deleteWorkItem`, `getWorkItemsStats`, `getWorkItem`, comments CRUD, `updateWorkItem` (maps `assignee` → `assigneeId`), tags add/remove, links add/remove, attachments upload/download/delete.
 
 ### 0.4 Auth flow
 
-- [ ] `src/lib/auth-storage.ts`: `accessToken`/`user` persistence to `localStorage`, `isTokenExpired()` (decode JWT `exp` client-side).
-- [ ] `src/hooks/use-auth.ts`: wraps `getCurrentUser` as a query; `login`/`logout` actions. Login success: store token → fetch `/users/me` → store user → navigate `/`.
-- [ ] Fix `login-form.tsx`: add "remember me" checkbox.
-- [ ] Fix `signup-form.tsx`: `firstName`/`lastName` fields (not single `name`), terms-acceptance checkbox (`npx shadcn add checkbox`), password complexity rule (upper/lower/digit, min 8) in the zod schema.
-- [ ] `src/components/protected-layout.tsx`: React Router `layout()` route wrapping authenticated routes — checks `isTokenExpired()` on mount/navigation, redirects to `/login`; redirects away from `/login`/`/signup` if already authenticated.
-- [ ] Register the guard layout in `routes.ts`.
-- [ ] Logout action: clear all `localStorage`, redirect to `/login`.
+- [x] `src/lib/auth-storage.ts`: `accessToken`/`user` persistence to `localStorage`, `isTokenExpired()` (decode JWT `exp` client-side).
+- [x] `src/hooks/use-auth.ts`: wraps `getCurrentUser` as a query; `login`/`logout` actions. Login success: store token → fetch `/users/me` → store user → navigate `/`.
+- [x] Fix `login-form.tsx`: add "remember me" checkbox.
+- [x] Fix `signup-form.tsx`: `firstName`/`lastName` fields (not single `name`), terms-acceptance checkbox (`npx shadcn add checkbox`), password complexity rule (upper/lower/digit, min 8) in the zod schema.
+- [x] `src/components/protected-layout.tsx`: React Router `layout()` route wrapping authenticated routes — checks `isTokenExpired()` on mount/navigation, redirects to `/login`; redirects away from `/login`/`/signup` if already authenticated.
+- [x] Register the guard layout in `routes.ts`.
+- [x] Logout action: clear all `localStorage`, redirect to `/login`.
 
 ### 0.5 Query & loading conventions
 
-- [ ] `src/queries/` convention doc/example: array key `[entityName, ...idsOrParams]`, `staleTime` 60s/300s per spec, `enabled` gating on parent IDs, `placeholderData` for empty states.
-- [ ] `src/hooks/use-delayed-loading.ts`: 200ms delay before surfacing `isPending`/`isFetching` as a loading state, to avoid spinner flicker (used everywhere, per spec).
+- [x] `src/queries/` convention doc/example: array key `[entityName, ...idsOrParams]`, `staleTime` 60s/300s per spec, `enabled` gating on parent IDs, `placeholderData` for empty states.
+- [x] `src/hooks/use-delayed-loading.ts`: 200ms delay before surfacing `isPending`/`isFetching` as a loading state, to avoid spinner flicker (used everywhere, per spec).
 
 ### 0.6 SignalR wrapper (built now, wired up in Phase 7)
 
-- [ ] Add `@microsoft/signalr` dependency.
-- [ ] `src/lib/signalr.ts`: generic connect/disconnect/on/invoke wrapper, hub URL `${VITE_API_URL}/hubs/{feature}`, WebSockets transport, `withCredentials: true`, `withAutomaticReconnect()`.
-- [ ] `src/hooks/use-signalr.ts`: subscribes to named events, invalidates a given query key on receipt (no manual cache merge).
+- [x] Add `@microsoft/signalr` dependency.
+- [x] `src/lib/signalr.ts`: generic connect/disconnect/on/invoke wrapper, hub URL `${VITE_API_URL}/hubs/{feature}`, WebSockets transport, `withCredentials: true`, `withAutomaticReconnect()`.
+- [x] `src/hooks/use-signalr.ts`: subscribes to named events, invalidates a given query key on receipt (no manual cache merge).
 
 **Verification**: `pnpm dev`, exercise login/signup end-to-end against the real backend — token persisted, `/users/me` populates the sidebar user, refresh keeps session, expired/invalid token redirects to `/login`, logout clears state. `pnpm typecheck` and `pnpm lint` clean.
 
@@ -102,29 +102,29 @@ Everything downstream depends on this. Verify each task against the login/signup
 
 ### 1.1 Routing skeleton
 
-- [ ] Register the full route map from spec §4 in `routes.ts`, nested under `<ProtectedLayout>`.
-- [ ] Org-scoped param routes (`/organizations/[organizationId]/...`) and project-scoped param routes (`/projects/[projectId]/...`).
+- [x] Register the full route map from spec §4 in `routes.ts`, nested under `<ProtectedLayout>`.
+- [x] Org-scoped param routes (`/organizations/[organizationId]/...`) and project-scoped param routes (`/projects/[projectId]/...`).
 
 ### 1.2 Org/project context
 
-- [ ] `src/hooks/use-organization-context.ts` — reads `organizationId` route param, drives org-level queries.
-- [ ] `src/hooks/use-project-context.ts` — reads `projectId` route param, drives project-level queries.
-- [ ] Replace `app-sidebar.tsx`'s hardcoded `data` object with real orgs/projects from these hooks; wire `team-switcher.tsx` to real organization list.
-- [ ] Dynamic `Breadcrumb` in `root-layout.tsx` (currently hardcoded "Build Your Application / Data Fetching").
+- [x] `src/hooks/use-organization-context.ts` — reads `organizationId` route param, drives org-level queries.
+- [x] `src/hooks/use-project-context.ts` — reads `projectId` route param, drives project-level queries.
+- [x] Replace `app-sidebar.tsx`'s hardcoded `data` object with real orgs/projects from these hooks; wire `team-switcher.tsx` to real organization list.
+- [x] Dynamic `Breadcrumb` in `root-layout.tsx` (currently hardcoded "Build Your Application / Data Fetching").
 
 ### 1.3 Search & shortcuts
 
-- [ ] `npx shadcn add command`.
-- [ ] Global search: `Command` palette toggled by topbar button or Ctrl+K, redirects to Wisdom Extractor with `?q=`.
-- [ ] Keyboard shortcuts panel (`Dialog` listing shortcuts).
+- [x] `npx shadcn add command`.
+- [x] Global search: `Command` palette toggled by topbar button or Ctrl+K, redirects to Wisdom Extractor with `?q=`.
+- [x] Keyboard shortcuts panel (`Dialog` listing shortcuts).
 
 ### 1.4 User profile
 
-- [ ] Topbar avatar → `Sheet` with first/last name edit + avatar upload/preview (`updateUserProfile`, `updateAvatar`), unsaved-changes tracking.
+- [x] Topbar avatar → `Sheet` with first/last name edit + avatar upload/preview (`updateUserProfile`, `updateAvatar`), unsaved-changes tracking.
 
 ### 1.5 Theme
 
-- [ ] Keep `next-themes` dark/light/system as primary mechanism (already present) — defer PrimeVue-style multi-preset/surface-palette picker to Phase 9 polish.
+- [x] Keep `next-themes` dark/light/system as primary mechanism (already present) — defer PrimeVue-style multi-preset/surface-palette picker to Phase 9 polish.
 
 **Verification**: navigate the full nav tree with a real logged-in session; sidebar/breadcrumb reflect the selected org/project; Ctrl+K opens search and redirects correctly.
 
@@ -134,29 +134,29 @@ Everything downstream depends on this. Verify each task against the login/signup
 
 ### 2.1 Organizations
 
-- [ ] `/organizations` list page.
-- [ ] Create-organization `Sheet` (`createOrganization`).
+- [x] `/organizations` list page.
+- [x] Create-organization `Sheet` (`createOrganization`).
 
 ### 2.2 Projects
 
-- [ ] `/organizations/[organizationId]/projects` list page.
-- [ ] Create/edit-project `Sheet` drawer (`createProject`, `updateProject`).
+- [x] `/organizations/[organizationId]/projects` list page.
+- [x] Create/edit-project `Sheet` drawer (`createProject`, `updateProject`).
 
 ### 2.3 Project summary
 
-- [ ] `/projects/[projectId]/summary`: stat `Card`s from `getWorkItemsStats`, period `Select` (1/7/30 days).
-- [ ] Paginated recent-members list (`getProjectUsers`).
+- [x] `/projects/[projectId]/summary`: stat `Card`s from `getWorkItemsStats`, period `Select` (1/7/30 days).
+- [x] Paginated recent-members list (`getProjectUsers`).
 
 ### 2.4 Project settings
 
-- [ ] `npx shadcn add tabs`.
-- [ ] `/projects/[projectId]/settings` `Tabs`: Overview (edit project), Teams, GitHub.
-- [ ] Teams tab: list teams (`listTeams`) + working "New Team" `Dialog` (`createTeam`) — built for real per decision above.
-- [ ] GitHub tab: "Connect your GitHub Account" button present, no-op (stub, per decision).
+- [x] `npx shadcn add tabs`.
+- [x] `/projects/[projectId]/settings` `Tabs`: Overview (edit project), Teams, GitHub.
+- [x] Teams tab: list teams (`listTeams`) + working "New Team" `Dialog` (`createTeam`) — built for real per decision above.
+- [x] GitHub tab: "Connect your GitHub Account" button present, no-op (stub, per decision).
 
 ### 2.5 Organization settings
 
-- [ ] `/organizations/[organizationId]/settings` Users tab: `DataTable` (`@tanstack/react-table` + shadcn `Table`) over `getOrganizationUsers`, invite via `addUserToOrganization`.
+- [x] `/organizations/[organizationId]/settings` Users tab: `DataTable` (`@tanstack/react-table` + shadcn `Table`) over `getOrganizationUsers`, invite via `addUserToOrganization`.
 
 **Verification**: create an org, create a project in it, edit project metadata, create a team from Settings → Teams and confirm it round-trips through `listTeams`.
 
