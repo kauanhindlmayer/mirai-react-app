@@ -22,9 +22,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 
 export default function RootLayout() {
   const breadcrumbs = useBreadcrumbs()
+
+  const pageLabel = breadcrumbs[breadcrumbs.length - 1]?.label
+  const contextLabel =
+    breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].label : null
+  useDocumentTitle(contextLabel ? `${pageLabel} - ${contextLabel}` : pageLabel)
 
   return (
     <TooltipProvider>
@@ -45,7 +51,9 @@ export default function RootLayout() {
                       {index > 0 ? (
                         <BreadcrumbSeparator className="hidden md:block" />
                       ) : null}
-                      <BreadcrumbItem className={index === 0 ? "hidden md:block" : undefined}>
+                      <BreadcrumbItem
+                        className={index === 0 ? "hidden md:block" : undefined}
+                      >
                         {crumb.href && index < breadcrumbs.length - 1 ? (
                           <BreadcrumbLink asChild>
                             <Link to={crumb.href}>{crumb.label}</Link>

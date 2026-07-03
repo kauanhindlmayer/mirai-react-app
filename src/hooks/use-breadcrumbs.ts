@@ -23,7 +23,9 @@ const PAGE_LABELS: Record<string, string> = {
 }
 
 function labelFor(segment: string): string {
-  return PAGE_LABELS[segment] ?? segment.charAt(0).toUpperCase() + segment.slice(1)
+  return (
+    PAGE_LABELS[segment] ?? segment.charAt(0).toUpperCase() + segment.slice(1)
+  )
 }
 
 export type Breadcrumb = {
