@@ -10,6 +10,7 @@ export type WorkItemWithDistanceResponse = {
   code: number
   title: string
   description?: string
+  acceptanceCriteria?: string
   type: WorkItemType
   createdAtUtc: string
   updatedAtUtc?: string
