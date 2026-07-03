@@ -17,5 +17,8 @@ export function useProjectContext() {
     projectId,
     project: projectQuery.data,
     isLoading: projectQuery.isLoading,
+    isError: projectQuery.isError,
+    error: projectQuery.error,
+    refetch: projectQuery.refetch,
   }
 }
