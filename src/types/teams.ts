@@ -5,8 +5,11 @@ export type CreateTeamRequest = {
 
 export type Team = {
   id: string
-  boardId: string
   name: string
+  description?: string
+  boardId: string
+  isDefault: boolean
+  memberCount: number
 }
 
 export type BacklogResponse = {
@@ -15,7 +18,8 @@ export type BacklogResponse = {
   type: string
   title: string
   status: string
-  storyPoints: number
+  storyPoints?: number
+  valueArea: string
   tags: string[]
   children: BacklogResponse[]
 }

@@ -1,7 +1,15 @@
 import { get, post } from "@/lib/api-client"
-import type { BacklogLevel, BacklogResponse, CreateTeamRequest, Team } from "@/types/teams"
+import type {
+  BacklogLevel,
+  BacklogResponse,
+  CreateTeamRequest,
+  Team,
+} from "@/types/teams"
 
-export function createTeam(projectId: string, request: CreateTeamRequest): Promise<string> {
+export function createTeam(
+  projectId: string,
+  request: CreateTeamRequest
+): Promise<string> {
   return post(`/projects/${projectId}/teams`, request)
 }
 
