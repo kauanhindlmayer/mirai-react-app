@@ -3,10 +3,10 @@
 import * as React from "react"
 import { useParams } from "react-router"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { ProjectSwitcher } from "@/components/project-switcher"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/layout/nav-main"
+import { NavUser } from "@/components/layout/nav-user"
+import { ProjectSwitcher } from "@/components/layout/project-switcher"
+import { TeamSwitcher } from "@/components/layout/team-switcher"
 import {
   Sidebar,
   SidebarContent,

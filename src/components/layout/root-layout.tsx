@@ -1,11 +1,11 @@
 import { Fragment } from "react"
 import { Outlet, Link } from "react-router"
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { GlobalSearch } from "@/components/global-search"
-import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog"
-import { RouteErrorBoundary } from "@/components/route-error-boundary"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { GlobalSearch } from "@/components/layout/global-search"
+import { KeyboardShortcutsDialog } from "@/components/layout/keyboard-shortcuts-dialog"
+import { RouteErrorBoundary } from "@/components/layout/route-error-boundary"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs"
 import { useDocumentTitle } from "@/hooks/use-document-title"
+import { requireAuth } from "@/lib/auth-middleware"
+
+export const clientMiddleware = [requireAuth]
 
 export default function RootLayout() {
   const breadcrumbs = useBreadcrumbs()

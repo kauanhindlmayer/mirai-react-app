@@ -2,6 +2,9 @@ import { Link } from "react-router"
 import { FrownIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { requireAuth } from "@/lib/auth-middleware"
+
+export const clientMiddleware = [requireAuth]
 
 export default function OopsPage() {
   return (

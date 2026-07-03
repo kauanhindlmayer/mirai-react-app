@@ -160,7 +160,7 @@ export function SignupForm({
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder="name@example.com"
             required
             className="bg-background"
             aria-invalid={!!form.formState.errors.email}

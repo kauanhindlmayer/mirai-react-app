@@ -19,7 +19,7 @@ import {
 import { ChevronsUpDownIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react"
 import { useLogout } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
-import { UserProfileSheet } from "@/components/user-profile-sheet"
+import { UserProfileSheet } from "@/components/layout/user-profile-sheet"
 
 export function NavUser({
   user,

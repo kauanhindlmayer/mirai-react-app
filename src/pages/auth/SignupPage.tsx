@@ -2,6 +2,9 @@ import { GalleryVerticalEnd } from "lucide-react"
 
 import { SignupForm } from "@/components/auth/signup-form"
 import { useDocumentTitle } from "@/hooks/use-document-title"
+import { redirectIfAuthenticated } from "@/lib/auth-middleware"
+
+export const clientMiddleware = [redirectIfAuthenticated]
 
 export default function SignupPage() {
   useDocumentTitle("Sign up")
