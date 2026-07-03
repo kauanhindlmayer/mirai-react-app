@@ -17,6 +17,15 @@ export class ApiError extends Error {
   }
 }
 
+function resolveErrorMessage(problem: ApiErrorResponse | null): string {
+  if (!problem) return "Something went wrong."
+
+  const validationMessages = Object.values(problem.errors ?? {}).flat()
+  if (validationMessages.length > 0) return validationMessages.join(" ")
+
+  return problem.detail ?? problem.title ?? "Something went wrong."
+}
+
 export type RequestConfig = {
   headers?: Record<string, string>
   params?: Record<string, string>
@@ -75,10 +84,7 @@ async function request<T>(
     const problem = (await response
       .json()
       .catch(() => null)) as ApiErrorResponse | null
-    throw new ApiError(
-      problem?.title ?? "Something went wrong.",
-      response.status
-    )
+    throw new ApiError(resolveErrorMessage(problem), response.status)
   }
 
   if (response.status === 204) {

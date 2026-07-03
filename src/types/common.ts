@@ -19,7 +19,9 @@ export type ApiErrorResponse = {
   type: string
   title: string
   status: number
-  traceId: string
+  requestId: string
+  detail?: string
+  errors?: Record<string, string[]>
 }
 
 export type HateoasResponse = {
