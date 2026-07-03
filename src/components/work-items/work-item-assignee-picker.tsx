@@ -4,7 +4,7 @@ import { UserIcon, XIcon } from "lucide-react"
 
 import { getProjectUsers } from "@/api/projects"
 import { useUpdateWorkItem } from "@/queries/work-items"
-import { useProjectContext } from "@/hooks/use-project-context"
+import { useCurrentProject } from "@/hooks/use-current-project"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -35,7 +35,7 @@ export function WorkItemAssigneePicker({
 }: WorkItemAssigneePickerProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const { project } = useProjectContext()
+  const { project } = useCurrentProject()
   const updateWorkItem = useUpdateWorkItem(projectId, workItemId)
 
   const { data } = useQuery({

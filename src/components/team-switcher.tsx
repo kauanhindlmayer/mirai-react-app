@@ -17,12 +17,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useOrganizationContext } from "@/hooks/use-organization-context"
+import { useCurrentOrganization } from "@/hooks/use-current-organization"
 
 export function TeamSwitcher() {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
-  const { organization, organizations } = useOrganizationContext()
+  const { organization, organizations } = useCurrentOrganization()
 
   const activeOrganization = organization ?? organizations[0]
 

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { getProjectUsers } from "@/api/projects"
 import { getWorkItemsStats } from "@/api/work-items"
 import { ErrorState } from "@/components/error-state"
-import { useProjectContext } from "@/hooks/use-project-context"
+import { useCurrentProject } from "@/hooks/use-current-project"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -32,7 +32,7 @@ const PERIOD_OPTIONS = [
 ]
 
 export default function ProjectSummaryPage() {
-  const { projectId, project } = useProjectContext()
+  const { projectId, project } = useCurrentProject()
   const [period, setPeriod] = useState(7)
   const [page, setPage] = useState(1)
 

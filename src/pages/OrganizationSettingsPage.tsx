@@ -15,7 +15,7 @@ import {
   addUserToOrganization,
   getOrganizationUsers,
 } from "@/api/organizations"
-import { useOrganizationContext } from "@/hooks/use-organization-context"
+import { useCurrentOrganization } from "@/hooks/use-current-organization"
 import type { OrganizationUserResponse } from "@/types/organizations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -80,7 +80,7 @@ const columns: ColumnDef<OrganizationUserResponse>[] = [
 ]
 
 export default function OrganizationSettingsPage() {
-  const { organizationId, organization } = useOrganizationContext()
+  const { organizationId, organization } = useCurrentOrganization()
   const [page, setPage] = useState(1)
 
   const { data, isLoading, isError, error, refetch } = useQuery({

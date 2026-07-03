@@ -7,7 +7,7 @@ import { listSprints } from "@/api/sprints"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { CreateSprintDialog } from "@/components/sprints/create-sprint-dialog"
 import { ErrorState } from "@/components/error-state"
-import { useTeamContext } from "@/hooks/use-team-context"
+import { useCurrentTeam } from "@/hooks/use-current-team"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -47,7 +47,7 @@ function formatDateRange(startDate: string, endDate: string): string {
 export default function SprintsPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const [, setSearchParams] = useSearchParams()
-  const { team, teams, isLoadingTeams, selectTeam } = useTeamContext(projectId)
+  const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 

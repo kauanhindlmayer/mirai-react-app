@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 
 import { getProject } from "@/api/projects"
 
-export function useProjectContext() {
+export function useCurrentProject() {
   const { projectId } = useParams<{ projectId: string }>()
 
   const { data, isLoading, isError, error, refetch } = useQuery({

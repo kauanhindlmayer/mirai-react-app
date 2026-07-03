@@ -19,12 +19,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useProjectContext } from "@/hooks/use-project-context"
+import { useCurrentProject } from "@/hooks/use-current-project"
 
 export function ProjectSwitcher() {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
-  const { project } = useProjectContext()
+  const { project } = useCurrentProject()
 
   const { data: projects = [] } = useQuery({
     queryKey: ["projects", project?.organizationId],

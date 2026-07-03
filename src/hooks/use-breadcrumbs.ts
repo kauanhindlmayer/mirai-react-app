@@ -1,7 +1,7 @@
 import { useLocation } from "react-router"
 
-import { useOrganizationContext } from "@/hooks/use-organization-context"
-import { useProjectContext } from "@/hooks/use-project-context"
+import { useCurrentOrganization } from "@/hooks/use-current-organization"
+import { useCurrentProject } from "@/hooks/use-current-project"
 
 const PAGE_LABELS: Record<string, string> = {
   projects: "Projects",
@@ -35,8 +35,8 @@ export type Breadcrumb = {
 
 export function useBreadcrumbs(): Breadcrumb[] {
   const location = useLocation()
-  const { organizationId, organization } = useOrganizationContext()
-  const { projectId, project } = useProjectContext()
+  const { organizationId, organization } = useCurrentOrganization()
+  const { projectId, project } = useCurrentProject()
 
   const segments = location.pathname.split("/").filter(Boolean)
   const lastSegment = segments[segments.length - 1]

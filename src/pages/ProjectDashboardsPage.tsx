@@ -8,7 +8,7 @@ import { BurnupChart } from "@/components/dashboards/burnup-chart"
 import { ChartCard } from "@/components/dashboards/chart-card"
 import { VelocityChart } from "@/components/dashboards/velocity-chart"
 import { WorkItemScatterChart } from "@/components/dashboards/work-item-scatter-chart"
-import { useTeamContext } from "@/hooks/use-team-context"
+import { useCurrentTeam } from "@/hooks/use-current-team"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ function formatDateRange(startDate: string, endDate: string): string {
 
 export default function ProjectDashboardsPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { team, teams, isLoadingTeams, selectTeam } = useTeamContext(projectId)
+  const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
 
   const {
     data: dashboard,

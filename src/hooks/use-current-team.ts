@@ -20,7 +20,7 @@ function setStoredTeamId(teamId: string): void {
  * project whenever the persisted id doesn't belong to it (derived on every
  * render rather than synced via an effect).
  */
-export function useTeamContext(projectId: string | undefined) {
+export function useCurrentTeam(projectId: string | undefined) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(() =>
     getStoredTeamId()
   )

@@ -45,7 +45,7 @@ import { ErrorState } from "@/components/error-state"
 import { RetrospectiveBoard } from "@/components/retrospectives/retrospective-board"
 import { RetrospectiveDialog } from "@/components/retrospectives/retrospective-dialog"
 import { useSignalR } from "@/hooks/use-signalr"
-import { useTeamContext } from "@/hooks/use-team-context"
+import { useCurrentTeam } from "@/hooks/use-current-team"
 
 export default function RetrospectivesPage() {
   const { projectId, retrospectiveId: routeRetrospectiveId } = useParams<{
@@ -54,7 +54,7 @@ export default function RetrospectivesPage() {
   }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { team, teams, isLoadingTeams, selectTeam } = useTeamContext(projectId)
+  const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
 
   const retrospectivesQuery = useQuery({
     queryKey: ["retrospectives", team?.id],

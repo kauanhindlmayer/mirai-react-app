@@ -8,7 +8,7 @@ import { z } from "zod"
 import { createTeam, listTeams } from "@/api/teams"
 import { updateProject } from "@/api/projects"
 import { ErrorState } from "@/components/error-state"
-import { useProjectContext } from "@/hooks/use-project-context"
+import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export default function ProjectSettingsPage() {
   const { projectId, project, isLoading, isError, error, refetch } =
-    useProjectContext()
+    useCurrentProject()
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

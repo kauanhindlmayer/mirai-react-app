@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 
 import { listOrganizations } from "@/api/organizations"
 
-export function useOrganizationContext() {
+export function useCurrentOrganization() {
   const { organizationId } = useParams<{ organizationId: string }>()
 
   const { data: organizations = [], isLoading } = useQuery({

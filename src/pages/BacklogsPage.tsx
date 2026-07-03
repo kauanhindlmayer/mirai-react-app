@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { getBacklog } from "@/api/teams"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { ErrorState } from "@/components/error-state"
-import { useTeamContext } from "@/hooks/use-team-context"
+import { useCurrentTeam } from "@/hooks/use-current-team"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -41,7 +41,7 @@ function collectIds(items: BacklogResponse[]): string[] {
 export default function BacklogsPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const [, setSearchParams] = useSearchParams()
-  const { team, teams, isLoadingTeams, selectTeam } = useTeamContext(projectId)
+  const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
   const [backlogLevel, setBacklogLevel] = useState<BacklogLevel>(
     BacklogLevel.Feature
   )
