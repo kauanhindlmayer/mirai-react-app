@@ -1,7 +1,10 @@
 import { get, post } from "@/lib/api-client"
 import type { CreateSprintRequest, Sprint } from "@/types/sprints"
 
-export function createSprint(teamId: string, request: CreateSprintRequest): Promise<string> {
+export function createSprint(
+  teamId: string,
+  request: CreateSprintRequest
+): Promise<string> {
   return post(`/teams/${teamId}/sprints`, request)
 }
 
