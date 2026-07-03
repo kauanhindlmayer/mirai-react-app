@@ -16,6 +16,9 @@
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
+    --color-chart-8: var(--chart-8);
+    --color-chart-7: var(--chart-7);
+    --color-chart-6: var(--chart-6);
     --color-chart-5: var(--chart-5);
     --color-chart-4: var(--chart-4);
     --color-chart-3: var(--chart-3);
@@ -67,11 +70,16 @@
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.828 0.111 230.318);
-    --chart-2: oklch(0.685 0.169 237.323);
-    --chart-3: oklch(0.588 0.158 241.966);
-    --chart-4: oklch(0.5 0.134 242.749);
-    --chart-5: oklch(0.443 0.11 240.79);
+    /* Validated categorical palette (dataviz skill) — fixed order, never cycled */
+    --chart-1: #2a78d6; /* blue */
+    --chart-2: #1baf7a; /* aqua */
+    --chart-3: #eda100; /* yellow */
+    --chart-4: #008300; /* green */
+    --chart-5: #4a3aa7; /* violet */
+    --chart-6: #e34948; /* red */
+    --chart-7: #e87ba4; /* magenta */
+    --chart-8: #eb6834; /* orange */
+    --chart-gridline: #e1e0d9;
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -102,11 +110,16 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.828 0.111 230.318);
-    --chart-2: oklch(0.685 0.169 237.323);
-    --chart-3: oklch(0.588 0.158 241.966);
-    --chart-4: oklch(0.5 0.134 242.749);
-    --chart-5: oklch(0.443 0.11 240.79);
+    /* Validated categorical palette (dataviz skill), dark-surface steps */
+    --chart-1: #3987e5; /* blue */
+    --chart-2: #199e70; /* aqua */
+    --chart-3: #c98500; /* yellow */
+    --chart-4: #008300; /* green */
+    --chart-5: #9085e9; /* violet */
+    --chart-6: #e66767; /* red */
+    --chart-7: #d55181; /* magenta */
+    --chart-8: #d95926; /* orange */
+    --chart-gridline: #2c2c2a;
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.685 0.169 237.323);
@@ -127,4 +140,53 @@
   html {
     @apply font-sans;
     }
+}
+
+.tiptap-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+.tiptap-content h1 {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+.tiptap-content h2 {
+  font-size: 1.25em;
+  font-weight: 600;
+}
+.tiptap-content h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.tiptap-content ul,
+.tiptap-content ol {
+  padding-left: 1.5em;
+}
+.tiptap-content ul {
+  list-style: disc;
+}
+.tiptap-content ol {
+  list-style: decimal;
+}
+.tiptap-content blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 1em;
+  color: var(--muted-foreground);
+}
+.tiptap-content code {
+  background: var(--muted);
+  border-radius: 0.25em;
+  padding: 0.15em 0.35em;
+  font-size: 0.9em;
+}
+.tiptap-content pre {
+  background: var(--muted);
+  border-radius: 0.5em;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+.tiptap-content pre code {
+  background: none;
+  padding: 0;
 }
