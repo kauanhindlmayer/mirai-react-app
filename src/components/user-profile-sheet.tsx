@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { updateAvatar, updateUserProfile } from "@/api/users"
 import { CURRENT_USER_QUERY_KEY, useCurrentUser } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
-import type { User } from "@/types/auth"
+import type { User } from "@/types/users"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -26,7 +26,10 @@ type UserProfileSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export function UserProfileSheet({ open, onOpenChange }: UserProfileSheetProps) {
+export function UserProfileSheet({
+  open,
+  onOpenChange,
+}: UserProfileSheetProps) {
   const { data: user } = useCurrentUser()
 
   return (

@@ -1,4 +1,4 @@
-import type { User } from "@/types/auth"
+import type { User } from "@/types/users"
 
 const ACCESS_TOKEN_KEY = "accessToken"
 const USER_KEY = "user"

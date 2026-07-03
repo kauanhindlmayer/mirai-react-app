@@ -9,7 +9,7 @@ import {
   setAccessToken,
   setStoredUser,
 } from "@/lib/auth-storage"
-import type { LoginCredentials, User } from "@/types/auth"
+import type { LoginRequest, User } from "@/types/users"
 
 export const CURRENT_USER_QUERY_KEY = ["current-user"]
 
@@ -28,7 +28,7 @@ export function useLogin() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (credentials: LoginCredentials): Promise<User> => {
+    mutationFn: async (credentials: LoginRequest): Promise<User> => {
       const { accessToken } = await loginUser(credentials)
       setAccessToken(accessToken)
       const user = await getCurrentUser()

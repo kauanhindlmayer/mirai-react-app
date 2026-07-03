@@ -1,14 +1,13 @@
-export type LoginCredentials = {
+export type LoginRequest = {
   email: string
   password: string
-  rememberMe: boolean
 }
 
 export type LoginResponse = {
   accessToken: string
 }
 
-export type RegisterCredentials = {
+export type RegisterRequest = {
   firstName: string
   lastName: string
   email: string

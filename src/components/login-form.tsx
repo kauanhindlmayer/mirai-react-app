@@ -1,14 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { Link } from "react-router"
 import { toast } from "sonner"
 import { z } from "zod"
 
 import { useLogin } from "@/hooks/use-auth"
-import type { LoginCredentials } from "@/types/auth"
+import type { LoginRequest } from "@/types/users"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Field,
@@ -23,25 +22,23 @@ import { Input } from "@/components/ui/input"
 const loginSchema = z.object({
   email: z.email("Enter a valid email address."),
   password: z.string().min(1, "Password is required."),
-  rememberMe: z.boolean(),
 })
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const form = useForm<LoginCredentials>({
+  const form = useForm<LoginRequest>({
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
     resolver: zodResolver(loginSchema),
   })
 
   const loginMutation = useLogin()
 
-  async function handleSubmit(values: LoginCredentials) {
+  async function handleSubmit(values: LoginRequest) {
     try {
       await loginMutation.mutateAsync(values)
     } catch (error) {
@@ -97,22 +94,6 @@ export function LoginForm({
             {...form.register("password")}
           />
           <FieldError errors={[form.formState.errors.password]} />
-        </Field>
-        <Field orientation="horizontal">
-          <Controller
-            control={form.control}
-            name="rememberMe"
-            render={({ field }) => (
-              <Checkbox
-                id="remember-me"
-                checked={field.value}
-                onCheckedChange={(checked) => field.onChange(checked === true)}
-              />
-            )}
-          />
-          <FieldLabel htmlFor="remember-me" className="font-normal">
-            Remember me
-          </FieldLabel>
         </Field>
         <Field>
           <Button type="submit" disabled={loginMutation.isPending}>

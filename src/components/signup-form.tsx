@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { registerUser } from "@/api/users"
-import type { RegisterCredentials } from "@/types/auth"
+import type { RegisterRequest } from "@/types/users"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -56,7 +56,7 @@ const signupSchema = z
     path: ["confirmPassword"],
   })
 
-type SignupFormValues = RegisterCredentials & {
+type SignupFormValues = RegisterRequest & {
   confirmPassword: string
 }
 
@@ -171,8 +171,8 @@ export function SignupForm({
           />
           <FieldError errors={[form.formState.errors.password]} />
           <FieldDescription>
-            At least 8 characters, with an uppercase letter, a lowercase
-            letter, and a number.
+            At least 8 characters, with an uppercase letter, a lowercase letter,
+            and a number.
           </FieldDescription>
         </Field>
         <Field>

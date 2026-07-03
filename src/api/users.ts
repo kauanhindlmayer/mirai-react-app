@@ -1,16 +1,16 @@
 import { get, patch, post, put } from "@/lib/api-client"
 import type {
-  LoginCredentials,
+  LoginRequest,
   LoginResponse,
-  RegisterCredentials,
+  RegisterRequest,
   User,
-} from "@/types/auth"
+} from "@/types/users"
 
-export function registerUser(credentials: RegisterCredentials): Promise<string> {
+export function registerUser(credentials: RegisterRequest): Promise<string> {
   return post("/users/register", credentials)
 }
 
-export function loginUser(credentials: LoginCredentials): Promise<LoginResponse> {
+export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
   return post("/users/login", credentials)
 }
 
