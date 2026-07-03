@@ -1,4 +1,9 @@
-import { type RouteConfig, route, index, layout } from "@react-router/dev/routes"
+import {
+  type RouteConfig,
+  route,
+  index,
+  layout,
+} from "@react-router/dev/routes"
 
 export default [
   layout("./components/protected-layout.tsx", [
@@ -18,40 +23,29 @@ export default [
         "./pages/OrganizationSettingsPage.tsx"
       ),
 
-      route("projects/:projectId/summary", "./pages/ProjectSummaryPage.tsx"),
-      route(
-        "projects/:projectId/dashboards",
-        "./pages/ProjectDashboardsPage.tsx"
-      ),
-      route("projects/:projectId/wiki-pages", "./pages/WikiPagesPage.tsx"),
-      route(
-        "projects/:projectId/wiki-pages/new",
-        "./pages/WikiPageNewPage.tsx"
-      ),
-      route(
-        "projects/:projectId/wiki-pages/:wikiPageId",
-        "./pages/WikiPageViewPage.tsx"
-      ),
-      route(
-        "projects/:projectId/wiki-pages/:wikiPageId/edit",
-        "./pages/WikiPageEditPage.tsx"
-      ),
-      route("projects/:projectId/work-items", "./pages/WorkItemsPage.tsx"),
-      route("projects/:projectId/boards", "./pages/BoardsPage.tsx"),
-      route("projects/:projectId/backlogs", "./pages/BacklogsPage.tsx"),
-      route("projects/:projectId/sprints", "./pages/SprintsPage.tsx"),
-      route("projects/:projectId/personas", "./pages/PersonasPage.tsx"),
-      route(
-        "projects/:projectId/retrospectives/:retrospectiveId?",
-        "./pages/RetrospectivesPage.tsx"
-      ),
-      route("projects/:projectId/tags", "./pages/TagsPage.tsx"),
-      route("projects/:projectId/tags/import", "./pages/TagsImportPage.tsx"),
-      route(
-        "projects/:projectId/wisdom-extractor",
-        "./pages/WisdomExtractorPage.tsx"
-      ),
-      route("projects/:projectId/settings", "./pages/ProjectSettingsPage.tsx"),
+      route("projects/:projectId", "./components/project-layout.tsx", [
+        route("summary", "./pages/ProjectSummaryPage.tsx"),
+        route("dashboards", "./pages/ProjectDashboardsPage.tsx"),
+        route("wiki-pages", "./components/wiki-pages/wiki-pages-layout.tsx", [
+          index("./pages/WikiPagesPage.tsx", { id: "wiki-pages-index" }),
+          route("new", "./pages/WikiPageNewPage.tsx"),
+          route(":wikiPageId", "./pages/WikiPageViewPage.tsx"),
+          route(":wikiPageId/edit", "./pages/WikiPageEditPage.tsx"),
+        ]),
+        route("work-items", "./pages/WorkItemsPage.tsx"),
+        route("boards", "./pages/BoardsPage.tsx"),
+        route("backlogs", "./pages/BacklogsPage.tsx"),
+        route("sprints", "./pages/SprintsPage.tsx"),
+        route("personas", "./pages/PersonasPage.tsx"),
+        route(
+          "retrospectives/:retrospectiveId?",
+          "./pages/RetrospectivesPage.tsx"
+        ),
+        route("tags", "./pages/TagsPage.tsx"),
+        route("tags/import", "./pages/TagsImportPage.tsx"),
+        route("wisdom-extractor", "./pages/WisdomExtractorPage.tsx"),
+        route("settings", "./pages/ProjectSettingsPage.tsx"),
+      ]),
     ]),
 
     route("not-found", "./pages/NotFoundPage.tsx"),

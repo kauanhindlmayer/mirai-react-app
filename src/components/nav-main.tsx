@@ -23,6 +23,7 @@ export type NavMainItem = {
   items: {
     title: string
     url: string
+    icon?: React.ReactNode
   }[]
 }
 
@@ -61,9 +62,12 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
                           <NavLink
                             to={subItem.url}
                             className={({ isActive }) =>
-                              isActive ? "font-medium text-sidebar-accent-foreground" : undefined
+                              isActive
+                                ? "font-medium text-sidebar-accent-foreground"
+                                : undefined
                             }
                           >
+                            {subItem.icon}
                             <span>{subItem.title}</span>
                           </NavLink>
                         </SidebarMenuSubButton>
