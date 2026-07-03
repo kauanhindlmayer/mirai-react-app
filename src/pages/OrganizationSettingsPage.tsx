@@ -16,7 +16,6 @@ import {
   getOrganizationUsers,
 } from "@/api/organizations"
 import { useOrganizationContext } from "@/hooks/use-organization-context"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import type { OrganizationUserResponse } from "@/types/organizations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -97,7 +96,6 @@ export default function OrganizationSettingsPage() {
     staleTime: 60_000,
     placeholderData: (previous) => previous,
   })
-  const showLoading = useDelayedLoading(usersQuery.isLoading)
 
   const table = useReactTable({
     data: usersQuery.data?.items ?? [],
@@ -152,7 +150,7 @@ export default function OrganizationSettingsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : showLoading ? (
+            ) : usersQuery.isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

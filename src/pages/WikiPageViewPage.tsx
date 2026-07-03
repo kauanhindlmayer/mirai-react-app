@@ -10,7 +10,6 @@ import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { getInitials } from "@/lib/utils"
 
 export default function WikiPageViewPage() {
@@ -25,8 +24,6 @@ export default function WikiPageViewPage() {
     queryFn: () => getWikiPage(projectId!, wikiPageId!),
     enabled: !!projectId && !!wikiPageId,
   })
-  const showLoading = useDelayedLoading(wikiPageQuery.isLoading)
-
   if (wikiPageQuery.isError) {
     return (
       <ErrorState
@@ -37,7 +34,7 @@ export default function WikiPageViewPage() {
     )
   }
 
-  if (showLoading) {
+  if (wikiPageQuery.isLoading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Skeleton className="h-8 w-64" />

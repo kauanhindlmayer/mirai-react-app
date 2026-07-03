@@ -5,7 +5,6 @@ import { getProjectUsers } from "@/api/projects"
 import { getWorkItemsStats } from "@/api/work-items"
 import { ErrorState } from "@/components/error-state"
 import { useProjectContext } from "@/hooks/use-project-context"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -53,8 +52,6 @@ export default function ProjectSummaryPage() {
     placeholderData: (previous) => previous,
   })
 
-  const statsLoading = useDelayedLoading(statsQuery.isLoading)
-
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
       <div className="flex items-center justify-between">
@@ -92,7 +89,7 @@ export default function ProjectSummaryPage() {
                 <span className="text-sm font-normal text-destructive">
                   Failed to load
                 </span>
-              ) : statsLoading ? (
+              ) : statsQuery.isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
                 (statsQuery.data?.workItemsCreated ?? 0)
@@ -108,7 +105,7 @@ export default function ProjectSummaryPage() {
                 <span className="text-sm font-normal text-destructive">
                   Failed to load
                 </span>
-              ) : statsLoading ? (
+              ) : statsQuery.isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
                 (statsQuery.data?.workItemsCompleted ?? 0)

@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query"
 import { getBacklog } from "@/api/teams"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { ErrorState } from "@/components/error-state"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { useTeamContext } from "@/hooks/use-team-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -61,7 +60,6 @@ export default function BacklogsPage() {
     () => toTreeNodes(backlogQuery.data ?? []),
     [backlogQuery.data]
   )
-  const showLoading = useDelayedLoading(backlogQuery.isLoading)
 
   function toggle(id: string) {
     setExpandedIds((prev) => {
@@ -146,7 +144,7 @@ export default function BacklogsPage() {
             title="Failed to load backlog"
             onRetry={() => backlogQuery.refetch()}
           />
-        ) : showLoading ? (
+        ) : backlogQuery.isLoading ? (
           <div className="flex flex-col gap-2 p-1">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-6 w-full" />

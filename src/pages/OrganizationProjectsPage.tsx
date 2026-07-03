@@ -4,7 +4,6 @@ import { FolderIcon, PencilIcon } from "lucide-react"
 
 import { listProjects } from "@/api/projects"
 import { useOrganizationContext } from "@/hooks/use-organization-context"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { ErrorState } from "@/components/error-state"
 import { ProjectFormSheet } from "@/components/project-form-sheet"
 import { Button } from "@/components/ui/button"
@@ -20,7 +19,6 @@ export default function OrganizationProjectsPage() {
     staleTime: 60_000,
     placeholderData: [],
   })
-  const showLoading = useDelayedLoading(projectsQuery.isLoading)
   const projects = projectsQuery.data ?? []
 
   return (
@@ -42,7 +40,7 @@ export default function OrganizationProjectsPage() {
           title="Failed to load projects"
           onRetry={() => projectsQuery.refetch()}
         />
-      ) : showLoading ? (
+      ) : projectsQuery.isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-24 rounded-xl" />

@@ -2,13 +2,11 @@ import { Link } from "react-router"
 import { Building2Icon } from "lucide-react"
 
 import { useOrganizations } from "@/queries/organizations"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { CreateOrganizationSheet } from "@/components/create-organization-sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function OrganizationsPage() {
   const { data: organizations, isLoading } = useOrganizations()
-  const showLoading = useDelayedLoading(isLoading)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -16,7 +14,7 @@ export default function OrganizationsPage() {
         <h1 className="text-xl font-semibold">Organizations</h1>
         <CreateOrganizationSheet />
       </div>
-      {showLoading ? (
+      {isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-24 rounded-xl" />

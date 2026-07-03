@@ -8,7 +8,6 @@ import { deleteTag, deleteTags, listTags, updateTag } from "@/api/tags"
 import { CreateTagPopover } from "@/components/tags/create-tag-popover"
 import { InlineEditableCell } from "@/components/tags/inline-editable-cell"
 import { TagColorPicker } from "@/components/tags/tag-color-picker"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -42,7 +41,6 @@ export default function TagsPage() {
     staleTime: 30_000,
     placeholderData: (previous) => previous,
   })
-  const showLoading = useDelayedLoading(tagsQuery.isLoading)
   const tags = tagsQuery.data?.items ?? []
 
   const updateTagMutation = useMutation({
@@ -176,7 +174,7 @@ export default function TagsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : showLoading ? (
+            ) : tagsQuery.isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={6}

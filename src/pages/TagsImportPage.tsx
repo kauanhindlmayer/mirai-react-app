@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { cn, getErrorMessage } from "@/lib/utils"
 import type { Link } from "@/types/common"
 import { TagImportJobStatus } from "@/types/tag-import-jobs"
@@ -105,7 +104,6 @@ export default function TagsImportPage() {
   }
 
   const jobs = jobsQuery.data?.items ?? []
-  const showLoading = useDelayedLoading(jobsQuery.isLoading)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -157,7 +155,7 @@ export default function TagsImportPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : showLoading ? (
+            ) : jobsQuery.isLoading ? (
               Array.from({ length: 3 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell colSpan={6}>

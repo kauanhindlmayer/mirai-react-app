@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import type { WikiPage } from "@/types/wiki-pages"
 
 export default function WikiPageEditPage() {
@@ -24,8 +23,6 @@ export default function WikiPageEditPage() {
     queryFn: () => getWikiPage(projectId!, wikiPageId!),
     enabled: !!projectId && !!wikiPageId,
   })
-  const showLoading = useDelayedLoading(wikiPageQuery.isLoading)
-
   if (wikiPageQuery.isError) {
     return (
       <ErrorState
@@ -36,7 +33,7 @@ export default function WikiPageEditPage() {
     )
   }
 
-  if (showLoading || !wikiPageQuery.data) {
+  if (wikiPageQuery.isLoading || !wikiPageQuery.data) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Skeleton className="h-8 w-64" />

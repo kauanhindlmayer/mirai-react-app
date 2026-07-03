@@ -8,7 +8,6 @@ import { BurnupChart } from "@/components/dashboards/burnup-chart"
 import { ChartCard } from "@/components/dashboards/chart-card"
 import { VelocityChart } from "@/components/dashboards/velocity-chart"
 import { WorkItemScatterChart } from "@/components/dashboards/work-item-scatter-chart"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { useTeamContext } from "@/hooks/use-team-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,7 +46,7 @@ export default function ProjectDashboardsPage() {
   })
 
   const dashboard = dashboardQuery.data
-  const isLoading = useDelayedLoading(dashboardQuery.isLoading)
+  const isLoading = dashboardQuery.isLoading
 
   const cycleTimePoints = (dashboard?.cycleTimeData ?? []).map((point) => ({
     x: new Date(point.completedDate).getTime(),

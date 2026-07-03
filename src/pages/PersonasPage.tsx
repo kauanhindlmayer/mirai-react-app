@@ -5,7 +5,6 @@ import { UsersRoundIcon } from "lucide-react"
 import { listPersonas } from "@/api/personas"
 import { CreatePersonaSheet } from "@/components/create-persona-sheet"
 import { ErrorState } from "@/components/error-state"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -20,7 +19,6 @@ export default function PersonasPage() {
     staleTime: 60_000,
     placeholderData: [],
   })
-  const showLoading = useDelayedLoading(personasQuery.isLoading)
   const personas = personasQuery.data ?? []
 
   return (
@@ -36,7 +34,7 @@ export default function PersonasPage() {
           title="Failed to load personas"
           onRetry={() => personasQuery.refetch()}
         />
-      ) : showLoading ? (
+      ) : personasQuery.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-40 rounded-xl" />

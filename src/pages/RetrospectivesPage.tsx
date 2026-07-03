@@ -44,7 +44,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { RetrospectiveBoard } from "@/components/retrospectives/retrospective-board"
 import { RetrospectiveDialog } from "@/components/retrospectives/retrospective-dialog"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { useSignalR } from "@/hooks/use-signalr"
 import { useTeamContext } from "@/hooks/use-team-context"
 
@@ -86,7 +85,6 @@ export default function RetrospectivesPage() {
     enabled: !!retrospectiveId,
   })
   const retrospective = retrospectiveQuery.data
-  const showLoading = useDelayedLoading(retrospectiveQuery.isLoading)
 
   const signalREvents = useMemo(
     () =>
@@ -233,7 +231,7 @@ export default function RetrospectivesPage() {
         />
       ) : retrospective ? (
         <RetrospectiveBoard retrospective={retrospective} />
-      ) : showLoading ? (
+      ) : retrospectiveQuery.isLoading ? (
         <div className="flex flex-1 gap-4">
           <Skeleton className="h-96 w-64" />
           <Skeleton className="h-96 w-64" />

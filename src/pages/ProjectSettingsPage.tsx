@@ -8,7 +8,6 @@ import { z } from "zod"
 import { createTeam, listTeams } from "@/api/teams"
 import { updateProject } from "@/api/projects"
 import { ErrorState } from "@/components/error-state"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { useProjectContext } from "@/hooks/use-project-context"
 import type { Project } from "@/types/projects"
 import { Button } from "@/components/ui/button"
@@ -36,7 +35,6 @@ import { Textarea } from "@/components/ui/textarea"
 export default function ProjectSettingsPage() {
   const { projectId, project, isLoading, isError, error, refetch } =
     useProjectContext()
-  const showLoading = useDelayedLoading(isLoading)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -56,7 +54,7 @@ export default function ProjectSettingsPage() {
               title="Failed to load project"
               onRetry={() => refetch()}
             />
-          ) : showLoading ? (
+          ) : isLoading ? (
             <Skeleton className="h-40" />
           ) : project ? (
             <ProjectOverviewForm project={project} />
@@ -158,7 +156,6 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
     staleTime: 60_000,
     placeholderData: [],
   })
-  const showLoading = useDelayedLoading(teamsQuery.isLoading)
 
   return (
     <div className="flex flex-col gap-4 py-4">
@@ -172,7 +169,7 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
           title="Failed to load teams"
           onRetry={() => teamsQuery.refetch()}
         />
-      ) : showLoading ? (
+      ) : teamsQuery.isLoading ? (
         <div className="flex flex-col gap-2">
           <Skeleton className="h-9 w-full" />
           <Skeleton className="h-9 w-full" />

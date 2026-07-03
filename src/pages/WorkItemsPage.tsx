@@ -12,7 +12,6 @@ import { toast } from "sonner"
 
 import { listWorkItems } from "@/api/work-items"
 import { useDeleteWorkItem, workItemsQueryKey } from "@/queries/work-items"
-import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import {
   WORK_ITEM_STATUS_COLORS,
   WORK_ITEM_TYPE_COLORS,
@@ -124,7 +123,6 @@ export default function WorkItemsPage() {
     staleTime: 60_000,
     placeholderData: (previous) => previous,
   })
-  const showLoading = useDelayedLoading(workItemsQuery.isLoading)
 
   const table = useReactTable({
     data: workItemsQuery.data?.items ?? [],
@@ -198,7 +196,7 @@ export default function WorkItemsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : showLoading ? (
+            ) : workItemsQuery.isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
