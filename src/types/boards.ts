@@ -4,7 +4,6 @@ export type Board = {
   id: string
   teamId: string
   name: string
-  description: string
   columns: Column[]
 }
 
@@ -31,8 +30,8 @@ export type Card = {
   columnId: string
   position: number
   workItem: BoardWorkItem
-  updatedAtUtc: string
   createdAtUtc: string
+  updatedAtUtc?: string
 }
 
 export type ColumnCardsResponse = {
@@ -43,23 +42,19 @@ export type ColumnCardsResponse = {
 
 export type BoardWorkItem = {
   id: string
-  code: string
+  code: number
   title: string
-  storyPoints: number
+  storyPoints?: number
   assignee?: Assignee
-  status: WorkItemStatus
   type: WorkItemType
+  status: WorkItemStatus
+  tags: string[]
 }
 
 export type Assignee = {
   id: string
   name: string
-  imageUrl: string
-}
-
-export type CreateBoardRequest = {
-  name: string
-  description: string
+  imageUrl?: string
 }
 
 export type MoveCardRequest = {

@@ -4,16 +4,14 @@ import type {
   BoardSummary,
   ColumnCardsResponse,
   CreateBoardColumnRequest,
-  CreateBoardRequest,
   MoveCardRequest,
 } from "@/types/boards"
 import type { BacklogLevel } from "@/types/teams"
 
-export function createBoard(teamId: string, request: CreateBoardRequest): Promise<string> {
-  return post(`/teams/${teamId}/boards`, request)
-}
-
-export function getBoard(boardId: string, backlogLevel?: BacklogLevel): Promise<Board> {
+export function getBoard(
+  boardId: string,
+  backlogLevel?: BacklogLevel
+): Promise<Board> {
   const params: Record<string, string> = {}
   if (backlogLevel) params.backlogLevel = backlogLevel
   return get(`/boards/${boardId}`, { params })
@@ -33,10 +31,16 @@ export function moveCard(
   cardId: string,
   request: MoveCardRequest
 ): Promise<void> {
-  return post(`/boards/${boardId}/columns/${columnId}/cards/${cardId}/move`, request)
+  return post(
+    `/boards/${boardId}/columns/${columnId}/cards/${cardId}/move`,
+    request
+  )
 }
 
-export function createColumn(boardId: string, request: CreateBoardColumnRequest): Promise<void> {
+export function createColumn(
+  boardId: string,
+  request: CreateBoardColumnRequest
+): Promise<string> {
   return post(`/boards/${boardId}/columns`, request)
 }
 
