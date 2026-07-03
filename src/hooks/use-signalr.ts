@@ -28,9 +28,14 @@ export function useSignalR(hub: string, events: EventInvalidation[]) {
     const connection = createHubConnection(hub)
     connectionRef.current = connection
 
-    for (const { event, queryKey } of eventsRef.current) {
-      connection.on(event, () => {
-        queryClient.invalidateQueries({ queryKey })
+    const eventNames = new Set(eventsRef.current.map((e) => e.event))
+    for (const eventName of eventNames) {
+      connection.on(eventName, () => {
+        for (const { event, queryKey } of eventsRef.current) {
+          if (event === eventName) {
+            queryClient.invalidateQueries({ queryKey })
+          }
+        }
       })
     }
 

@@ -3,10 +3,7 @@ export type Retrospective = {
   title: string
   maxVotesPerUser: number
   template: ProcessTemplate
-  teamId: string
   columns: RetrospectiveColumn[]
-  createdAtUtc: string
-  updatedAtUtc?: string
 }
 
 export const ProcessTemplate = {
@@ -17,7 +14,8 @@ export const ProcessTemplate = {
   Sailboat: "Sailboat",
 } as const
 
-export type ProcessTemplate = (typeof ProcessTemplate)[keyof typeof ProcessTemplate]
+export type ProcessTemplate =
+  (typeof ProcessTemplate)[keyof typeof ProcessTemplate]
 
 export type RetrospectiveSummary = {
   id: string
@@ -38,5 +36,17 @@ export type RetrospectiveItem = {
   authorId: string
   votes: number
   createdAtUtc: string
-  updatedAtUtc?: string
+}
+
+export type CreateRetrospectiveRequest = {
+  teamId: string
+  title: string
+  maxVotesPerUser?: number
+  template?: ProcessTemplate
+}
+
+export type UpdateRetrospectiveRequest = {
+  title: string
+  maxVotesPerUser?: number
+  template?: ProcessTemplate
 }
