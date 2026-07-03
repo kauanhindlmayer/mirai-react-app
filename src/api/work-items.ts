@@ -10,6 +10,7 @@ import type {
   CreateWorkItemRequest,
   WorkItem,
   WorkItemsStats,
+  WorkItemSummary,
 } from "@/types/work-items"
 
 export function createWorkItem(
@@ -22,7 +23,7 @@ export function createWorkItem(
 export function listWorkItems(
   projectId: string,
   filters: PaginationFilter
-): Promise<PaginatedList<WorkItem>> {
+): Promise<PaginatedList<WorkItemSummary>> {
   const params: Record<string, string> = {
     page: filters.page.toString(),
     pageSize: filters.pageSize.toString(),
@@ -32,7 +33,10 @@ export function listWorkItems(
   return get(`/projects/${projectId}/work-items`, { params })
 }
 
-export function deleteWorkItem(projectId: string, workItemId: string): Promise<void> {
+export function deleteWorkItem(
+  projectId: string,
+  workItemId: string
+): Promise<void> {
   return del(`/projects/${projectId}/work-items/${workItemId}`)
 }
 
@@ -45,7 +49,10 @@ export function getWorkItemsStats(
   })
 }
 
-export function getWorkItem(projectId: string, workItemId: string): Promise<WorkItem> {
+export function getWorkItem(
+  projectId: string,
+  workItemId: string
+): Promise<WorkItem> {
   return get(`/projects/${projectId}/work-items/${workItemId}`)
 }
 
@@ -54,7 +61,10 @@ export function addWorkItemComment(
   workItemId: string,
   request: AddCommentRequest
 ): Promise<void> {
-  return post(`/projects/${projectId}/work-items/${workItemId}/comments`, request)
+  return post(
+    `/projects/${projectId}/work-items/${workItemId}/comments`,
+    request
+  )
 }
 
 export function updateWorkItemComment(
@@ -63,7 +73,10 @@ export function updateWorkItemComment(
   commentId: string,
   request: UpdateCommentRequest
 ): Promise<void> {
-  return put(`/projects/${projectId}/work-items/${workItemId}/comments/${commentId}`, request)
+  return put(
+    `/projects/${projectId}/work-items/${workItemId}/comments/${commentId}`,
+    request
+  )
 }
 
 export function deleteWorkItemComment(
@@ -71,7 +84,9 @@ export function deleteWorkItemComment(
   workItemId: string,
   commentId: string
 ): Promise<void> {
-  return del(`/projects/${projectId}/work-items/${workItemId}/comments/${commentId}`)
+  return del(
+    `/projects/${projectId}/work-items/${workItemId}/comments/${commentId}`
+  )
 }
 
 export function updateWorkItem(
@@ -126,7 +141,10 @@ export function uploadWorkItemAttachment(
 ): Promise<string> {
   const formData = new FormData()
   formData.append("file", file)
-  return post(`/projects/${projectId}/work-items/${workItemId}/attachments`, formData)
+  return post(
+    `/projects/${projectId}/work-items/${workItemId}/attachments`,
+    formData
+  )
 }
 
 export function downloadWorkItemAttachment(
@@ -134,9 +152,12 @@ export function downloadWorkItemAttachment(
   workItemId: string,
   attachmentId: string
 ): Promise<Blob> {
-  return get(`/projects/${projectId}/work-items/${workItemId}/attachments/${attachmentId}`, {
-    responseType: "blob",
-  })
+  return get(
+    `/projects/${projectId}/work-items/${workItemId}/attachments/${attachmentId}`,
+    {
+      responseType: "blob",
+    }
+  )
 }
 
 export function deleteWorkItemAttachment(
@@ -144,5 +165,7 @@ export function deleteWorkItemAttachment(
   workItemId: string,
   attachmentId: string
 ): Promise<void> {
-  return del(`/projects/${projectId}/work-items/${workItemId}/attachments/${attachmentId}`)
+  return del(
+    `/projects/${projectId}/work-items/${workItemId}/attachments/${attachmentId}`
+  )
 }

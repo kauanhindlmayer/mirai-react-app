@@ -1,15 +1,17 @@
 import type { Comment } from "@/types/common"
 
 export type WorkItem = {
-  id?: string
+  id: string
   code: number
   title: string
   description?: string
   acceptanceCriteria?: string
   type: WorkItemType
   status: WorkItemStatus
-  planning: Planning
-  classification: Classification
+  planning?: Planning
+  classification?: Classification
+  parentWorkItem?: RelatedWorkItemResponse
+  childWorkItems: RelatedWorkItemResponse[]
   tags: TagBriefResponse[]
   comments: Comment[]
   attachments: WorkItemAttachment[]
@@ -17,17 +19,40 @@ export type WorkItem = {
   incomingLinks: WorkItemLink[]
   assigneeId?: string
   assignee?: AssigneeResponse
-  createdAtUtc?: string
-  updatedAtUtc: string
+  createdAtUtc: string
+  updatedAtUtc?: string
+}
+
+/**
+ * Lightweight shape returned by the work items list endpoint — distinct from
+ * `WorkItem` (the full detail shape returned by the single-item GET). The
+ * backend intentionally omits planning/classification/comments/etc. here.
+ */
+export type WorkItemSummary = {
+  id: string
+  code: number
+  title: string
+  status: WorkItemStatus
+  type: WorkItemType
+  assignee?: WorkItemSummaryAssignee
+  tags: TagBriefResponse[]
+  createdAtUtc: string
+  updatedAtUtc?: string
+}
+
+export type WorkItemSummaryAssignee = {
+  id: string
+  name: string
+  imageUrl?: string
 }
 
 export type Planning = {
-  storyPoints: number
-  priority: number
+  storyPoints?: number
+  priority?: number
 }
 
 export type Classification = {
-  valueArea: ValueArea
+  valueArea?: ValueArea
 }
 
 export const ValueArea = {
@@ -71,7 +96,8 @@ export const WorkItemStatus = {
   Removed: "Removed",
 } as const
 
-export type WorkItemStatus = (typeof WorkItemStatus)[keyof typeof WorkItemStatus]
+export type WorkItemStatus =
+  (typeof WorkItemStatus)[keyof typeof WorkItemStatus]
 
 export const WorkItemType = {
   UserStory: "UserStory",
@@ -101,6 +127,7 @@ export type RelatedWorkItemResponse = {
   title: string
   type: WorkItemType
   status: WorkItemStatus
+  assignee?: WorkItemSummaryAssignee
 }
 
 export const WorkItemLinkType = {
@@ -110,7 +137,8 @@ export const WorkItemLinkType = {
   Duplicate: "Duplicate",
 } as const
 
-export type WorkItemLinkType = (typeof WorkItemLinkType)[keyof typeof WorkItemLinkType]
+export type WorkItemLinkType =
+  (typeof WorkItemLinkType)[keyof typeof WorkItemLinkType]
 
 export type CreateWorkItemLinkRequest = {
   targetWorkItemId: string
@@ -123,6 +151,6 @@ export type WorkItemAttachment = {
   fileName: string
   contentType: string
   fileSizeBytes: number
-  uploadedById: string
+  authorId: string
   createdAtUtc: string
 }
