@@ -8,15 +8,14 @@ export type WikiPage = {
   content: string
   comments: Comment[]
   createdAtUtc: string
-  updatedAtUtc: string
-  parentWikiPageId?: string
+  updatedAtUtc?: string
 }
 
 export type WikiPageSummary = {
   id: string
   title: string
   position: number
-  subPages: WikiPageSummary[]
+  subPages?: WikiPageSummary[]
 }
 
 export type WikiPageStats = {
@@ -35,6 +34,6 @@ export type UpdateWikiPageRequest = {
 }
 
 export type MoveWikiPageRequest = {
-  targetParentId: string
+  targetParentId?: string
   targetPosition: number
 }

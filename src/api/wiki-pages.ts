@@ -9,7 +9,10 @@ import type {
   WikiPageSummary,
 } from "@/types/wiki-pages"
 
-export function createWikiPage(projectId: string, request: CreateWikiPageRequest): Promise<string> {
+export function createWikiPage(
+  projectId: string,
+  request: CreateWikiPageRequest
+): Promise<string> {
   return post(`/projects/${projectId}/wiki-pages`, request)
 }
 
@@ -29,11 +32,17 @@ export function moveWikiPage(
   return put(`/projects/${projectId}/wiki-pages/${wikiPageId}/move`, request)
 }
 
-export function getWikiPage(projectId: string, wikiPageId: string): Promise<WikiPage> {
+export function getWikiPage(
+  projectId: string,
+  wikiPageId: string
+): Promise<WikiPage> {
   return get(`/projects/${projectId}/wiki-pages/${wikiPageId}`)
 }
 
-export function getWikiPageStats(projectId: string, wikiPageId: string): Promise<WikiPageStats> {
+export function getWikiPageStats(
+  projectId: string,
+  wikiPageId: string
+): Promise<WikiPageStats> {
   return get(`/projects/${projectId}/wiki-pages/${wikiPageId}/stats`)
 }
 
@@ -41,7 +50,10 @@ export function listWikiPages(projectId: string): Promise<WikiPageSummary[]> {
   return get(`/projects/${projectId}/wiki-pages`)
 }
 
-export function deleteWikiPage(projectId: string, wikiPageId: string): Promise<void> {
+export function deleteWikiPage(
+  projectId: string,
+  wikiPageId: string
+): Promise<void> {
   return del(`/projects/${projectId}/wiki-pages/${wikiPageId}`)
 }
 
@@ -50,7 +62,10 @@ export function addWikiPageComment(
   wikiPageId: string,
   request: AddCommentRequest
 ): Promise<void> {
-  return post(`/projects/${projectId}/wiki-pages/${wikiPageId}/comments`, request)
+  return post(
+    `/projects/${projectId}/wiki-pages/${wikiPageId}/comments`,
+    request
+  )
 }
 
 export function updateWikiPageComment(
@@ -59,7 +74,10 @@ export function updateWikiPageComment(
   commentId: string,
   request: UpdateCommentRequest
 ): Promise<void> {
-  return put(`/projects/${projectId}/wiki-pages/${wikiPageId}/comments/${commentId}`, request)
+  return put(
+    `/projects/${projectId}/wiki-pages/${wikiPageId}/comments/${commentId}`,
+    request
+  )
 }
 
 export function deleteWikiPageComment(
@@ -67,5 +85,7 @@ export function deleteWikiPageComment(
   wikiPageId: string,
   commentId: string
 ): Promise<void> {
-  return del(`/projects/${projectId}/wiki-pages/${wikiPageId}/comments/${commentId}`)
+  return del(
+    `/projects/${projectId}/wiki-pages/${wikiPageId}/comments/${commentId}`
+  )
 }

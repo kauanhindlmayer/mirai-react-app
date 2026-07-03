@@ -1,5 +1,103 @@
-import { PagePlaceholder } from "@/components/page-placeholder"
+import { Link, useNavigate, useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
+import { PencilIcon } from "lucide-react"
+
+import { getWikiPage } from "@/api/wiki-pages"
+import { DeleteWikiPageDialog } from "@/components/wiki-pages/delete-wiki-page-dialog"
+import { ErrorState } from "@/components/error-state"
+import { WikiPageComments } from "@/components/wiki-pages/wiki-page-comments"
+import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useDelayedLoading } from "@/hooks/use-delayed-loading"
+import { getInitials } from "@/lib/utils"
 
 export default function WikiPageViewPage() {
-  return <PagePlaceholder title="Wiki Page" description="View a wiki page." />
+  const { projectId, wikiPageId } = useParams<{
+    projectId: string
+    wikiPageId: string
+  }>()
+  const navigate = useNavigate()
+
+  const wikiPageQuery = useQuery({
+    queryKey: ["wiki-page", projectId, wikiPageId],
+    queryFn: () => getWikiPage(projectId!, wikiPageId!),
+    enabled: !!projectId && !!wikiPageId,
+  })
+  const showLoading = useDelayedLoading(wikiPageQuery.isLoading)
+
+  if (wikiPageQuery.isError) {
+    return (
+      <ErrorState
+        error={wikiPageQuery.error}
+        title="Failed to load wiki page"
+        onRetry={() => wikiPageQuery.refetch()}
+      />
+    )
+  }
+
+  if (showLoading) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    )
+  }
+
+  const wikiPage = wikiPageQuery.data
+  if (!wikiPage) return null
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold">{wikiPage.title}</h1>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Avatar className="size-5">
+              <AvatarImage
+                src={wikiPage.author.imageUrl}
+                alt={wikiPage.author.name}
+              />
+              <AvatarFallback>
+                {getInitials(wikiPage.author.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span>{wikiPage.author.name}</span>
+            <span>&middot;</span>
+            <span>
+              {new Date(
+                wikiPage.updatedAtUtc ?? wikiPage.createdAtUtc
+              ).toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/projects/${projectId}/wiki-pages/${wikiPageId}/edit`}>
+              <PencilIcon />
+              Edit
+            </Link>
+          </Button>
+          <DeleteWikiPageDialog
+            projectId={projectId!}
+            wikiPageId={wikiPageId!}
+            title={wikiPage.title}
+            onDeleted={() => navigate(`/projects/${projectId}/wiki-pages`)}
+          />
+        </div>
+      </div>
+      <WikiPageEditor
+        key={wikiPage.id}
+        content={wikiPage.content}
+        editable={false}
+      />
+      <WikiPageComments
+        projectId={projectId!}
+        wikiPageId={wikiPageId!}
+        comments={wikiPage.comments}
+      />
+    </div>
+  )
 }
