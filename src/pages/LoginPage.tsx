@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react"
 
-import { LoginForm } from "@/components/login-form"
+import { LoginForm } from "@/components/auth/login-form"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 
 export default function LoginPage() {

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 

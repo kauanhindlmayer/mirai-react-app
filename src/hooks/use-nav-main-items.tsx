@@ -16,7 +16,7 @@ import {
   ZapIcon,
 } from "lucide-react"
 
-import type { NavMainItem } from "@/components/nav-main"
+import type { NavMainItem } from "@/components/layout/nav-main"
 
 export function useNavMainItems(): NavMainItem[] {
   const { organizationId, projectId } = useParams<{

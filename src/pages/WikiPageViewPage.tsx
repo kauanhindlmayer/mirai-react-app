@@ -4,7 +4,7 @@ import { PencilIcon } from "lucide-react"
 
 import { getWikiPage } from "@/api/wiki-pages"
 import { DeleteWikiPageDialog } from "@/components/wiki-pages/delete-wiki-page-dialog"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { WikiPageComments } from "@/components/wiki-pages/wiki-page-comments"
 import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

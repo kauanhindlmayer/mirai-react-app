@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { getWikiPage, updateWikiPage } from "@/api/wiki-pages"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

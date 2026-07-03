@@ -3,7 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router"
 import { Toaster } from "sonner"
 
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/layout/theme-provider"
 import { queryClient } from "@/lib/query-client"
 
 import "@/index.css"

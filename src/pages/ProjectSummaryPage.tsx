@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { getProjectUsers } from "@/api/projects"
 import { getWorkItemsStats } from "@/api/work-items"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

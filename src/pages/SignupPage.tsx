@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react"
 
-import { SignupForm } from "@/components/signup-form"
+import { SignupForm } from "@/components/auth/signup-form"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 
 export default function SignupPage() {

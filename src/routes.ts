@@ -6,11 +6,11 @@ import {
 } from "@react-router/dev/routes"
 
 export default [
-  layout("./components/protected-layout.tsx", [
+  layout("./components/layout/protected-layout.tsx", [
     route("login", "./pages/LoginPage.tsx"),
     route("signup", "./pages/SignupPage.tsx"),
 
-    layout("./components/root-layout.tsx", [
+    layout("./components/layout/root-layout.tsx", [
       index("./pages/HomeRedirectPage.tsx", { id: "home" }),
 
       route("organizations", "./pages/OrganizationsPage.tsx"),
@@ -23,7 +23,7 @@ export default [
         "./pages/OrganizationSettingsPage.tsx"
       ),
 
-      route("projects/:projectId", "./components/project-layout.tsx", [
+      route("projects/:projectId", "./components/layout/project-layout.tsx", [
         route("summary", "./pages/ProjectSummaryPage.tsx"),
         route("dashboards", "./pages/ProjectDashboardsPage.tsx"),
         route("wiki-pages", "./components/wiki-pages/wiki-pages-layout.tsx", [

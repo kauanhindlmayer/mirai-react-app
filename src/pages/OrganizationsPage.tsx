@@ -2,7 +2,7 @@ import { Link } from "react-router"
 import { Building2Icon } from "lucide-react"
 
 import { useOrganizations } from "@/queries/organizations"
-import { CreateOrganizationSheet } from "@/components/create-organization-sheet"
+import { CreateOrganizationSheet } from "@/components/organizations/create-organization-sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function OrganizationsPage() {

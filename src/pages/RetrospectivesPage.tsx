@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { RetrospectiveBoard } from "@/components/retrospectives/retrospective-board"
 import { RetrospectiveDialog } from "@/components/retrospectives/retrospective-dialog"
 import { useSignalR } from "@/hooks/use-signalr"

@@ -4,8 +4,8 @@ import { FolderIcon, PencilIcon } from "lucide-react"
 
 import { listProjects } from "@/api/projects"
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
-import { ErrorState } from "@/components/error-state"
-import { ProjectFormSheet } from "@/components/project-form-sheet"
+import { ErrorState } from "@/components/common/error-state"
+import { ProjectFormSheet } from "@/components/projects/project-form-sheet"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 

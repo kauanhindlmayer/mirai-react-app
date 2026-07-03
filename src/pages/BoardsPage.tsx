@@ -17,7 +17,7 @@ import { getBoard, listBoards, moveCard } from "@/api/boards"
 import { BoardCardOverlay } from "@/components/boards/board-card"
 import { BoardColumn } from "@/components/boards/board-column"
 import { BoardSettingsSheet } from "@/components/boards/board-settings-sheet"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import {
   Select,
   SelectContent,

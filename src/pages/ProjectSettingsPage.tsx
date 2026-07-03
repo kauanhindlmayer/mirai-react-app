@@ -7,7 +7,7 @@ import { z } from "zod"
 
 import { createTeam, listTeams } from "@/api/teams"
 import { updateProject } from "@/api/projects"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
 import { Button } from "@/components/ui/button"

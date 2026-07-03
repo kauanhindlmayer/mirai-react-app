@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { getBacklog } from "@/api/teams"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/common/error-state"
 import { useCurrentTeam } from "@/hooks/use-current-team"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
