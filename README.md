@@ -1,21 +1,22 @@
-# React + TypeScript + Vite + shadcn/ui
+# Mirai
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/kauanhindlmayer/mirai-api)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/kauanhindlmayer/mirai-api)
 
-## Adding components
+Mirai (Japanese word for "future") is a web-based project management tool that aims to help teams collaborate and manage their projects more effectively.
 
-To add components to your app, run the following command:
+![Mirai screenshot showing the Boards page](https://github.com/kauanhindlmayer/mirai-api/blob/develop/docs/images/boards.png)
 
-```bash
-npx shadcn@latest add button
-```
+Key features include:
 
-This will place the ui components in the `src/components` directory.
+- [Agile and Scrum](http://docs.miraihq.com/agile-and-scrum)
+- [Wikis](http://docs.miraihq.com/wikis)
+- [Wisdom Extractor](http://docs.miraihq.com/wisdom-extractor)
 
-## Using components
+## Documentation
 
-To use the components in your app, import them as follows:
+Explore our comprehensive [documentation](http://docs.miraihq.com) to help you get started with Mirai.
 
-```tsx
-import { Button } from "@/components/ui/button"
-```
+## License
+
+This project is licensed under the terms of the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
