@@ -7,6 +7,8 @@ import { z } from "zod"
 
 import { createTeam, listTeams } from "@/api/teams"
 import { updateProject } from "@/api/projects"
+import { ErrorState } from "@/components/error-state"
+import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { useProjectContext } from "@/hooks/use-project-context"
 import type { Project } from "@/types/projects"
 import { Button } from "@/components/ui/button"
@@ -19,7 +21,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
@@ -27,7 +34,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
 export default function ProjectSettingsPage() {
-  const { projectId, project } = useProjectContext()
+  const { projectId, project, isLoading, isError, error, refetch } =
+    useProjectContext()
+  const showLoading = useDelayedLoading(isLoading)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -41,11 +50,17 @@ export default function ProjectSettingsPage() {
           <TabsTrigger value="github">GitHub</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          {project ? (
-            <ProjectOverviewForm project={project} />
-          ) : (
+          {isError ? (
+            <ErrorState
+              error={error}
+              title="Failed to load project"
+              onRetry={() => refetch()}
+            />
+          ) : showLoading ? (
             <Skeleton className="h-40" />
-          )}
+          ) : project ? (
+            <ProjectOverviewForm project={project} />
+          ) : null}
         </TabsContent>
         <TabsContent value="teams">
           {projectId ? <ProjectTeamsTab projectId={projectId} /> : null}
@@ -143,6 +158,7 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
     staleTime: 60_000,
     placeholderData: [],
   })
+  const showLoading = useDelayedLoading(teamsQuery.isLoading)
 
   return (
     <div className="flex flex-col gap-4 py-4">
@@ -150,7 +166,18 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
         <h2 className="text-sm font-medium">Teams</h2>
         <CreateTeamDialog projectId={projectId} />
       </div>
-      {teamsQuery.data && teamsQuery.data.length > 0 ? (
+      {teamsQuery.isError ? (
+        <ErrorState
+          error={teamsQuery.error}
+          title="Failed to load teams"
+          onRetry={() => teamsQuery.refetch()}
+        />
+      ) : showLoading ? (
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ) : teamsQuery.data && teamsQuery.data.length > 0 ? (
         <ul className="flex flex-col divide-y rounded-md border">
           {teamsQuery.data.map((team) => (
             <li key={team.id} className="px-4 py-2 text-sm">
@@ -246,7 +273,11 @@ function CreateTeamForm({
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button type="submit" form="create-team-form" disabled={mutation.isPending}>
+        <Button
+          type="submit"
+          form="create-team-form"
+          disabled={mutation.isPending}
+        >
           {mutation.isPending ? <Spinner data-icon="inline-end" /> : null}
           Create
         </Button>

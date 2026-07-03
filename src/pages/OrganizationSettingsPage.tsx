@@ -11,7 +11,10 @@ import {
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { addUserToOrganization, getOrganizationUsers } from "@/api/organizations"
+import {
+  addUserToOrganization,
+  getOrganizationUsers,
+} from "@/api/organizations"
 import { useOrganizationContext } from "@/hooks/use-organization-context"
 import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import type { OrganizationUserResponse } from "@/types/organizations"
@@ -26,7 +29,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -37,7 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getInitials } from "@/lib/utils"
+import { getErrorMessage, getInitials } from "@/lib/utils"
 
 const PAGE_SIZE = 10
 
@@ -48,7 +56,10 @@ const columns: ColumnDef<OrganizationUserResponse>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Avatar className="size-7">
-          <AvatarImage src={row.original.imageUrl} alt={row.original.fullName} />
+          <AvatarImage
+            src={row.original.imageUrl}
+            alt={row.original.fullName}
+          />
           <AvatarFallback>{getInitials(row.original.fullName)}</AvatarFallback>
         </Avatar>
         <span className="font-medium">{row.original.fullName}</span>
@@ -124,7 +135,24 @@ export default function OrganizationSettingsPage() {
             ))}
           </TableHeader>
           <TableBody>
-            {showLoading ? (
+            {usersQuery.isError ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24">
+                  <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+                    <span className="text-sm">
+                      {getErrorMessage(usersQuery.error)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => usersQuery.refetch()}
+                    >
+                      Try again
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : showLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -138,7 +166,10 @@ export default function OrganizationSettingsPage() {
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -267,7 +298,11 @@ function InviteUserForm({
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button type="submit" form="invite-user-form" disabled={mutation.isPending}>
+        <Button
+          type="submit"
+          form="invite-user-form"
+          disabled={mutation.isPending}
+        >
           {mutation.isPending ? <Spinner data-icon="inline-end" /> : null}
           Invite
         </Button>

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { getProjectUsers } from "@/api/projects"
 import { getWorkItemsStats } from "@/api/work-items"
+import { ErrorState } from "@/components/error-state"
 import { useProjectContext } from "@/hooks/use-project-context"
 import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { getInitials } from "@/lib/utils"
@@ -61,7 +62,9 @@ export default function ProjectSummaryPage() {
           <h1 className="text-xl font-semibold">
             {project?.name ?? "Project"} — Summary
           </h1>
-          <p className="text-sm text-muted-foreground">{project?.description}</p>
+          <p className="text-sm text-muted-foreground">
+            {project?.description}
+          </p>
         </div>
         <Select
           value={period.toString()}
@@ -85,7 +88,11 @@ export default function ProjectSummaryPage() {
           <CardHeader>
             <CardDescription>Work items created</CardDescription>
             <CardTitle className="text-3xl">
-              {statsLoading ? (
+              {statsQuery.isError ? (
+                <span className="text-sm font-normal text-destructive">
+                  Failed to load
+                </span>
+              ) : statsLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
                 (statsQuery.data?.workItemsCreated ?? 0)
@@ -97,7 +104,11 @@ export default function ProjectSummaryPage() {
           <CardHeader>
             <CardDescription>Work items completed</CardDescription>
             <CardTitle className="text-3xl">
-              {statsLoading ? (
+              {statsQuery.isError ? (
+                <span className="text-sm font-normal text-destructive">
+                  Failed to load
+                </span>
+              ) : statsLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
                 (statsQuery.data?.workItemsCompleted ?? 0)
@@ -112,12 +123,21 @@ export default function ProjectSummaryPage() {
           <CardTitle>Recent members</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {membersQuery.data?.items.length ? (
+          {membersQuery.isError ? (
+            <ErrorState
+              error={membersQuery.error}
+              title="Failed to load members"
+              onRetry={() => membersQuery.refetch()}
+              className="py-4"
+            />
+          ) : membersQuery.data?.items.length ? (
             membersQuery.data.items.map((member) => (
               <div key={member.id} className="flex items-center gap-3">
                 <Avatar className="size-8">
                   <AvatarImage src={member.imageUrl} alt={member.fullName} />
-                  <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
+                  <AvatarFallback>
+                    {getInitials(member.fullName)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{member.fullName}</span>

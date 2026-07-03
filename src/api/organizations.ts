@@ -7,7 +7,9 @@ import type {
   OrganizationUserResponse,
 } from "@/types/organizations"
 
-export function createOrganization(request: CreateOrganizationRequest): Promise<string> {
+export function createOrganization(
+  request: CreateOrganizationRequest
+): Promise<string> {
   return post("/organizations", request)
 }
 
