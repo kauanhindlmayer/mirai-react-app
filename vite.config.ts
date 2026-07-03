@@ -12,9 +12,14 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
+    port: parseInt(process.env.PORT ?? "5173"),
     proxy: {
       "/api": {
-        target: "https://localhost:5000",
+        target:
+          process.env["services__mirai-api__https__0"] ||
+          process.env["services__mirai-api__http__0"] ||
+          "https://localhost:5000",
         changeOrigin: true,
         secure: false,
       },

@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { useMutation } from "@tanstack/react-query"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { register } from "@/api/auth"
+import { registerUser } from "@/api/users"
 import type { RegisterCredentials } from "@/types/auth"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Field,
   FieldDescription,
@@ -24,8 +25,31 @@ const signupSchema = z
   .object({
     confirmPassword: z.string().min(1, "Please confirm your password."),
     email: z.email("Enter a valid email address."),
-    name: z.string().min(2, "Name must be at least 2 characters."),
-    password: z.string().min(8, "Must be at least 8 characters long."),
+    firstName: z
+      .string()
+      .min(1, "First name is required.")
+      .max(50, "First name must be less than 50 characters.")
+      .regex(
+        /^[\p{L}\p{M}\s'-]+$/u,
+        "First name can only contain letters, spaces, hyphens, and apostrophes."
+      ),
+    lastName: z
+      .string()
+      .min(1, "Last name is required.")
+      .max(100, "Last name must be less than 100 characters.")
+      .regex(
+        /^[\p{L}\p{M}\s'-]+$/u,
+        "Last name can only contain letters, spaces, hyphens, and apostrophes."
+      ),
+    hasAcceptedTerms: z.boolean().refine((value) => value, {
+      message: "Please accept the terms and conditions.",
+    }),
+    password: z
+      .string()
+      .min(8, "Must be at least 8 characters long.")
+      .regex(/[A-Z]/, "Must contain at least one uppercase letter.")
+      .regex(/[a-z]/, "Must contain at least one lowercase letter.")
+      .regex(/[0-9]/, "Must contain at least one number."),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match.",
@@ -45,14 +69,16 @@ export function SignupForm({
     defaultValues: {
       confirmPassword: "",
       email: "",
-      name: "",
+      firstName: "",
+      lastName: "",
+      hasAcceptedTerms: false,
       password: "",
     },
     resolver: zodResolver(signupSchema),
   })
 
   const signupMutation = useMutation({
-    mutationFn: register,
+    mutationFn: registerUser,
     onError: (error) => {
       toast.error("Sign up failed.", {
         description:
@@ -60,15 +86,21 @@ export function SignupForm({
       })
     },
     onSuccess: () => {
-      toast.success("Account created successfully.")
-      navigate("/")
+      toast.success("Account created successfully. Please log in.")
+      navigate("/login")
     },
   })
 
   async function handleSubmit(values: SignupFormValues) {
-    const { email, name, password } = values
+    const { email, firstName, lastName, password, hasAcceptedTerms } = values
 
-    await signupMutation.mutateAsync({ email, name, password })
+    await signupMutation.mutateAsync({
+      email,
+      firstName,
+      lastName,
+      password,
+      hasAcceptedTerms,
+    })
   }
 
   return (
@@ -85,17 +117,30 @@ export function SignupForm({
           </p>
         </div>
         <Field>
-          <FieldLabel htmlFor="name">Full Name</FieldLabel>
+          <FieldLabel htmlFor="first-name">First Name</FieldLabel>
           <Input
-            id="name"
+            id="first-name"
             type="text"
-            placeholder="John Doe"
+            placeholder="John"
             required
             className="bg-background"
-            aria-invalid={!!form.formState.errors.name}
-            {...form.register("name")}
+            aria-invalid={!!form.formState.errors.firstName}
+            {...form.register("firstName")}
           />
-          <FieldError errors={[form.formState.errors.name]} />
+          <FieldError errors={[form.formState.errors.firstName]} />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="last-name">Last Name</FieldLabel>
+          <Input
+            id="last-name"
+            type="text"
+            placeholder="Doe"
+            required
+            className="bg-background"
+            aria-invalid={!!form.formState.errors.lastName}
+            {...form.register("lastName")}
+          />
+          <FieldError errors={[form.formState.errors.lastName]} />
         </Field>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -126,7 +171,8 @@ export function SignupForm({
           />
           <FieldError errors={[form.formState.errors.password]} />
           <FieldDescription>
-            Must be at least 8 characters long.
+            At least 8 characters, with an uppercase letter, a lowercase
+            letter, and a number.
           </FieldDescription>
         </Field>
         <Field>
@@ -141,6 +187,24 @@ export function SignupForm({
           />
           <FieldError errors={[form.formState.errors.confirmPassword]} />
           <FieldDescription>Please confirm your password.</FieldDescription>
+        </Field>
+        <Field orientation="horizontal">
+          <Controller
+            control={form.control}
+            name="hasAcceptedTerms"
+            render={({ field }) => (
+              <Checkbox
+                id="accept-terms"
+                checked={field.value}
+                aria-invalid={!!form.formState.errors.hasAcceptedTerms}
+                onCheckedChange={(checked) => field.onChange(checked === true)}
+              />
+            )}
+          />
+          <FieldLabel htmlFor="accept-terms" className="font-normal">
+            I have read the Terms and Conditions
+          </FieldLabel>
+          <FieldError errors={[form.formState.errors.hasAcceptedTerms]} />
         </Field>
         <Field>
           <Button type="submit" disabled={signupMutation.isPending}>
@@ -162,7 +226,7 @@ export function SignupForm({
             Sign up with GitHub
           </Button>
           <FieldDescription className="px-6 text-center">
-            Already have an account? <Link to="/">Sign in</Link>
+            Already have an account? <Link to="/login">Sign in</Link>
           </FieldDescription>
         </Field>
       </FieldGroup>

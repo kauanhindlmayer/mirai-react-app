@@ -1,6 +1,7 @@
 export type LoginCredentials = {
   email: string
   password: string
+  rememberMe: boolean
 }
 
 export type LoginResponse = {
@@ -8,13 +9,11 @@ export type LoginResponse = {
 }
 
 export type RegisterCredentials = {
-  name: string
+  firstName: string
+  lastName: string
   email: string
   password: string
-}
-
-export type RegisterResponse = {
-  message?: string
+  hasAcceptedTerms: boolean
 }
 
 export type User = {
