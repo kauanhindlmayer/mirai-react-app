@@ -9,15 +9,18 @@ Mirai's React frontend — a project management tool (agile/scrum boards, backlo
 ## Commands
 
 ```bash
-pnpm start       # dev server (vite)
-pnpm build       # tsc -b && vite build
-pnpm typecheck   # tsc --noEmit
-pnpm lint        # eslint .
-pnpm format      # prettier --write "**/*.{ts,tsx}"
-pnpm preview     # preview a production build
+pnpm start          # dev server (vite)
+pnpm build          # tsc -b && vite build
+pnpm typecheck      # tsc --noEmit
+pnpm lint           # eslint .
+pnpm format         # prettier --write "**/*.{ts,tsx}"
+pnpm preview        # preview a production build
+pnpm test           # vitest run (single pass, CI-friendly)
+pnpm test:watch     # vitest (interactive)
+pnpm test:coverage  # vitest run --coverage
 ```
 
-There is no test suite in this repo (no vitest/RTL config, zero `*.test.*` files) — don't invent test commands or assume one exists.
+Test tooling (Vitest + React Testing Library + MSW) is new and coverage is still sparse — see `docs/testing-strategy-plan.md` for the framework rationale, conventions (co-located `*.test.ts(x)`, no `test.globals`, `src/test/test-utils.tsx`'s `renderWithProviders`, MSW handlers in `src/test/mocks/`), and the rollout order for what to test next. Don't assume a given file has tests just because the tooling exists — check first.
 
 Style: no semicolons, double quotes, 80-col width, Tailwind class sorting via `prettier-plugin-tailwindcss` (see `.prettierrc`). Always run `pnpm typecheck` and `pnpm lint` after non-trivial changes — both must be clean (lint has zero tolerance for errors; a handful of pre-existing `react-hooks/incompatible-library`/`react-refresh` warnings are expected and fine).
 
