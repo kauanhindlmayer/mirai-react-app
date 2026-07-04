@@ -12,5 +12,11 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // Node's built-in `localStorage` (stable since Node 22, gated behind this
+    // flag when disabled) shadows jsdom's own implementation and is missing
+    // methods like `.clear()`. Setting this here (not just via NODE_OPTIONS
+    // in package.json's scripts) so it also applies when Vitest is launched
+    // by an IDE extension rather than `pnpm test`.
+    execArgv: ["--no-experimental-webstorage"],
   },
 })
