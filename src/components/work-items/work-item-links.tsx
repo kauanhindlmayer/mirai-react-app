@@ -7,6 +7,7 @@ import {
   useWorkItemsSearchQuery,
 } from "@/queries/work-items"
 import { WorkItemLinkType, type WorkItemLink } from "@/types/work-items"
+import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -30,18 +31,15 @@ import {
 } from "@/components/ui/select"
 
 type WorkItemLinksProps = {
-  projectId: string
-  workItemId: string
   outgoingLinks: WorkItemLink[]
   incomingLinks: WorkItemLink[]
 }
 
 export function WorkItemLinks({
-  projectId,
-  workItemId,
   outgoingLinks,
   incomingLinks,
 }: WorkItemLinksProps) {
+  const { projectId, workItemId } = useWorkItemContext()
   const deleteLink = useDeleteWorkItemLinkMutation(projectId, workItemId)
 
   return (
@@ -87,18 +85,13 @@ export function WorkItemLinks({
       ) : (
         <p className="text-sm text-muted-foreground">No linked work items.</p>
       )}
-      <AddLinkPopover projectId={projectId} workItemId={workItemId} />
+      <AddLinkPopover />
     </div>
   )
 }
 
-function AddLinkPopover({
-  projectId,
-  workItemId,
-}: {
-  projectId: string
-  workItemId: string
-}) {
+function AddLinkPopover() {
+  const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [linkType, setLinkType] = useState<WorkItemLinkType>(

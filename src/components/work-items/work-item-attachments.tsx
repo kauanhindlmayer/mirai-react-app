@@ -7,6 +7,7 @@ import {
   useUploadWorkItemAttachmentMutation,
 } from "@/queries/work-items"
 import type { WorkItemAttachment } from "@/types/work-items"
+import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -17,19 +18,20 @@ function formatFileSize(bytes: number): string {
 }
 
 type WorkItemAttachmentsProps = {
-  projectId: string
-  workItemId: string
   attachments: WorkItemAttachment[]
 }
 
-export function WorkItemAttachments({
-  projectId,
-  workItemId,
-  attachments,
-}: WorkItemAttachmentsProps) {
+export function WorkItemAttachments({ attachments }: WorkItemAttachmentsProps) {
+  const { projectId, workItemId } = useWorkItemContext()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const uploadAttachment = useUploadWorkItemAttachmentMutation(projectId, workItemId)
-  const deleteAttachment = useDeleteWorkItemAttachmentMutation(projectId, workItemId)
+  const uploadAttachment = useUploadWorkItemAttachmentMutation(
+    projectId,
+    workItemId
+  )
+  const deleteAttachment = useDeleteWorkItemAttachmentMutation(
+    projectId,
+    workItemId
+  )
 
   async function handleDownload(attachment: WorkItemAttachment) {
     const blob = await downloadWorkItemAttachment(

@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils"
 import { WorkItemAssigneePicker } from "@/components/work-items/work-item-assignee-picker"
 import { WorkItemAttachments } from "@/components/work-items/work-item-attachments"
 import { WorkItemComments } from "@/components/work-items/work-item-comments"
+import {
+  useWorkItemContext,
+  WorkItemProvider,
+} from "@/components/work-items/work-item-context"
 import { WorkItemLinks } from "@/components/work-items/work-item-links"
 import { WorkItemTagsEditor } from "@/components/work-items/work-item-tags-editor"
 import { Badge } from "@/components/ui/badge"
@@ -73,13 +77,16 @@ export function WorkItemDetailDialog() {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 sm:max-w-6xl">
         {open ? (
-          <WorkItemDetailContent
+          <WorkItemProvider
             key={workItemId}
             projectId={projectId}
             workItemId={workItemId}
-            onDeleted={() => handleOpenChange(false)}
-            onNavigate={handleNavigate}
-          />
+          >
+            <WorkItemDetailContent
+              onDeleted={() => handleOpenChange(false)}
+              onNavigate={handleNavigate}
+            />
+          </WorkItemProvider>
         ) : null}
       </DialogContent>
     </Dialog>
@@ -87,16 +94,13 @@ export function WorkItemDetailDialog() {
 }
 
 function WorkItemDetailContent({
-  projectId,
-  workItemId,
   onDeleted,
   onNavigate,
 }: {
-  projectId: string
-  workItemId: string
   onDeleted: () => void
   onNavigate: (workItemId: string) => void
 }) {
+  const { projectId, workItemId } = useWorkItemContext()
   const workItemQuery = useWorkItemQuery(projectId, workItemId)
   const deleteWorkItem = useDeleteWorkItemMutation(projectId)
 
@@ -174,11 +178,7 @@ function WorkItemDetailContent({
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 pt-2 md:grid-cols-[1fr_320px]">
         <div className="-mx-4 min-h-0 overflow-y-auto px-4">
           <div className="flex flex-col gap-4 pb-4">
-            <WorkItemMainFields
-              projectId={projectId}
-              workItemId={workItemId}
-              workItem={workItem}
-            />
+            <WorkItemMainFields workItem={workItem} />
 
             {workItem.childWorkItems.length > 0 ? (
               <>
@@ -227,32 +227,20 @@ function WorkItemDetailContent({
 
             <div className="flex flex-col gap-2">
               <Label>Comments</Label>
-              <WorkItemComments
-                projectId={projectId}
-                workItemId={workItemId}
-                comments={workItem.comments}
-              />
+              <WorkItemComments comments={workItem.comments} />
             </div>
           </div>
         </div>
 
         <div className="-mx-4 min-h-0 overflow-y-auto border-t px-4 pt-4 md:mx-0 md:border-t-0 md:border-l md:px-4 md:pt-0 md:pl-6">
           <div className="flex flex-col gap-4 pb-4">
-            <WorkItemMetaFields
-              projectId={projectId}
-              workItemId={workItemId}
-              workItem={workItem}
-            />
+            <WorkItemMetaFields workItem={workItem} />
 
             <Separator />
 
             <div className="flex flex-col gap-2">
               <Label>Tags</Label>
-              <WorkItemTagsEditor
-                projectId={projectId}
-                workItemId={workItemId}
-                tags={workItem.tags}
-              />
+              <WorkItemTagsEditor tags={workItem.tags} />
             </div>
 
             <Separator />
@@ -260,8 +248,6 @@ function WorkItemDetailContent({
             <div className="flex flex-col gap-2">
               <Label>Linked work items</Label>
               <WorkItemLinks
-                projectId={projectId}
-                workItemId={workItemId}
                 outgoingLinks={workItem.outgoingLinks}
                 incomingLinks={workItem.incomingLinks}
               />
@@ -271,11 +257,7 @@ function WorkItemDetailContent({
 
             <div className="flex flex-col gap-2">
               <Label>Attachments</Label>
-              <WorkItemAttachments
-                projectId={projectId}
-                workItemId={workItemId}
-                attachments={workItem.attachments}
-              />
+              <WorkItemAttachments attachments={workItem.attachments} />
             </div>
 
             <Separator />
@@ -297,15 +279,8 @@ function WorkItemDetailContent({
   )
 }
 
-function WorkItemMainFields({
-  projectId,
-  workItemId,
-  workItem,
-}: {
-  projectId: string
-  workItemId: string
-  workItem: WorkItem
-}) {
+function WorkItemMainFields({ workItem }: { workItem: WorkItem }) {
+  const { projectId, workItemId } = useWorkItemContext()
   const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
 
   const titleField = useDraftField(workItem.title, (next) => {
@@ -357,15 +332,8 @@ function WorkItemMainFields({
   )
 }
 
-function WorkItemMetaFields({
-  projectId,
-  workItemId,
-  workItem,
-}: {
-  projectId: string
-  workItemId: string
-  workItem: WorkItem
-}) {
+function WorkItemMetaFields({ workItem }: { workItem: WorkItem }) {
+  const { projectId, workItemId } = useWorkItemContext()
   const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
 
   const storyPointsField = useDraftField(
@@ -393,11 +361,7 @@ function WorkItemMetaFields({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs text-muted-foreground">Assignee</Label>
-        <WorkItemAssigneePicker
-          projectId={projectId}
-          workItemId={workItemId}
-          assignee={workItem.assignee}
-        />
+        <WorkItemAssigneePicker assignee={workItem.assignee} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs text-muted-foreground">Status</Label>

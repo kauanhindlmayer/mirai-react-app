@@ -2,8 +2,12 @@ import { useState } from "react"
 import { PlusIcon, XIcon } from "lucide-react"
 
 import { useTagsQuery } from "@/queries/tags"
-import { useAddWorkItemTagMutation, useRemoveWorkItemTagMutation } from "@/queries/work-items"
+import {
+  useAddWorkItemTagMutation,
+  useRemoveWorkItemTagMutation,
+} from "@/queries/work-items"
 import type { TagBriefResponse } from "@/types/work-items"
+import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,16 +25,11 @@ import {
 } from "@/components/ui/popover"
 
 type WorkItemTagsEditorProps = {
-  projectId: string
-  workItemId: string
   tags: TagBriefResponse[]
 }
 
-export function WorkItemTagsEditor({
-  projectId,
-  workItemId,
-  tags,
-}: WorkItemTagsEditorProps) {
+export function WorkItemTagsEditor({ tags }: WorkItemTagsEditorProps) {
+  const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const addTag = useAddWorkItemTagMutation(projectId, workItemId)
   const removeTag = useRemoveWorkItemTagMutation(projectId, workItemId)

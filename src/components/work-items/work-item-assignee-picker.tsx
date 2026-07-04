@@ -6,6 +6,7 @@ import { useUpdateWorkItemMutation } from "@/queries/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
 import { getInitials } from "@/lib/utils"
+import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Command,
@@ -22,16 +23,13 @@ import {
 } from "@/components/ui/popover"
 
 type WorkItemAssigneePickerProps = {
-  projectId: string
-  workItemId: string
   assignee?: AssigneeResponse
 }
 
 export function WorkItemAssigneePicker({
-  projectId,
-  workItemId,
   assignee,
 }: WorkItemAssigneePickerProps) {
+  const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const { project } = useCurrentProject()

@@ -8,22 +8,18 @@ import {
 } from "@/queries/work-items"
 import type { Comment } from "@/types/common"
 import { getInitials } from "@/lib/utils"
+import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 
 type WorkItemCommentsProps = {
-  projectId: string
-  workItemId: string
   comments: Comment[]
 }
 
-export function WorkItemComments({
-  projectId,
-  workItemId,
-  comments,
-}: WorkItemCommentsProps) {
+export function WorkItemComments({ comments }: WorkItemCommentsProps) {
+  const { projectId, workItemId } = useWorkItemContext()
   const { data: currentUser } = useCurrentUserQuery()
   const [draft, setDraft] = useState("")
   const addComment = useAddWorkItemCommentMutation(projectId, workItemId)
@@ -41,8 +37,6 @@ export function WorkItemComments({
           comments.map((comment) => (
             <CommentItem
               key={comment.id}
-              projectId={projectId}
-              workItemId={workItemId}
               comment={comment}
               canEdit={comment.author.id === currentUser?.id}
             />
@@ -72,16 +66,13 @@ export function WorkItemComments({
 }
 
 function CommentItem({
-  projectId,
-  workItemId,
   comment,
   canEdit,
 }: {
-  projectId: string
-  workItemId: string
   comment: Comment
   canEdit: boolean
 }) {
+  const { projectId, workItemId } = useWorkItemContext()
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(comment.content)
   const updateComment = useUpdateWorkItemCommentMutation(projectId, workItemId)
