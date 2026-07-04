@@ -11,7 +11,7 @@ Mirai's React frontend — a project management tool (agile/scrum boards, backlo
 ```bash
 pnpm start          # dev server (vite)
 pnpm build          # tsc -b && vite build
-pnpm typecheck      # tsc --noEmit
+pnpm typecheck      # tsc -b
 pnpm lint           # eslint .
 pnpm format         # prettier --write "**/*.{ts,tsx}"
 pnpm preview        # preview a production build

@@ -5,14 +5,14 @@ import { useDraftField } from "@/hooks/use-draft-field"
 
 describe("useDraftField", () => {
   it("initializes the draft to the given value", () => {
-    const { result } = renderHook(() => useDraftField("hello", vi.fn()))
+    const { result } = renderHook(() => useDraftField<string>("hello", vi.fn()))
 
     expect(result.current.draft).toBe("hello")
   })
 
   it("setDraft updates the local draft without committing", () => {
     const onCommit = vi.fn()
-    const { result } = renderHook(() => useDraftField("hello", onCommit))
+    const { result } = renderHook(() => useDraftField<string>("hello", onCommit))
 
     act(() => {
       result.current.setDraft("hello world")
@@ -24,7 +24,7 @@ describe("useDraftField", () => {
 
   it("commit calls onCommit with the draft when it differs from value", () => {
     const onCommit = vi.fn()
-    const { result } = renderHook(() => useDraftField("hello", onCommit))
+    const { result } = renderHook(() => useDraftField<string>("hello", onCommit))
 
     act(() => {
       result.current.setDraft("hello world")
@@ -39,7 +39,7 @@ describe("useDraftField", () => {
 
   it("commit does not call onCommit when the draft is unchanged", () => {
     const onCommit = vi.fn()
-    const { result } = renderHook(() => useDraftField("hello", onCommit))
+    const { result } = renderHook(() => useDraftField<string>("hello", onCommit))
 
     act(() => {
       result.current.commit()
