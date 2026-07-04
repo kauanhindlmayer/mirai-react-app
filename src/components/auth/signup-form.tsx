@@ -105,13 +105,17 @@ export function SignupForm({
   async function handleSubmit(values: SignupFormValues) {
     const { email, firstName, lastName, password, hasAcceptedTerms } = values
 
-    await signupMutation.mutateAsync({
-      email,
-      firstName,
-      lastName,
-      password,
-      hasAcceptedTerms,
-    })
+    try {
+      await signupMutation.mutateAsync({
+        email,
+        firstName,
+        lastName,
+        password,
+        hasAcceptedTerms,
+      })
+    } catch {
+      // handled by signupMutation's onError
+    }
   }
 
   return (
@@ -134,7 +138,6 @@ export function SignupForm({
               id="first-name"
               type="text"
               placeholder="John"
-              required
               className="bg-background"
               aria-invalid={!!form.formState.errors.firstName}
               {...form.register("firstName")}
@@ -147,7 +150,6 @@ export function SignupForm({
               id="last-name"
               type="text"
               placeholder="Doe"
-              required
               className="bg-background"
               aria-invalid={!!form.formState.errors.lastName}
               {...form.register("lastName")}
@@ -161,7 +163,6 @@ export function SignupForm({
             id="email"
             type="email"
             placeholder="name@example.com"
-            required
             className="bg-background"
             aria-invalid={!!form.formState.errors.email}
             {...form.register("email")}
@@ -177,7 +178,6 @@ export function SignupForm({
           <Input
             id="password"
             type="password"
-            required
             className="bg-background"
             aria-invalid={!!form.formState.errors.password}
             {...form.register("password")}
@@ -216,7 +216,6 @@ export function SignupForm({
           <Input
             id="confirm-password"
             type="password"
-            required
             className="bg-background"
             aria-invalid={!!form.formState.errors.confirmPassword}
             {...form.register("confirmPassword")}

@@ -50,7 +50,8 @@ client.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    if (error.response.status === 401) {
+    const isPublicPath = PUBLIC_PATHS.includes(error.config?.url ?? "")
+    if (error.response.status === 401 && !isPublicPath) {
       handleUnauthorized()
     }
 

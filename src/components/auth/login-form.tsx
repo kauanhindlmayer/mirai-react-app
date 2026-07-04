@@ -68,7 +68,6 @@ export function LoginForm({
             id="email"
             type="email"
             placeholder="name@example.com"
-            required
             className="bg-background"
             aria-invalid={!!form.formState.errors.email}
             {...form.register("email")}
@@ -88,7 +87,6 @@ export function LoginForm({
           <Input
             id="password"
             type="password"
-            required
             className="bg-background"
             aria-invalid={!!form.formState.errors.password}
             {...form.register("password")}
