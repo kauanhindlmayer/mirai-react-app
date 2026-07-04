@@ -1,14 +1,12 @@
 import { type FormEvent, useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 
-import {
-  addWikiPageComment,
-  deleteWikiPageComment,
-  updateWikiPageComment,
-} from "@/api/wiki-pages"
-import { useCurrentUser } from "@/hooks/use-auth"
+import { useCurrentUserQuery } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
+import {
+  useAddWikiPageCommentMutation,
+  useDeleteWikiPageCommentMutation,
+  useUpdateWikiPageCommentMutation,
+} from "@/queries/wiki-pages"
 import type { Comment } from "@/types/common"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -26,31 +24,15 @@ export function WikiPageComments({
   wikiPageId,
   comments,
 }: WikiPageCommentsProps) {
-  const { data: currentUser } = useCurrentUser()
+  const { data: currentUser } = useCurrentUserQuery()
   const [draft, setDraft] = useState("")
-  const queryClient = useQueryClient()
 
-  const addComment = useMutation({
-    mutationFn: (content: string) =>
-      addWikiPageComment(projectId, wikiPageId, { content }),
-    onError: (error) => {
-      toast.error("Failed to add comment.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["wiki-page", projectId, wikiPageId],
-      })
-      setDraft("")
-    },
-  })
+  const addComment = useAddWikiPageCommentMutation(projectId, wikiPageId)
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!draft.trim()) return
-    addComment.mutate(draft)
+    addComment.mutate({ content: draft }, { onSuccess: () => setDraft("") })
   }
 
   return (
@@ -104,39 +86,21 @@ function CommentItem({
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(comment.content)
-  const queryClient = useQueryClient()
 
-  const updateComment = useMutation({
-    mutationFn: (content: string) =>
-      updateWikiPageComment(projectId, wikiPageId, comment.id, { content }),
-    onError: (error) => {
-      toast.error("Failed to update comment.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["wiki-page", projectId, wikiPageId],
-      })
-      setIsEditing(false)
-    },
-  })
+  const updateComment = useUpdateWikiPageCommentMutation(projectId, wikiPageId)
+  const deleteComment = useDeleteWikiPageCommentMutation(projectId, wikiPageId)
 
-  const deleteComment = useMutation({
-    mutationFn: () => deleteWikiPageComment(projectId, wikiPageId, comment.id),
-    onError: (error) => {
-      toast.error("Failed to delete comment.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["wiki-page", projectId, wikiPageId],
-      })
-    },
-  })
+  function handleUpdate() {
+    if (!draft.trim()) return
+    updateComment.mutate(
+      { commentId: comment.id, request: { content: draft } },
+      { onSuccess: () => setIsEditing(false) }
+    )
+  }
+
+  function handleDelete() {
+    deleteComment.mutate(comment.id)
+  }
 
   return (
     <div className="flex gap-3">
@@ -160,7 +124,7 @@ function CommentItem({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                onClick={() => draft.trim() && updateComment.mutate(draft)}
+                onClick={handleUpdate}
                 disabled={updateComment.isPending}
               >
                 Save
@@ -189,7 +153,7 @@ function CommentItem({
             <button
               type="button"
               className="text-xs text-muted-foreground hover:underline"
-              onClick={() => deleteComment.mutate()}
+              onClick={handleDelete}
             >
               Delete
             </button>

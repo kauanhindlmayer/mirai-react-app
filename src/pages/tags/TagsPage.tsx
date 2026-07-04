@@ -1,10 +1,7 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TrashIcon, UploadIcon } from "lucide-react"
-import { toast } from "sonner"
 
-import { deleteTag, deleteTags, listTags, updateTag } from "@/api/tags"
 import { CreateTagPopover } from "@/components/tags/create-tag-popover"
 import { InlineEditableCell } from "@/components/tags/inline-editable-cell"
 import { TagColorPicker } from "@/components/tags/tag-color-picker"
@@ -19,77 +16,36 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getErrorMessage } from "@/lib/utils"
+import {
+  useDeleteTagMutation,
+  useDeleteTagsMutation,
+  useTagsQuery,
+  useUpdateTagMutation,
+} from "@/queries/tags"
 
 const PAGE_SIZE = 20
 
 export default function TagsPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["tags", projectId, page],
-    queryFn: () =>
-      listTags(projectId!, {
-        page,
-        pageSize: PAGE_SIZE,
-        sort: "",
-        searchTerm: "",
-      }),
-    enabled: !!projectId,
-    staleTime: 30_000,
-    placeholderData: (previous) => previous,
-  })
+  const { data, isLoading, isError, error, refetch } = useTagsQuery(
+    projectId!,
+    {
+      page,
+      pageSize: PAGE_SIZE,
+      sort: "",
+      searchTerm: "",
+    }
+  )
   const tags = data?.items ?? []
 
-  const updateTagMutation = useMutation({
-    mutationFn: ({
-      tagId,
-      request,
-    }: {
-      tagId: string
-      request: { name: string; description: string; color: string }
-    }) => updateTag(projectId!, tagId, request),
-    onError: (error) => {
-      toast.error("Failed to update tag.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags", projectId] })
-    },
-  })
+  const updateTagMutation = useUpdateTagMutation(projectId!)
 
-  const deleteTagMutation = useMutation({
-    mutationFn: (tagId: string) => deleteTag(projectId!, tagId),
-    onError: (error) => {
-      toast.error("Failed to delete tag.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags", projectId] })
-      toast.success("Tag deleted.")
-    },
-  })
+  const deleteTagMutation = useDeleteTagMutation(projectId!)
 
-  const bulkDeleteMutation = useMutation({
-    mutationFn: (tagIds: string[]) => deleteTags(projectId!, tagIds),
-    onError: (error) => {
-      toast.error("Failed to delete tags.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags", projectId] })
-      toast.success("Tags deleted.")
-      setSelectedIds(new Set())
-    },
-  })
+  const bulkDeleteMutation = useDeleteTagsMutation(projectId!)
 
   function updateField(
     tag: (typeof tags)[number],
@@ -127,7 +83,11 @@ export default function TagsPage() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+              onClick={() =>
+                bulkDeleteMutation.mutate(Array.from(selectedIds), {
+                  onSuccess: () => setSelectedIds(new Set()),
+                })
+              }
               disabled={bulkDeleteMutation.isPending}
             >
               <TrashIcon />

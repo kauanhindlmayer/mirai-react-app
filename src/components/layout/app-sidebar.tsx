@@ -14,13 +14,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { useCurrentUser } from "@/hooks/use-auth"
+import { useCurrentUserQuery } from "@/hooks/use-auth"
 import { useNavMainItems } from "@/hooks/use-nav-main-items"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { projectId } = useParams<{ projectId?: string }>()
   const navMainItems = useNavMainItems()
-  const { data: user } = useCurrentUser()
+  const { data: user } = useCurrentUserQuery()
 
   return (
     <Sidebar collapsible="icon" {...props}>

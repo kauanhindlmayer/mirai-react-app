@@ -1,8 +1,7 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 
-import { getProjectUsers } from "@/api/projects"
-import { getWorkItemsStats } from "@/api/work-items"
+import { useProjectUsersQuery } from "@/queries/projects"
+import { useWorkItemsStatsQuery } from "@/queries/work-items"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import { getInitials } from "@/lib/utils"
@@ -36,21 +35,15 @@ export default function ProjectSummaryPage() {
   const [period, setPeriod] = useState(7)
   const [page, setPage] = useState(1)
 
-  const statsQuery = useQuery({
-    queryKey: ["work-items-stats", projectId, period],
-    queryFn: () => getWorkItemsStats(projectId!, period),
-    enabled: !!projectId,
-    staleTime: 60_000,
-  })
+  const statsQuery = useWorkItemsStatsQuery(projectId ?? "", period)
 
-  const membersQuery = useQuery({
-    queryKey: ["project-users", project?.organizationId, projectId, page],
-    queryFn: () =>
-      getProjectUsers(project!.organizationId, projectId!, undefined, page, 10),
-    enabled: !!project?.organizationId && !!projectId,
-    staleTime: 60_000,
-    placeholderData: (previous) => previous,
-  })
+  const membersQuery = useProjectUsersQuery(
+    project?.organizationId,
+    projectId,
+    undefined,
+    page,
+    10
+  )
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">

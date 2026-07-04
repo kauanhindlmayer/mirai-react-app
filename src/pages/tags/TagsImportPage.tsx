@@ -1,10 +1,8 @@
 import { type ChangeEvent, useRef, useState } from "react"
 import { useParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { UploadIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { createTagImportJob, listTagImportJobs } from "@/api/tag-import-jobs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,6 +15,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn, getErrorMessage } from "@/lib/utils"
+import {
+  useCreateTagImportJobMutation,
+  useTagImportJobsQuery,
+} from "@/queries/tag-import-jobs"
 import type { Link } from "@/types/common"
 import { TagImportJobStatus } from "@/types/tag-import-jobs"
 
@@ -46,39 +48,20 @@ function extractPageFromHref(href: string): number | null {
 
 export default function TagsImportPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["tag-import-jobs", projectId, page],
-    queryFn: () =>
-      listTagImportJobs(projectId!, {
-        page,
-        pageSize: PAGE_SIZE,
-        sort: "",
-        searchTerm: "",
-      }),
-    enabled: !!projectId,
-    staleTime: 15_000,
-    placeholderData: (previous) => previous,
-  })
+  const { data, isLoading, isError, error, refetch } = useTagImportJobsQuery(
+    projectId!,
+    {
+      page,
+      pageSize: PAGE_SIZE,
+      sort: "",
+      searchTerm: "",
+    }
+  )
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => createTagImportJob(projectId!, file),
-    onError: (error) => {
-      toast.error("Failed to start import.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["tag-import-jobs", projectId],
-      })
-      toast.success("Import started.")
-    },
-  })
+  const uploadMutation = useCreateTagImportJobMutation(projectId!)
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]

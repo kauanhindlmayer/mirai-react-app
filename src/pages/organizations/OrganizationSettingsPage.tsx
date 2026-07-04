@@ -1,21 +1,19 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import {
-  addUserToOrganization,
-  getOrganizationUsers,
-} from "@/api/organizations"
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
+import {
+  useAddUserToOrganizationMutation,
+  useOrganizationUsersQuery,
+} from "@/queries/organizations"
 import type { OrganizationUserResponse } from "@/types/organizations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -83,19 +81,10 @@ export default function OrganizationSettingsPage() {
   const { organizationId, organization } = useCurrentOrganization()
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["organization-users", organizationId, page],
-    queryFn: () =>
-      getOrganizationUsers(organizationId!, {
-        page,
-        pageSize: PAGE_SIZE,
-        sort: "",
-        searchTerm: "",
-      }),
-    enabled: !!organizationId,
-    staleTime: 60_000,
-    placeholderData: (previous) => previous,
-  })
+  const { data, isLoading, isError, error, refetch } = useOrganizationUsersQuery(
+    organizationId!,
+    { page, pageSize: PAGE_SIZE, sort: "", searchTerm: "" }
+  )
 
   const table = useReactTable({
     data: data?.items ?? [],
@@ -244,29 +233,12 @@ function InviteUserForm({
   organizationId: string
   onDone: () => void
 }) {
-  const queryClient = useQueryClient()
   const form = useForm<InviteFormValues>({
     defaultValues: { email: "" },
     resolver: zodResolver(inviteSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: InviteFormValues) =>
-      addUserToOrganization(organizationId, values),
-    onError: (error) => {
-      toast.error("Failed to invite member.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["organization-users", organizationId],
-      })
-      toast.success("Member invited.")
-      onDone()
-    },
-  })
+  const mutation = useAddUserToOrganizationMutation(organizationId)
 
   return (
     <>
@@ -278,7 +250,9 @@ function InviteUserForm({
       </DialogHeader>
       <form
         id="invite-user-form"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          mutation.mutate(values, { onSuccess: onDone })
+        )}
       >
         <FieldGroup>
           <Field>

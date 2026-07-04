@@ -1,11 +1,10 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { LinkIcon, PlusIcon, XIcon } from "lucide-react"
 
-import { listWorkItems } from "@/api/work-items"
 import {
-  useCreateWorkItemLink,
-  useDeleteWorkItemLink,
+  useCreateWorkItemLinkMutation,
+  useDeleteWorkItemLinkMutation,
+  useWorkItemsSearchQuery,
 } from "@/queries/work-items"
 import { WorkItemLinkType, type WorkItemLink } from "@/types/work-items"
 import { Button } from "@/components/ui/button"
@@ -43,7 +42,7 @@ export function WorkItemLinks({
   outgoingLinks,
   incomingLinks,
 }: WorkItemLinksProps) {
-  const deleteLink = useDeleteWorkItemLink(projectId, workItemId)
+  const deleteLink = useDeleteWorkItemLinkMutation(projectId, workItemId)
 
   return (
     <div className="flex flex-col gap-3">
@@ -105,19 +104,11 @@ function AddLinkPopover({
   const [linkType, setLinkType] = useState<WorkItemLinkType>(
     WorkItemLinkType.Related
   )
-  const createLink = useCreateWorkItemLink(projectId, workItemId)
+  const createLink = useCreateWorkItemLinkMutation(projectId, workItemId)
 
-  const { data } = useQuery({
-    queryKey: ["work-items", projectId, "search", search],
-    queryFn: () =>
-      listWorkItems(projectId, {
-        page: 1,
-        pageSize: 10,
-        sort: "",
-        searchTerm: search,
-      }),
+  const { data } = useWorkItemsSearchQuery(projectId, search, {
+    pageSize: 10,
     enabled: open,
-    staleTime: 30_000,
   })
 
   return (

@@ -1,9 +1,8 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { PlusIcon, XIcon } from "lucide-react"
 
-import { listTags } from "@/api/tags"
-import { useAddWorkItemTag, useRemoveWorkItemTag } from "@/queries/work-items"
+import { useTagsQuery } from "@/queries/tags"
+import { useAddWorkItemTagMutation, useRemoveWorkItemTagMutation } from "@/queries/work-items"
 import type { TagBriefResponse } from "@/types/work-items"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -33,16 +32,14 @@ export function WorkItemTagsEditor({
   tags,
 }: WorkItemTagsEditorProps) {
   const [open, setOpen] = useState(false)
-  const addTag = useAddWorkItemTag(projectId, workItemId)
-  const removeTag = useRemoveWorkItemTag(projectId, workItemId)
+  const addTag = useAddWorkItemTagMutation(projectId, workItemId)
+  const removeTag = useRemoveWorkItemTagMutation(projectId, workItemId)
 
-  const { data } = useQuery({
-    queryKey: ["tags", projectId],
-    queryFn: () =>
-      listTags(projectId, { page: 1, pageSize: 100, sort: "", searchTerm: "" }),
-    enabled: open,
-    staleTime: 60_000,
-  })
+  const { data } = useTagsQuery(
+    projectId,
+    { page: 1, pageSize: 100, sort: "", searchTerm: "" },
+    { enabled: open, staleTime: 60_000 }
+  )
 
   const tagNames = new Set(tags.map((tag) => tag.name))
 

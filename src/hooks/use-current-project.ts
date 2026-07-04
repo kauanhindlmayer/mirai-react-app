@@ -1,17 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router"
 
-import { getProject } from "@/api/projects"
+import { useProjectQuery } from "@/queries/projects"
 
 export function useCurrentProject() {
   const { projectId } = useParams<{ projectId: string }>()
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => getProject(projectId!),
-    enabled: !!projectId,
-    staleTime: 60_000,
-  })
+  const { data, isLoading, isError, error, refetch } = useProjectQuery(projectId)
 
   return {
     projectId,

@@ -1,9 +1,8 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { UserIcon, XIcon } from "lucide-react"
 
-import { getProjectUsers } from "@/api/projects"
-import { useUpdateWorkItem } from "@/queries/work-items"
+import { useProjectUsersQuery } from "@/queries/projects"
+import { useUpdateWorkItemMutation } from "@/queries/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
 import { getInitials } from "@/lib/utils"
@@ -36,14 +35,16 @@ export function WorkItemAssigneePicker({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const { project } = useCurrentProject()
-  const updateWorkItem = useUpdateWorkItem(projectId, workItemId)
+  const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
 
-  const { data } = useQuery({
-    queryKey: ["project-users", project?.organizationId, projectId, search],
-    queryFn: () => getProjectUsers(project!.organizationId, projectId, search),
-    enabled: open && !!project,
-    staleTime: 30_000,
-  })
+  const { data } = useProjectUsersQuery(
+    project?.organizationId,
+    projectId,
+    search,
+    undefined,
+    undefined,
+    { enabled: open && !!project, staleTime: 30_000 }
+  )
 
   function handleSelect(user?: ProjectUserResponse) {
     updateWorkItem.mutate({ assignee: user })

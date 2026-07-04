@@ -1,12 +1,9 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PlusIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createSprint } from "@/api/sprints"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -25,6 +22,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { useCreateSprintMutation } from "@/queries/sprints"
 
 const sprintSchema = z
   .object({
@@ -66,31 +64,12 @@ function CreateSprintForm({
   teamId: string
   onDone: () => void
 }) {
-  const queryClient = useQueryClient()
   const form = useForm<SprintFormValues>({
     defaultValues: { name: "", startDate: "", endDate: "" },
     resolver: zodResolver(sprintSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: SprintFormValues) =>
-      createSprint(teamId, {
-        name: values.name,
-        startDate: new Date(values.startDate),
-        endDate: new Date(values.endDate),
-      }),
-    onError: (error) => {
-      toast.error("Failed to create sprint.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sprints", teamId] })
-      toast.success("Sprint created.")
-      onDone()
-    },
-  })
+  const mutation = useCreateSprintMutation(teamId)
 
   return (
     <>
@@ -102,7 +81,16 @@ function CreateSprintForm({
       </DialogHeader>
       <form
         id="create-sprint-form"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          mutation.mutate(
+            {
+              name: values.name,
+              startDate: new Date(values.startDate),
+              endDate: new Date(values.endDate),
+            },
+            { onSuccess: onDone }
+          )
+        )}
       >
         <FieldGroup>
           <Field>

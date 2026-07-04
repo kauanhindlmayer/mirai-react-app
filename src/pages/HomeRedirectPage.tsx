@@ -1,11 +1,11 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
 
-import { useOrganizations } from "@/queries/organizations"
+import { useOrganizationsQuery } from "@/queries/organizations"
 
 export default function HomeRedirectPage() {
   const navigate = useNavigate()
-  const { data: organizations, isSuccess } = useOrganizations()
+  const { data: organizations, isSuccess } = useOrganizationsQuery()
 
   useEffect(() => {
     if (!isSuccess) return

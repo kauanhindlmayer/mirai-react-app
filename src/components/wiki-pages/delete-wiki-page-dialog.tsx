@@ -1,8 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TrashIcon } from "lucide-react"
-import { toast } from "sonner"
 
-import { deleteWikiPage } from "@/api/wiki-pages"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { useDeleteWikiPageMutation } from "@/queries/wiki-pages"
 
 type DeleteWikiPageDialogProps = {
   projectId: string
@@ -29,22 +27,11 @@ export function DeleteWikiPageDialog({
   title,
   onDeleted,
 }: DeleteWikiPageDialogProps) {
-  const queryClient = useQueryClient()
+  const mutation = useDeleteWikiPageMutation(projectId)
 
-  const mutation = useMutation({
-    mutationFn: () => deleteWikiPage(projectId, wikiPageId),
-    onError: (error) => {
-      toast.error("Failed to delete wiki page.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wiki-pages", projectId] })
-      toast.success("Wiki page deleted.")
-      onDeleted()
-    },
-  })
+  function handleDelete() {
+    mutation.mutate(wikiPageId, { onSuccess: onDeleted })
+  }
 
   return (
     <AlertDialog>
@@ -65,7 +52,7 @@ export function DeleteWikiPageDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => mutation.mutate()}
+            onClick={handleDelete}
             disabled={mutation.isPending}
           >
             Delete

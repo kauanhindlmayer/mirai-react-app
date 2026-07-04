@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 
-import { getBacklog } from "@/api/teams"
+import { useBacklogQuery } from "@/queries/teams"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentTeam } from "@/hooks/use-current-team"
@@ -53,13 +52,7 @@ export default function BacklogsPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["backlog", team?.id, backlogLevel],
-    queryFn: () => getBacklog(team!.id, undefined, backlogLevel),
-    enabled: !!team?.id,
-    staleTime: 30_000,
-    placeholderData: [],
-  })
+  } = useBacklogQuery(team?.id ?? "", undefined, backlogLevel)
 
   const nodes = useMemo(() => toTreeNodes(items), [items])
 

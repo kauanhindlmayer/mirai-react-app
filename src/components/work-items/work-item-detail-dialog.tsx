@@ -1,11 +1,11 @@
-import { useState } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { ChevronRightIcon, EllipsisVerticalIcon } from "lucide-react"
 
+import { useDraftField } from "@/hooks/use-draft-field"
 import {
-  useDeleteWorkItem,
-  useUpdateWorkItem,
-  useWorkItem,
+  useDeleteWorkItemMutation,
+  useUpdateWorkItemMutation,
+  useWorkItemQuery,
 } from "@/queries/work-items"
 import { ValueArea, WorkItemStatus, type WorkItem } from "@/types/work-items"
 import {
@@ -97,8 +97,8 @@ function WorkItemDetailContent({
   onDeleted: () => void
   onNavigate: (workItemId: string) => void
 }) {
-  const workItemQuery = useWorkItem(projectId, workItemId)
-  const deleteWorkItem = useDeleteWorkItem(projectId)
+  const workItemQuery = useWorkItemQuery(projectId, workItemId)
+  const deleteWorkItem = useDeleteWorkItemMutation(projectId)
 
   if (workItemQuery.isLoading || !workItemQuery.data) {
     return (
@@ -306,45 +306,35 @@ function WorkItemMainFields({
   workItemId: string
   workItem: WorkItem
 }) {
-  const updateWorkItem = useUpdateWorkItem(projectId, workItemId)
-  const [title, setTitle] = useState(workItem.title)
-  const [description, setDescription] = useState(workItem.description ?? "")
-  const [acceptanceCriteria, setAcceptanceCriteria] = useState(
-    workItem.acceptanceCriteria ?? ""
+  const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
+
+  const titleField = useDraftField(workItem.title, (next) => {
+    if (next.trim()) updateWorkItem.mutate({ title: next })
+  })
+  const descriptionField = useDraftField(workItem.description ?? "", (next) => {
+    updateWorkItem.mutate({ description: next })
+  })
+  const acceptanceCriteriaField = useDraftField(
+    workItem.acceptanceCriteria ?? "",
+    (next) => {
+      updateWorkItem.mutate({ acceptanceCriteria: next })
+    }
   )
-
-  function handleTitleBlur() {
-    if (title.trim() && title !== workItem.title) {
-      updateWorkItem.mutate({ title })
-    }
-  }
-
-  function handleDescriptionBlur() {
-    if (description !== (workItem.description ?? "")) {
-      updateWorkItem.mutate({ description })
-    }
-  }
-
-  function handleAcceptanceCriteriaBlur() {
-    if (acceptanceCriteria !== (workItem.acceptanceCriteria ?? "")) {
-      updateWorkItem.mutate({ acceptanceCriteria })
-    }
-  }
 
   return (
     <div className="flex flex-col gap-3">
       <Input
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        onBlur={handleTitleBlur}
+        value={titleField.draft}
+        onChange={(event) => titleField.setDraft(event.target.value)}
+        onBlur={titleField.commit}
         className="border-none px-0 text-lg font-semibold shadow-none focus-visible:ring-0"
       />
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs text-muted-foreground">Description</Label>
         <Textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          onBlur={handleDescriptionBlur}
+          value={descriptionField.draft}
+          onChange={(event) => descriptionField.setDraft(event.target.value)}
+          onBlur={descriptionField.commit}
           placeholder="Add a description..."
           className="min-h-28"
         />
@@ -354,9 +344,11 @@ function WorkItemMainFields({
           Acceptance criteria
         </Label>
         <Textarea
-          value={acceptanceCriteria}
-          onChange={(event) => setAcceptanceCriteria(event.target.value)}
-          onBlur={handleAcceptanceCriteriaBlur}
+          value={acceptanceCriteriaField.draft}
+          onChange={(event) =>
+            acceptanceCriteriaField.setDraft(event.target.value)
+          }
+          onBlur={acceptanceCriteriaField.commit}
           placeholder="Add acceptance criteria..."
           className="min-h-20"
         />
@@ -374,29 +366,28 @@ function WorkItemMetaFields({
   workItemId: string
   workItem: WorkItem
 }) {
-  const updateWorkItem = useUpdateWorkItem(projectId, workItemId)
-  const [storyPoints, setStoryPoints] = useState(
-    workItem.planning?.storyPoints?.toString() ?? ""
-  )
-  const [priority, setPriority] = useState(
-    workItem.planning?.priority?.toString() ?? ""
-  )
+  const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
 
-  function handleStoryPointsBlur() {
-    const parsed = storyPoints.trim() ? Number(storyPoints) : undefined
-    if (parsed === workItem.planning?.storyPoints) return
-    updateWorkItem.mutate({
-      planning: { ...workItem.planning, storyPoints: parsed },
-    })
-  }
-
-  function handlePriorityBlur() {
-    const parsed = priority.trim() ? Number(priority) : undefined
-    if (parsed === workItem.planning?.priority) return
-    updateWorkItem.mutate({
-      planning: { ...workItem.planning, priority: parsed },
-    })
-  }
+  const storyPointsField = useDraftField(
+    workItem.planning?.storyPoints?.toString() ?? "",
+    (next) => {
+      const parsed = next.trim() ? Number(next) : undefined
+      if (parsed === workItem.planning?.storyPoints) return
+      updateWorkItem.mutate({
+        planning: { ...workItem.planning, storyPoints: parsed },
+      })
+    }
+  )
+  const priorityField = useDraftField(
+    workItem.planning?.priority?.toString() ?? "",
+    (next) => {
+      const parsed = next.trim() ? Number(next) : undefined
+      if (parsed === workItem.planning?.priority) return
+      updateWorkItem.mutate({
+        planning: { ...workItem.planning, priority: parsed },
+      })
+    }
+  )
 
   return (
     <div className="flex flex-col gap-3">
@@ -439,9 +430,9 @@ function WorkItemMetaFields({
           <Input
             type="number"
             min={0}
-            value={storyPoints}
-            onChange={(event) => setStoryPoints(event.target.value)}
-            onBlur={handleStoryPointsBlur}
+            value={storyPointsField.draft}
+            onChange={(event) => storyPointsField.setDraft(event.target.value)}
+            onBlur={storyPointsField.commit}
           />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -449,9 +440,9 @@ function WorkItemMetaFields({
           <Input
             type="number"
             min={0}
-            value={priority}
-            onChange={(event) => setPriority(event.target.value)}
-            onBlur={handlePriorityBlur}
+            value={priorityField.draft}
+            onChange={(event) => priorityField.setDraft(event.target.value)}
+            onBlur={priorityField.commit}
           />
         </div>
       </div>

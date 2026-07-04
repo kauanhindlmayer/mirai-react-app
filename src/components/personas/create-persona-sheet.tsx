@@ -1,12 +1,10 @@
 import { useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PlusIcon, UserIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createPersona } from "@/api/personas"
+import { useCreatePersonaMutation } from "@/queries/personas"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -66,7 +64,6 @@ function CreatePersonaForm({
   projectId: string
   onDone: () => void
 }) {
-  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -76,21 +73,7 @@ function CreatePersonaForm({
     resolver: zodResolver(personaSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: PersonaFormValues) =>
-      createPersona(projectId, { ...values, file: imageFile ?? undefined }),
-    onError: (error) => {
-      toast.error("Failed to create persona.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["personas", projectId] })
-      toast.success("Persona created.")
-      onDone()
-    },
-  })
+  const mutation = useCreatePersonaMutation(projectId)
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -110,7 +93,12 @@ function CreatePersonaForm({
       <form
         id="create-persona-form"
         className="px-4"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          mutation.mutate(
+            { ...values, file: imageFile ?? undefined },
+            { onSuccess: onDone }
+          )
+        )}
       >
         <FieldGroup>
           <Field>

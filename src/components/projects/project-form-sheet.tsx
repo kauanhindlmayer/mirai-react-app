@@ -1,11 +1,12 @@
 import { type ReactNode, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createProject, updateProject } from "@/api/projects"
+import {
+  useCreateProjectMutation,
+  useUpdateProjectMutation,
+} from "@/queries/projects"
 import type { Project } from "@/types/projects"
 import { Button } from "@/components/ui/button"
 import {
@@ -73,7 +74,6 @@ function ProjectForm({
   project?: Project
   onDone: () => void
 }) {
-  const queryClient = useQueryClient()
   const isEditing = !!project
 
   const form = useForm<ProjectFormValues>({
@@ -84,29 +84,20 @@ function ProjectForm({
     resolver: zodResolver(projectSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: ProjectFormValues) =>
-      isEditing
-        ? updateProject({ id: project.id, organizationId, ...values })
-        : createProject({ organizationId, ...values }),
-    onError: (error) => {
-      toast.error(
-        isEditing ? "Failed to update project." : "Failed to create project.",
-        {
-          description:
-            error instanceof Error ? error.message : "Something went wrong.",
-        }
+  const createProject = useCreateProjectMutation()
+  const updateProject = useUpdateProjectMutation()
+  const mutation = isEditing ? updateProject : createProject
+
+  function onSubmit(values: ProjectFormValues) {
+    if (isEditing) {
+      updateProject.mutate(
+        { id: project.id, organizationId, ...values },
+        { onSuccess: onDone }
       )
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", organizationId] })
-      if (isEditing) {
-        queryClient.invalidateQueries({ queryKey: ["project", project.id] })
-      }
-      toast.success(isEditing ? "Project updated." : "Project created.")
-      onDone()
-    },
-  })
+    } else {
+      createProject.mutate({ organizationId, ...values }, { onSuccess: onDone })
+    }
+  }
 
   return (
     <>
@@ -121,7 +112,7 @@ function ProjectForm({
       <form
         id="project-form"
         className="px-4"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <FieldGroup>
           <Field>

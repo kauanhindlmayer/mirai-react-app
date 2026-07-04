@@ -1,14 +1,12 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { InfoIcon, PlusIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createWorkItem } from "@/api/work-items"
 import { BoardCard } from "@/components/boards/board-card"
 import { Button } from "@/components/ui/button"
 import {
@@ -37,6 +35,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { boardQueryKey } from "@/queries/boards"
+import { useCreateWorkItemMutation } from "@/queries/work-items"
 import type { Column } from "@/types/boards"
 import { WorkItemType } from "@/types/work-items"
 
@@ -147,22 +147,20 @@ function QuickAddWorkItem({
     resolver: zodResolver(quickAddSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: QuickAddValues) =>
-      createWorkItem(projectId, { ...values, assignedTeamId: teamId }),
-    onError: (error) => {
-      toast.error("Failed to create work item.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["work-items", projectId] })
-      queryClient.invalidateQueries({ queryKey: ["board", boardId] })
-      form.reset()
-      setOpen(false)
-    },
-  })
+  const createWorkItemMutation = useCreateWorkItemMutation(projectId)
+
+  function handleSubmit(values: QuickAddValues) {
+    createWorkItemMutation.mutate(
+      { ...values, assignedTeamId: teamId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: boardQueryKey(boardId) })
+          form.reset()
+          setOpen(false)
+        },
+      }
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -175,7 +173,7 @@ function QuickAddWorkItem({
       <PopoverContent className="w-72" align="start">
         <form
           className="flex flex-col gap-3"
-          onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FieldGroup>
             <Field>
@@ -210,10 +208,10 @@ function QuickAddWorkItem({
             <Field>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={createWorkItemMutation.isPending}
                 className="w-full"
               >
-                {mutation.isPending ? <Spinner data-icon="inline-end" /> : null}
+                {createWorkItemMutation.isPending ? <Spinner data-icon="inline-end" /> : null}
                 Add to Top
               </Button>
             </Field>

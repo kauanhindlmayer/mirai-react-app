@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   DndContext,
   DragOverlay,
@@ -11,9 +10,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { toast } from "sonner"
 
-import { getBoard, listBoards, moveCard } from "@/api/boards"
 import { BoardCardOverlay } from "@/components/boards/board-card"
 import { BoardColumn } from "@/components/boards/board-column"
 import { BoardSettingsSheet } from "@/components/boards/board-settings-sheet"
@@ -25,7 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { BoardWorkItem, MoveCardRequest } from "@/types/boards"
+import {
+  useBoardQuery,
+  useBoardsQuery,
+  useMoveCardMutation,
+} from "@/queries/boards"
+import type { BoardWorkItem } from "@/types/boards"
 import { BacklogLevel } from "@/types/teams"
 
 export default function BoardsPage() {
@@ -38,15 +40,8 @@ export default function BoardsPage() {
   const [backlogLevel, setBacklogLevel] = useState<BacklogLevel>(
     BacklogLevel.UserStory
   )
-  const queryClient = useQueryClient()
 
-  const boardsQuery = useQuery({
-    queryKey: ["boards", projectId],
-    queryFn: () => listBoards(projectId!),
-    enabled: !!projectId,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  const boardsQuery = useBoardsQuery(projectId!)
 
   const boards = boardsQuery.data ?? []
   const activeBoardId =
@@ -55,34 +50,9 @@ export default function BoardsPage() {
       : boards[0]?.id
   const activeBoard = boards.find((board) => board.id === activeBoardId)
 
-  const boardQuery = useQuery({
-    queryKey: ["board", activeBoardId, backlogLevel],
-    queryFn: () => getBoard(activeBoardId!, backlogLevel),
-    enabled: !!activeBoardId,
-    staleTime: 30_000,
-  })
+  const boardQuery = useBoardQuery(activeBoardId, backlogLevel)
 
-  const moveCardMutation = useMutation({
-    mutationFn: ({
-      columnId,
-      cardId,
-      request,
-    }: {
-      columnId: string
-      cardId: string
-      request: MoveCardRequest
-    }) => moveCard(activeBoardId!, columnId, cardId, request),
-    onError: (error) => {
-      toast.error("Failed to move card.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-      queryClient.invalidateQueries({ queryKey: ["board", activeBoardId] })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["board", activeBoardId] })
-    },
-  })
+  const moveCardMutation = useMoveCardMutation(activeBoardId!)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })

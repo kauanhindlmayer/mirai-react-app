@@ -1,14 +1,13 @@
 import { useParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 import { EllipsisVerticalIcon } from "lucide-react"
 
-import { getDashboardData } from "@/api/dashboards"
 import { BurndownChart } from "@/components/dashboards/burndown-chart"
 import { BurnupChart } from "@/components/dashboards/burnup-chart"
 import { ChartCard } from "@/components/dashboards/chart-card"
 import { VelocityChart } from "@/components/dashboards/velocity-chart"
 import { WorkItemScatterChart } from "@/components/dashboards/work-item-scatter-chart"
 import { useCurrentTeam } from "@/hooks/use-current-team"
+import { useDashboardDataQuery } from "@/queries/dashboards"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -44,12 +43,7 @@ export default function ProjectDashboardsPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["dashboard", team?.id],
-    queryFn: () => getDashboardData(team!.id),
-    enabled: !!team?.id,
-    staleTime: 60_000,
-  })
+  } = useDashboardDataQuery(team?.id)
 
   const cycleTimePoints = (dashboard?.cycleTimeData ?? []).map((point) => ({
     x: new Date(point.completedDate).getTime(),

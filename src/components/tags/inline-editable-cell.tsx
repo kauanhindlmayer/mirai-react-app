@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useState } from "react"
 
+import { useDraftField } from "@/hooks/use-draft-field"
 import { Input } from "@/components/ui/input"
 
 type InlineEditableCellProps = {
@@ -14,13 +15,14 @@ export function InlineEditableCell({
   placeholder,
 }: InlineEditableCellProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [draft, setDraft] = useState(value)
+  const field = useDraftField(value, (next) => {
+    const trimmed = next.trim()
+    if (trimmed !== value) onSave(trimmed)
+  })
 
-  function commit() {
+  function handleBlur() {
     setIsEditing(false)
-    if (draft.trim() !== value) {
-      onSave(draft.trim())
-    }
+    field.commit()
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -28,7 +30,7 @@ export function InlineEditableCell({
       event.currentTarget.blur()
     }
     if (event.key === "Escape") {
-      setDraft(value)
+      field.reset()
       setIsEditing(false)
     }
   }
@@ -37,9 +39,9 @@ export function InlineEditableCell({
     return (
       <Input
         autoFocus
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={commit}
+        value={field.draft}
+        onChange={(event) => field.setDraft(event.target.value)}
+        onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className="h-7"
       />
@@ -51,7 +53,7 @@ export function InlineEditableCell({
       type="button"
       className="w-full rounded px-2 py-1 text-left hover:bg-accent"
       onClick={() => {
-        setDraft(value)
+        field.reset()
         setIsEditing(true)
       }}
     >

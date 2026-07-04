@@ -1,10 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createRetrospective, updateRetrospective } from "@/api/retrospectives"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -29,6 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  useCreateRetrospectiveMutation,
+  useUpdateRetrospectiveMutation,
+} from "@/queries/retrospectives"
 import { ProcessTemplate, type Retrospective } from "@/types/retrospectives"
 
 const PROCESS_TEMPLATE_LABELS: Record<ProcessTemplate, string> = {
@@ -95,7 +96,6 @@ function RetrospectiveForm({
   onCreated?: (retrospectiveId: string) => void
 }) {
   const isUpdateMode = !!retrospective
-  const queryClient = useQueryClient()
 
   const form = useForm<RetrospectiveFormValues>({
     defaultValues: {
@@ -106,41 +106,24 @@ function RetrospectiveForm({
     resolver: zodResolver(retrospectiveSchema),
   })
 
-  const createMutation = useMutation({
-    mutationFn: (values: RetrospectiveFormValues) =>
-      createRetrospective({ ...values, teamId }),
-    onError: (error) => {
-      toast.error("Failed to create retrospective.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: (retrospectiveId) => {
-      queryClient.invalidateQueries({ queryKey: ["retrospectives", teamId] })
-      toast.success("Retrospective created.")
-      onCreated?.(retrospectiveId)
-      onDone()
-    },
-  })
+  const createMutation = useCreateRetrospectiveMutation()
+  const updateMutation = useUpdateRetrospectiveMutation(retrospective?.id ?? "")
 
-  const updateMutation = useMutation({
-    mutationFn: (values: RetrospectiveFormValues) =>
-      updateRetrospective(retrospective!.id, values),
-    onError: (error) => {
-      toast.error("Failed to update retrospective.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["retrospectives", teamId] })
-      queryClient.invalidateQueries({
-        queryKey: ["retrospective", retrospective!.id],
-      })
-      toast.success("Retrospective updated.")
-      onDone()
-    },
-  })
+  function submit(values: RetrospectiveFormValues) {
+    if (isUpdateMode) {
+      updateMutation.mutate(values, { onSuccess: onDone })
+    } else {
+      createMutation.mutate(
+        { ...values, teamId },
+        {
+          onSuccess: (retrospectiveId) => {
+            onCreated?.(retrospectiveId)
+            onDone()
+          },
+        }
+      )
+    }
+  }
 
   const mutation = isUpdateMode ? updateMutation : createMutation
 
@@ -156,10 +139,7 @@ function RetrospectiveForm({
             : "Set up a new board to start collecting feedback and insights."}
         </DialogDescription>
       </DialogHeader>
-      <form
-        id="retrospective-form"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-      >
+      <form id="retrospective-form" onSubmit={form.handleSubmit(submit)}>
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="retrospective-title">Title</FieldLabel>

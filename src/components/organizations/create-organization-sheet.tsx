@@ -1,12 +1,10 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PlusIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createOrganization } from "@/api/organizations"
+import { useCreateOrganizationMutation } from "@/queries/organizations"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -54,27 +52,12 @@ export function CreateOrganizationSheet() {
 }
 
 function CreateOrganizationForm({ onDone }: { onDone: () => void }) {
-  const queryClient = useQueryClient()
-
   const form = useForm<OrganizationFormValues>({
     defaultValues: { name: "", description: "" },
     resolver: zodResolver(organizationSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: createOrganization,
-    onError: (error) => {
-      toast.error("Failed to create organization.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organizations"] })
-      toast.success("Organization created.")
-      onDone()
-    },
-  })
+  const mutation = useCreateOrganizationMutation()
 
   return (
     <>
@@ -87,7 +70,9 @@ function CreateOrganizationForm({ onDone }: { onDone: () => void }) {
       <form
         id="create-organization-form"
         className="px-4"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          mutation.mutate(values, { onSuccess: onDone })
+        )}
       >
         <FieldGroup>
           <Field>

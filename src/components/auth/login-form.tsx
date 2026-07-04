@@ -4,7 +4,7 @@ import { Link } from "react-router"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { useLogin } from "@/hooks/use-auth"
+import { useLoginMutation } from "@/hooks/use-auth"
 import type { LoginRequest } from "@/types/users"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,7 @@ export function LoginForm({
     resolver: zodResolver(loginSchema),
   })
 
-  const loginMutation = useLogin()
+  const loginMutation = useLoginMutation()
 
   async function handleSubmit(values: LoginRequest) {
     try {

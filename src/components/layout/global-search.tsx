@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router"
 import { SearchIcon } from "lucide-react"
 
-import { listWorkItems } from "@/api/work-items"
 import { useNavMainItems } from "@/hooks/use-nav-main-items"
+import { useWorkItemsSearchQuery } from "@/queries/work-items"
 import { cn } from "@/lib/utils"
 import { WORK_ITEM_STATUS_COLORS } from "@/lib/work-item-colors"
 import { Badge } from "@/components/ui/badge"
@@ -25,17 +24,9 @@ export function GlobalSearch() {
   const { projectId } = useParams<{ projectId?: string }>()
   const navItems = useNavMainItems()
 
-  const { data } = useQuery({
-    queryKey: ["work-items", projectId, "search", query],
-    queryFn: () =>
-      listWorkItems(projectId!, {
-        page: 1,
-        pageSize: 5,
-        sort: "",
-        searchTerm: query,
-      }),
+  const { data } = useWorkItemsSearchQuery(projectId ?? "", query, {
+    pageSize: 5,
     enabled: open && !!projectId && !!query.trim(),
-    staleTime: 30_000,
   })
 
   useEffect(() => {

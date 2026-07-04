@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   EllipsisIcon,
   LinkIcon,
@@ -10,11 +9,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import {
-  deleteRetrospective,
-  getRetrospective,
-  listRetrospectives,
-} from "@/api/retrospectives"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +40,11 @@ import { RetrospectiveBoard } from "@/components/retrospectives/retrospective-bo
 import { RetrospectiveDialog } from "@/components/retrospectives/retrospective-dialog"
 import { useSignalR } from "@/hooks/use-signalr"
 import { useCurrentTeam } from "@/hooks/use-current-team"
+import {
+  useDeleteRetrospectiveMutation,
+  useRetrospectiveQuery,
+  useRetrospectivesQuery,
+} from "@/queries/retrospectives"
 
 export default function RetrospectivesPage() {
   const { projectId, retrospectiveId: routeRetrospectiveId } = useParams<{
@@ -53,16 +52,9 @@ export default function RetrospectivesPage() {
     retrospectiveId?: string
   }>()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
 
-  const retrospectivesQuery = useQuery({
-    queryKey: ["retrospectives", team?.id],
-    queryFn: () => listRetrospectives(team!.id),
-    enabled: !!team?.id,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  const retrospectivesQuery = useRetrospectivesQuery(team?.id)
   const retrospectives = retrospectivesQuery.data ?? []
 
   const selected =
@@ -79,11 +71,7 @@ export default function RetrospectivesPage() {
     })
   }, [projectId, selected, routeRetrospectiveId, navigate])
 
-  const retrospectiveQuery = useQuery({
-    queryKey: ["retrospective", retrospectiveId],
-    queryFn: () => getRetrospective(retrospectiveId!),
-    enabled: !!retrospectiveId,
-  })
+  const retrospectiveQuery = useRetrospectiveQuery(retrospectiveId)
   const retrospective = retrospectiveQuery.data
 
   const signalREvents = useMemo(
@@ -125,21 +113,16 @@ export default function RetrospectivesPage() {
     )
   }
 
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteRetrospective(retrospectiveId!),
-    onError: (error) => {
-      toast.error("Failed to delete retrospective.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["retrospectives", team?.id] })
-      toast.success("Retrospective deleted.")
-      setDeleteDialogOpen(false)
-      navigate(`/projects/${projectId}/retrospectives`, { replace: true })
-    },
-  })
+  const deleteMutation = useDeleteRetrospectiveMutation()
+
+  function handleDeleteRetrospective() {
+    deleteMutation.mutate(retrospectiveId!, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        navigate(`/projects/${projectId}/retrospectives`, { replace: true })
+      },
+    })
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -276,7 +259,7 @@ export default function RetrospectivesPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteMutation.mutate()}
+              onClick={handleDeleteRetrospective}
               disabled={deleteMutation.isPending}
             >
               Delete

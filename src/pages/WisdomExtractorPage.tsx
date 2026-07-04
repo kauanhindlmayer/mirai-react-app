@@ -46,12 +46,14 @@ export default function WisdomExtractorPage() {
     mutation.mutate(q)
   }
 
+  const { mutate } = mutation
+
   useEffect(() => {
     if (autoAskedRef.current) return
     if (!initialQuestion.trim()) return
     autoAskedRef.current = true
-    mutation.mutate(initialQuestion)
-  }, [initialQuestion, mutation])
+    mutate(initialQuestion)
+  }, [initialQuestion, mutate])
 
   function openWorkItem(workItemId: string) {
     setSearchParams((prev) => {

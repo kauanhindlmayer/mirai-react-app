@@ -1,10 +1,10 @@
 import { type FormEvent, useState } from "react"
 
-import { useCurrentUser } from "@/hooks/use-auth"
+import { useCurrentUserQuery } from "@/hooks/use-auth"
 import {
-  useAddWorkItemComment,
-  useDeleteWorkItemComment,
-  useUpdateWorkItemComment,
+  useAddWorkItemCommentMutation,
+  useDeleteWorkItemCommentMutation,
+  useUpdateWorkItemCommentMutation,
 } from "@/queries/work-items"
 import type { Comment } from "@/types/common"
 import { getInitials } from "@/lib/utils"
@@ -24,9 +24,9 @@ export function WorkItemComments({
   workItemId,
   comments,
 }: WorkItemCommentsProps) {
-  const { data: currentUser } = useCurrentUser()
+  const { data: currentUser } = useCurrentUserQuery()
   const [draft, setDraft] = useState("")
-  const addComment = useAddWorkItemComment(projectId, workItemId)
+  const addComment = useAddWorkItemCommentMutation(projectId, workItemId)
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -84,8 +84,8 @@ function CommentItem({
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(comment.content)
-  const updateComment = useUpdateWorkItemComment(projectId, workItemId)
-  const deleteComment = useDeleteWorkItemComment(projectId, workItemId)
+  const updateComment = useUpdateWorkItemCommentMutation(projectId, workItemId)
+  const deleteComment = useDeleteWorkItemCommentMutation(projectId, workItemId)
 
   function handleSave() {
     if (!draft.trim()) return

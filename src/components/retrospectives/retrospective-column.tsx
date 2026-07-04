@@ -1,16 +1,14 @@
 import { type KeyboardEvent, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PlusIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createRetrospectiveItem } from "@/api/retrospectives"
 import { RetrospectiveItemCard } from "@/components/retrospectives/retrospective-item"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Textarea } from "@/components/ui/textarea"
+import { useCreateRetrospectiveItemMutation } from "@/queries/retrospectives"
 import type { RetrospectiveColumn } from "@/types/retrospectives"
 
 const addItemSchema = z.object({
@@ -32,29 +30,20 @@ export function RetrospectiveColumnCard({
   column,
 }: RetrospectiveColumnCardProps) {
   const [isAddingItem, setIsAddingItem] = useState(false)
-  const queryClient = useQueryClient()
 
   const form = useForm<AddItemValues>({
     defaultValues: { content: "" },
     resolver: zodResolver(addItemSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: AddItemValues) =>
-      createRetrospectiveItem(retrospectiveId, column.id, values.content),
-    onError: (error) => {
-      toast.error("Failed to add item.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["retrospective", retrospectiveId],
-      })
-      closeForm()
-    },
-  })
+  const mutation = useCreateRetrospectiveItemMutation(retrospectiveId)
+
+  function submitItem(values: AddItemValues) {
+    mutation.mutate(
+      { columnId: column.id, content: values.content },
+      { onSuccess: closeForm }
+    )
+  }
 
   function closeForm() {
     setIsAddingItem(false)
@@ -67,7 +56,7 @@ export function RetrospectiveColumnCard({
     }
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault()
-      form.handleSubmit((values) => mutation.mutate(values))()
+      form.handleSubmit(submitItem)()
     }
   }
 
@@ -88,7 +77,7 @@ export function RetrospectiveColumnCard({
       {isAddingItem ? (
         <form
           className="flex flex-col gap-1 rounded-md border bg-card p-2"
-          onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+          onSubmit={form.handleSubmit(submitItem)}
         >
           <Textarea
             autoFocus

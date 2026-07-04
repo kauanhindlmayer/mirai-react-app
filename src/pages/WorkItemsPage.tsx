@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 import {
   type ColumnDef,
   type SortingState,
@@ -10,8 +9,7 @@ import {
 } from "@tanstack/react-table"
 import { toast } from "sonner"
 
-import { listWorkItems } from "@/api/work-items"
-import { useDeleteWorkItem, workItemsQueryKey } from "@/queries/work-items"
+import { useDeleteWorkItemMutation, useWorkItemsQuery } from "@/queries/work-items"
 import {
   WORK_ITEM_STATUS_COLORS,
   WORK_ITEM_TYPE_COLORS,
@@ -105,24 +103,15 @@ export default function WorkItemsPage() {
   const [, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const [sorting, setSorting] = useState<SortingState>([])
-  const deleteWorkItemMutation = useDeleteWorkItem(projectId!)
+  const deleteWorkItemMutation = useDeleteWorkItemMutation(projectId!)
 
   const sort =
     sorting.length > 0 ? `${sorting[0].desc ? "-" : ""}${sorting[0].id}` : ""
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: [...workItemsQueryKey(projectId!), page, sort],
-    queryFn: () =>
-      listWorkItems(projectId!, {
-        page,
-        pageSize: PAGE_SIZE,
-        sort,
-        searchTerm: "",
-      }),
-    enabled: !!projectId,
-    staleTime: 60_000,
-    placeholderData: (previous) => previous,
-  })
+  const { data, isLoading, isError, error, refetch } = useWorkItemsQuery(
+    projectId!,
+    { page, pageSize: PAGE_SIZE, sort, searchTerm: "" }
+  )
 
   const table = useReactTable({
     data: data?.items ?? [],

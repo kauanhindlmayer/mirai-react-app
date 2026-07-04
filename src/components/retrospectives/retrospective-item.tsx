@@ -1,8 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TrashIcon } from "lucide-react"
-import { toast } from "sonner"
 
-import { deleteRetrospectiveItem } from "@/api/retrospectives"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { useDeleteRetrospectiveItemMutation } from "@/queries/retrospectives"
 import type { RetrospectiveItem } from "@/types/retrospectives"
 
 type RetrospectiveItemCardProps = {
@@ -28,23 +26,7 @@ export function RetrospectiveItemCard({
   columnId,
   item,
 }: RetrospectiveItemCardProps) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: () =>
-      deleteRetrospectiveItem(retrospectiveId, columnId, item.id),
-    onError: (error) => {
-      toast.error("Failed to delete item.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["retrospective", retrospectiveId],
-      })
-    },
-  })
+  const mutation = useDeleteRetrospectiveItemMutation(retrospectiveId)
 
   return (
     <div className="group relative flex flex-col gap-2 rounded-md border bg-card p-3 shadow-sm">
@@ -82,7 +64,7 @@ export function RetrospectiveItemCard({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => mutation.mutate()}
+              onClick={() => mutation.mutate({ columnId, itemId: item.id })}
               disabled={mutation.isPending}
             >
               Delete

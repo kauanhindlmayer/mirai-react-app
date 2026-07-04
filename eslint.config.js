@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import pluginQuery from '@tanstack/eslint-plugin-query'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
@@ -14,6 +15,7 @@ export default defineConfig([
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
+      ...pluginQuery.configs['flat/recommended'],
     ],
     languageOptions: {
       globals: globals.browser,

@@ -1,12 +1,10 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createTeam, listTeams } from "@/api/teams"
-import { updateProject } from "@/api/projects"
+import { useCreateTeamMutation, useTeamsQuery } from "@/queries/teams"
+import { useUpdateProjectMutation } from "@/queries/projects"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
@@ -86,38 +84,25 @@ const projectOverviewSchema = z.object({
 type ProjectOverviewValues = z.infer<typeof projectOverviewSchema>
 
 function ProjectOverviewForm({ project }: { project: Project }) {
-  const queryClient = useQueryClient()
   const form = useForm<ProjectOverviewValues>({
     defaultValues: { name: project.name, description: project.description },
     resolver: zodResolver(projectOverviewSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: ProjectOverviewValues) =>
-      updateProject({
-        id: project.id,
-        organizationId: project.organizationId,
-        ...values,
-      }),
-    onError: (error) => {
-      toast.error("Failed to update project.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project", project.id] })
-      queryClient.invalidateQueries({
-        queryKey: ["projects", project.organizationId],
-      })
-      toast.success("Project updated.")
-    },
-  })
+  const mutation = useUpdateProjectMutation()
+
+  function onSubmit(values: ProjectOverviewValues) {
+    mutation.mutate({
+      id: project.id,
+      organizationId: project.organizationId,
+      ...values,
+    })
+  }
 
   return (
     <form
       className="flex max-w-md flex-col gap-4 py-4"
-      onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+      onSubmit={form.handleSubmit(onSubmit)}
     >
       <FieldGroup>
         <Field>
@@ -150,18 +135,8 @@ function ProjectOverviewForm({ project }: { project: Project }) {
 }
 
 function ProjectTeamsTab({ projectId }: { projectId: string }) {
-  const {
-    data: teams = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["teams", projectId],
-    queryFn: () => listTeams(projectId),
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  const { data: teams = [], isLoading, isError, error, refetch } =
+    useTeamsQuery(projectId)
 
   return (
     <div className="flex flex-col gap-4 py-4">
@@ -226,26 +201,16 @@ function CreateTeamForm({
   projectId: string
   onDone: () => void
 }) {
-  const queryClient = useQueryClient()
   const form = useForm<TeamFormValues>({
     defaultValues: { name: "", description: "" },
     resolver: zodResolver(teamSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: TeamFormValues) => createTeam(projectId, values),
-    onError: (error) => {
-      toast.error("Failed to create team.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["teams", projectId] })
-      toast.success("Team created.")
-      onDone()
-    },
-  })
+  const mutation = useCreateTeamMutation(projectId)
+
+  function onSubmit(values: TeamFormValues) {
+    mutation.mutate(values, { onSuccess: onDone })
+  }
 
   return (
     <>
@@ -255,10 +220,7 @@ function CreateTeamForm({
           Teams work through boards, backlogs, and sprints.
         </DialogDescription>
       </DialogHeader>
-      <form
-        id="create-team-form"
-        onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-      >
+      <form id="create-team-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="team-name">Name</FieldLabel>

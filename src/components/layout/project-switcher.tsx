@@ -1,10 +1,9 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
 import { ChevronsUpDownIcon, FolderIcon, LayoutGridIcon } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 
-import { listProjects } from "@/api/projects"
+import { useProjectsQuery } from "@/queries/projects"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,12 +25,7 @@ export function ProjectSwitcher() {
   const navigate = useNavigate()
   const { project } = useCurrentProject()
 
-  const { data: projects = [] } = useQuery({
-    queryKey: ["projects", project?.organizationId],
-    queryFn: () => listProjects(project!.organizationId),
-    enabled: !!project,
-    staleTime: 60_000,
-  })
+  const { data: projects = [] } = useProjectsQuery(project?.organizationId)
 
   if (!project) {
     return (

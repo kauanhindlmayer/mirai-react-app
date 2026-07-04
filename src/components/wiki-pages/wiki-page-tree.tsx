@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react"
 import { Link, useParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   DndContext,
   type DragEndEvent,
@@ -12,12 +11,14 @@ import {
 } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { FileTextIcon, PlusIcon } from "lucide-react"
-import { toast } from "sonner"
 
-import { listWikiPages, moveWikiPage } from "@/api/wiki-pages"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import {
+  useMoveWikiPageMutation,
+  useWikiPagesQuery,
+} from "@/queries/wiki-pages"
 import type { WikiPageSummary } from "@/types/wiki-pages"
 
 function toTreeNodes(
@@ -40,38 +41,13 @@ export function WikiPageTree() {
     projectId: string
     wikiPageId?: string
   }>()
-  const queryClient = useQueryClient()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  const { data: pages = [] } = useQuery({
-    queryKey: ["wiki-pages", projectId],
-    queryFn: () => listWikiPages(projectId!),
-    enabled: !!projectId,
-    staleTime: 30_000,
-    placeholderData: [],
-  })
+  const { data: pages = [] } = useWikiPagesQuery(projectId)
 
   const nodes = useMemo(() => toTreeNodes(pages), [pages])
 
-  const moveMutation = useMutation({
-    mutationFn: ({
-      pageId,
-      targetParentId,
-    }: {
-      pageId: string
-      targetParentId?: string
-    }) =>
-      moveWikiPage(projectId!, pageId, { targetParentId, targetPosition: 0 }),
-    onError: (error) => {
-      toast.error("Failed to move page.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wiki-pages", projectId] })
-    },
-  })
+  const moveMutation = useMoveWikiPageMutation(projectId!)
 
   function toggle(id: string) {
     setExpandedIds((prev) => {
@@ -97,7 +73,10 @@ export function WikiPageTree() {
     const targetParentId =
       over.id === ROOT_DROPPABLE_ID ? undefined : String(over.id)
 
-    moveMutation.mutate({ pageId, targetParentId })
+    moveMutation.mutate({
+      wikiPageId: pageId,
+      request: { targetParentId, targetPosition: 0 },
+    })
   }
 
   return (

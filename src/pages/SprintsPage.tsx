@@ -1,13 +1,12 @@
 import { useMemo, useState } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 
-import { getBacklog } from "@/api/teams"
-import { listSprints } from "@/api/sprints"
 import { Tree, type TreeNodeData } from "@/components/common/tree"
 import { CreateSprintDialog } from "@/components/sprints/create-sprint-dialog"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentTeam } from "@/hooks/use-current-team"
+import { useSprintsQuery } from "@/queries/sprints"
+import { useBacklogQuery } from "@/queries/teams"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -51,25 +50,18 @@ export default function SprintsPage() {
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  const sprintsQuery = useQuery({
-    queryKey: ["sprints", team?.id],
-    queryFn: () => listSprints(team!.id),
-    enabled: !!team?.id,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  const sprintsQuery = useSprintsQuery(team?.id)
 
   const sprints = sprintsQuery.data ?? []
   const sprint =
     sprints.find((s) => s.id === selectedSprintId) ?? sprints[0] ?? null
 
-  const backlogQuery = useQuery({
-    queryKey: ["backlog", team?.id, sprint?.id, BacklogLevel.UserStory],
-    queryFn: () => getBacklog(team!.id, sprint!.id, BacklogLevel.UserStory),
-    enabled: !!team?.id && !!sprint?.id,
-    staleTime: 30_000,
-    placeholderData: [],
-  })
+  const backlogQuery = useBacklogQuery(
+    team?.id ?? "",
+    sprint?.id,
+    BacklogLevel.UserStory,
+    { enabled: !!team?.id && !!sprint?.id }
+  )
 
   const nodes = useMemo(
     () => toTreeNodes(backlogQuery.data ?? []),

@@ -1,12 +1,9 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { SettingsIcon, TrashIcon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 
-import { createColumn, deleteColumn } from "@/api/boards"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -25,6 +22,10 @@ import {
 } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  useCreateColumnMutation,
+  useDeleteColumnMutation,
+} from "@/queries/boards"
 import type { Column } from "@/types/boards"
 
 type BoardSettingsSheetProps = {
@@ -88,27 +89,14 @@ function DeleteColumnButton({
   boardId: string
   columnId: string
 }) {
-  const queryClient = useQueryClient()
-  const mutation = useMutation({
-    mutationFn: () => deleteColumn(boardId, columnId),
-    onError: (error) => {
-      toast.error("Failed to delete column.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["board", boardId] })
-      toast.success("Column deleted.")
-    },
-  })
+  const mutation = useDeleteColumnMutation(boardId)
 
   return (
     <Button
       variant="ghost"
       size="icon"
       className="size-7"
-      onClick={() => mutation.mutate()}
+      onClick={() => mutation.mutate(columnId)}
       disabled={mutation.isPending}
       aria-label="Delete column"
     >
@@ -126,37 +114,33 @@ const columnSchema = z.object({
 type ColumnFormValues = z.infer<typeof columnSchema>
 
 function CreateColumnForm({ boardId }: { boardId: string }) {
-  const queryClient = useQueryClient()
   const form = useForm<ColumnFormValues>({
     defaultValues: { name: "", wipLimit: "", definitionOfDone: "" },
     resolver: zodResolver(columnSchema),
   })
 
-  const mutation = useMutation({
-    mutationFn: (values: ColumnFormValues) =>
-      createColumn(boardId, {
+  const mutation = useCreateColumnMutation(boardId)
+
+  function handleSubmit(values: ColumnFormValues) {
+    mutation.mutate(
+      {
         name: values.name,
         position: 1,
         wipLimit: values.wipLimit ? Number(values.wipLimit) : undefined,
         definitionOfDone: values.definitionOfDone || undefined,
-      }),
-    onError: (error) => {
-      toast.error("Failed to create column.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["board", boardId] })
-      toast.success("Column created.")
-      form.reset()
-    },
-  })
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+        },
+      }
+    )
+  }
 
   return (
     <form
       className="flex flex-col gap-3 border-t pt-4"
-      onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+      onSubmit={form.handleSubmit(handleSubmit)}
     >
       <h4 className="text-sm font-medium">Add column</h4>
       <FieldGroup>

@@ -4,19 +4,31 @@ import { toast } from "sonner"
 import {
   addTagToWorkItem,
   addWorkItemComment,
+  createWorkItem,
   createWorkItemLink,
   deleteWorkItem,
   deleteWorkItemAttachment,
   deleteWorkItemComment,
   deleteWorkItemLink,
   getWorkItem,
+  getWorkItemsStats,
+  listWorkItems,
   removeTagFromWorkItem,
   updateWorkItem,
   updateWorkItemComment,
   uploadWorkItemAttachment,
 } from "@/api/work-items"
-import type { AddCommentRequest, UpdateCommentRequest } from "@/types/common"
-import type { CreateWorkItemLinkRequest, WorkItem } from "@/types/work-items"
+import { createErrorToastHandler } from "@/lib/query-helpers"
+import type {
+  AddCommentRequest,
+  PaginationFilter,
+  UpdateCommentRequest,
+} from "@/types/common"
+import type {
+  CreateWorkItemLinkRequest,
+  CreateWorkItemRequest,
+  WorkItem,
+} from "@/types/work-items"
 
 export function workItemsQueryKey(projectId: string) {
   return ["work-items", projectId]
@@ -26,7 +38,10 @@ export function workItemQueryKey(projectId: string, workItemId: string) {
   return ["work-item", projectId, workItemId]
 }
 
-export function useWorkItem(projectId: string, workItemId: string | null) {
+export function useWorkItemQuery(
+  projectId: string,
+  workItemId: string | null
+) {
   return useQuery({
     queryKey: workItemQueryKey(projectId, workItemId ?? ""),
     queryFn: () => getWorkItem(projectId, workItemId!),
@@ -34,13 +49,53 @@ export function useWorkItem(projectId: string, workItemId: string | null) {
   })
 }
 
-function createErrorToastHandler(message: string) {
-  return (error: unknown) => {
-    toast.error(message, {
-      description:
-        error instanceof Error ? error.message : "Something went wrong.",
-    })
-  }
+export function useWorkItemsQuery(
+  projectId: string,
+  filters: PaginationFilter
+) {
+  return useQuery({
+    queryKey: [...workItemsQueryKey(projectId), filters],
+    queryFn: () => listWorkItems(projectId, filters),
+    enabled: !!projectId,
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+  })
+}
+
+export function useWorkItemsSearchQuery(
+  projectId: string,
+  search: string,
+  options: { pageSize: number; enabled: boolean }
+) {
+  return useQuery({
+    queryKey: [
+      ...workItemsQueryKey(projectId),
+      "search",
+      search,
+      options.pageSize,
+    ],
+    queryFn: () =>
+      listWorkItems(projectId, {
+        page: 1,
+        pageSize: options.pageSize,
+        sort: "",
+        searchTerm: search,
+      }),
+    enabled: options.enabled,
+    staleTime: 30_000,
+  })
+}
+
+export function useWorkItemsStatsQuery(
+  projectId: string,
+  periodInDays: number
+) {
+  return useQuery({
+    queryKey: ["work-items-stats", projectId, periodInDays],
+    queryFn: () => getWorkItemsStats(projectId, periodInDays),
+    enabled: !!projectId,
+    staleTime: 60_000,
+  })
 }
 
 function useInvalidateWorkItem(projectId: string, workItemId: string) {
@@ -53,7 +108,19 @@ function useInvalidateWorkItem(projectId: string, workItemId: string) {
   }
 }
 
-export function useDeleteWorkItem(projectId: string) {
+export function useCreateWorkItemMutation(projectId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (request: CreateWorkItemRequest) =>
+      createWorkItem(projectId, request),
+    onError: createErrorToastHandler("Failed to create work item."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workItemsQueryKey(projectId) })
+    },
+  })
+}
+
+export function useDeleteWorkItemMutation(projectId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (workItemId: string) => deleteWorkItem(projectId, workItemId),
@@ -65,7 +132,10 @@ export function useDeleteWorkItem(projectId: string) {
   })
 }
 
-export function useUpdateWorkItem(projectId: string, workItemId: string) {
+export function useUpdateWorkItemMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (request: Partial<WorkItem>) =>
@@ -75,7 +145,10 @@ export function useUpdateWorkItem(projectId: string, workItemId: string) {
   })
 }
 
-export function useAddWorkItemComment(projectId: string, workItemId: string) {
+export function useAddWorkItemCommentMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (request: AddCommentRequest) =>
@@ -85,7 +158,7 @@ export function useAddWorkItemComment(projectId: string, workItemId: string) {
   })
 }
 
-export function useUpdateWorkItemComment(
+export function useUpdateWorkItemCommentMutation(
   projectId: string,
   workItemId: string
 ) {
@@ -103,7 +176,7 @@ export function useUpdateWorkItemComment(
   })
 }
 
-export function useDeleteWorkItemComment(
+export function useDeleteWorkItemCommentMutation(
   projectId: string,
   workItemId: string
 ) {
@@ -116,7 +189,10 @@ export function useDeleteWorkItemComment(
   })
 }
 
-export function useAddWorkItemTag(projectId: string, workItemId: string) {
+export function useAddWorkItemTagMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (name: string) => addTagToWorkItem(projectId, workItemId, name),
@@ -125,7 +201,10 @@ export function useAddWorkItemTag(projectId: string, workItemId: string) {
   })
 }
 
-export function useRemoveWorkItemTag(projectId: string, workItemId: string) {
+export function useRemoveWorkItemTagMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (tagName: string) =>
@@ -135,7 +214,7 @@ export function useRemoveWorkItemTag(projectId: string, workItemId: string) {
   })
 }
 
-export function useUploadWorkItemAttachment(
+export function useUploadWorkItemAttachmentMutation(
   projectId: string,
   workItemId: string
 ) {
@@ -148,7 +227,7 @@ export function useUploadWorkItemAttachment(
   })
 }
 
-export function useDeleteWorkItemAttachment(
+export function useDeleteWorkItemAttachmentMutation(
   projectId: string,
   workItemId: string
 ) {
@@ -161,7 +240,10 @@ export function useDeleteWorkItemAttachment(
   })
 }
 
-export function useCreateWorkItemLink(projectId: string, workItemId: string) {
+export function useCreateWorkItemLinkMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (request: CreateWorkItemLinkRequest) =>
@@ -171,7 +253,10 @@ export function useCreateWorkItemLink(projectId: string, workItemId: string) {
   })
 }
 
-export function useDeleteWorkItemLink(projectId: string, workItemId: string) {
+export function useDeleteWorkItemLinkMutation(
+  projectId: string,
+  workItemId: string
+) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
     mutationFn: (linkId: string) =>

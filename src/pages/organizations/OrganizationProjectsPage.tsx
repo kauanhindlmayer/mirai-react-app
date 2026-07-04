@@ -1,8 +1,7 @@
 import { Link } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 import { FolderIcon, PencilIcon } from "lucide-react"
 
-import { listProjects } from "@/api/projects"
+import { useProjectsQuery } from "@/queries/projects"
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
 import { ErrorState } from "@/components/common/error-state"
 import { ProjectFormSheet } from "@/components/projects/project-form-sheet"
@@ -18,13 +17,7 @@ export default function OrganizationProjectsPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["projects", organizationId],
-    queryFn: () => listProjects(organizationId!),
-    enabled: !!organizationId,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  } = useProjectsQuery(organizationId)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

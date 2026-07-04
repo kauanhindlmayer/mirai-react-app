@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { updateAvatar, updateUserProfile } from "@/api/users"
-import { CURRENT_USER_QUERY_KEY, useCurrentUser } from "@/hooks/use-auth"
+import { CURRENT_USER_QUERY_KEY, useCurrentUserQuery } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
 import type { User } from "@/types/users"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,7 +30,7 @@ export function UserProfileSheet({
   open,
   onOpenChange,
 }: UserProfileSheetProps) {
-  const { data: user } = useCurrentUser()
+  const { data: user } = useCurrentUserQuery()
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

@@ -13,7 +13,7 @@ import type { LoginRequest, User } from "@/types/users"
 
 export const CURRENT_USER_QUERY_KEY = ["current-user"]
 
-export function useCurrentUser() {
+export function useCurrentUserQuery() {
   return useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: getCurrentUser,
@@ -23,7 +23,7 @@ export function useCurrentUser() {
   })
 }
 
-export function useLogin() {
+export function useLoginMutation() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 

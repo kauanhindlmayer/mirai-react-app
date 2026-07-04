@@ -1,8 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 import { PencilIcon } from "lucide-react"
 
-import { getWikiPage } from "@/api/wiki-pages"
 import { DeleteWikiPageDialog } from "@/components/wiki-pages/delete-wiki-page-dialog"
 import { ErrorState } from "@/components/common/error-state"
 import { WikiPageComments } from "@/components/wiki-pages/wiki-page-comments"
@@ -11,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getInitials } from "@/lib/utils"
+import { useWikiPageQuery } from "@/queries/wiki-pages"
 
 export default function WikiPageViewPage() {
   const { projectId, wikiPageId } = useParams<{
@@ -25,11 +24,7 @@ export default function WikiPageViewPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["wiki-page", projectId, wikiPageId],
-    queryFn: () => getWikiPage(projectId!, wikiPageId!),
-    enabled: !!projectId && !!wikiPageId,
-  })
+  } = useWikiPageQuery(projectId, wikiPageId)
   if (isError) {
     return (
       <ErrorState

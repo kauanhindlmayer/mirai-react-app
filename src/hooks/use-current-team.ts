@@ -1,7 +1,6 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 
-import { listTeams } from "@/api/teams"
+import { useTeamsQuery } from "@/queries/teams"
 import type { Team } from "@/types/teams"
 
 const TEAM_ID_STORAGE_KEY = "teamId"
@@ -25,13 +24,7 @@ export function useCurrentTeam(projectId: string | undefined) {
     getStoredTeamId()
   )
 
-  const { data: teams = [], isLoading } = useQuery({
-    queryKey: ["teams", projectId],
-    queryFn: () => listTeams(projectId!),
-    enabled: !!projectId,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  const { data: teams = [], isLoading } = useTeamsQuery(projectId)
 
   const currentTeamExists = teams.some((team) => team.id === selectedTeamId)
   const team: Team | null =

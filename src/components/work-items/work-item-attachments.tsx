@@ -3,8 +3,8 @@ import { DownloadIcon, PaperclipIcon, TrashIcon } from "lucide-react"
 
 import { downloadWorkItemAttachment } from "@/api/work-items"
 import {
-  useDeleteWorkItemAttachment,
-  useUploadWorkItemAttachment,
+  useDeleteWorkItemAttachmentMutation,
+  useUploadWorkItemAttachmentMutation,
 } from "@/queries/work-items"
 import type { WorkItemAttachment } from "@/types/work-items"
 import { Button } from "@/components/ui/button"
@@ -28,8 +28,8 @@ export function WorkItemAttachments({
   attachments,
 }: WorkItemAttachmentsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const uploadAttachment = useUploadWorkItemAttachment(projectId, workItemId)
-  const deleteAttachment = useDeleteWorkItemAttachment(projectId, workItemId)
+  const uploadAttachment = useUploadWorkItemAttachmentMutation(projectId, workItemId)
+  const deleteAttachment = useDeleteWorkItemAttachmentMutation(projectId, workItemId)
 
   async function handleDownload(attachment: WorkItemAttachment) {
     const blob = await downloadWorkItemAttachment(

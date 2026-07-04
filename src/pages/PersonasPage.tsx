@@ -1,10 +1,9 @@
 import { useParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
 import { UsersRoundIcon } from "lucide-react"
 
-import { listPersonas } from "@/api/personas"
 import { CreatePersonaSheet } from "@/components/personas/create-persona-sheet"
 import { ErrorState } from "@/components/common/error-state"
+import { usePersonasQuery } from "@/queries/personas"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,13 +17,7 @@ export default function PersonasPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["personas", projectId],
-    queryFn: () => listPersonas(projectId!),
-    enabled: !!projectId,
-    staleTime: 60_000,
-    placeholderData: [],
-  })
+  } = usePersonasQuery(projectId!)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

@@ -1,15 +1,16 @@
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 
-import { getWikiPage, updateWikiPage } from "@/api/wiki-pages"
 import { ErrorState } from "@/components/common/error-state"
 import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  useUpdateWikiPageMutation,
+  useWikiPageQuery,
+} from "@/queries/wiki-pages"
 import type { WikiPage } from "@/types/wiki-pages"
 
 export default function WikiPageEditPage() {
@@ -24,11 +25,7 @@ export default function WikiPageEditPage() {
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["wiki-page", projectId, wikiPageId],
-    queryFn: () => getWikiPage(projectId!, wikiPageId!),
-    enabled: !!projectId && !!wikiPageId,
-  })
+  } = useWikiPageQuery(projectId, wikiPageId)
   if (isError) {
     return (
       <ErrorState
@@ -68,27 +65,21 @@ function WikiPageEditForm({
   wikiPage: WikiPage
 }) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [title, setTitle] = useState(wikiPage.title)
   const [content, setContent] = useState(wikiPage.content)
 
-  const mutation = useMutation({
-    mutationFn: () => updateWikiPage(projectId, wikiPageId, { title, content }),
-    onError: (error) => {
-      toast.error("Failed to update wiki page.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["wiki-page", projectId, wikiPageId],
-      })
-      queryClient.invalidateQueries({ queryKey: ["wiki-pages", projectId] })
-      toast.success("Wiki page updated.")
-      navigate(`/projects/${projectId}/wiki-pages/${wikiPageId}`)
-    },
-  })
+  const mutation = useUpdateWikiPageMutation(projectId, wikiPageId)
+
+  function handleSave() {
+    mutation.mutate(
+      { title, content },
+      {
+        onSuccess: () => {
+          navigate(`/projects/${projectId}/wiki-pages/${wikiPageId}`)
+        },
+      }
+    )
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
@@ -109,7 +100,7 @@ function WikiPageEditForm({
             Cancel
           </Button>
           <Button
-            onClick={() => mutation.mutate()}
+            onClick={handleSave}
             disabled={!title.trim() || mutation.isPending}
           >
             {mutation.isPending ? <Spinner data-icon="inline-end" /> : null}

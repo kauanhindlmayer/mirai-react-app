@@ -2,11 +2,11 @@
 
 A snapshot of missing/inconsistent React patterns in this codebase, based on grepping actual usage (not generic advice).
 
-1. **No centralized data-access layer** — `src/queries/` only has `organizations.ts` and `work-items.ts`. ~23 other files (boards, tags, sprints, retrospectives, wiki-pages, personas, teams, project/org settings) call `useQuery`/`useMutation` directly in components/pages instead of a shared hook module.
+1. ~~**No centralized data-access layer**~~ — **Resolved.** Every domain now has a `src/queries/<domain>.ts` module (`boards`, `dashboards`, `organizations`, `personas`, `projects`, `retrospectives`, `sprints`, `tags`, `tag-import-jobs`, `teams`, `wiki-pages`, `work-items`) built on `queryOptions()`, and all ~40 call sites across components/pages were migrated off inline `useQuery`/`useMutation`. Enforced going forward by `@tanstack/eslint-plugin-query`'s `prefer-query-options` and `exhaustive-deps` rules (`flat/recommended-strict`) — `pnpm lint` now fails if new code hand-rolls a query instead of using a `queryOptions()`-backed hook.
 
 2. ~~**Zero error-state handling**~~ — **Resolved.** Every page-level query now branches on `isError`/`getErrorMessage` with a retry action (see `f517edc`, `e944a94`).
 
-3. **Duplicated "draft + blur-commit" logic** — the same hand-rolled `useState` + `onBlur → mutate` pattern is reimplemented independently in `work-item-detail-dialog.tsx`, `retrospective-column.tsx`, and `inline-editable-cell.tsx` instead of one shared `useAutosaveField`-style hook.
+3. ~~**Duplicated "draft + blur-commit" logic**~~ — **Resolved** for the two files that actually matched: extracted a shared `useDraftField` hook (`src/hooks/use-draft-field.ts`), now used by `work-item-detail-dialog.tsx` (title/description/acceptanceCriteria/storyPoints/priority) and `inline-editable-cell.tsx`. Correction: `retrospective-column.tsx` doesn't actually share this pattern — it's a react-hook-form "add new item" form that closes on blur-if-empty, not a draft+commit field; the original audit misclassified it.
 
 4. ~~**Hooks named like Context that aren't Context**~~ — **Resolved.** Renamed to `use-current-organization.ts`/`use-current-project.ts`/`use-current-team.ts` (`useCurrentOrganization`/`useCurrentProject`/`useCurrentTeam`) to drop the misleading `-context` suffix; they're still plain re-deriving hooks, just no longer implying shared subtree state.
 
@@ -26,11 +26,11 @@ A snapshot of missing/inconsistent React patterns in this codebase, based on gre
 
 **Do first (cheap + high impact):**
 1. ~~**#2 Zero error-state handling**~~ — done.
-2. **#1 Centralize data-access layer** — now the main remaining item in this tier; still worth doing since 23 files hand-roll `useQuery`/`useMutation` instead of sharing hooks (and the loading/error/staleTime conventions with them).
+2. ~~**#1 Centralize data-access layer**~~ — done.
 3. ~~**#4 Misnamed "-context" hooks**~~ — done.
 
 **Do next (real maintainability payoff, moderate effort):**
-4. **#3 Duplicated draft+blur-commit logic** — isolated, low-risk extraction into one hook.
+4. ~~**#3 Duplicated draft+blur-commit logic**~~ — done.
 5. **#7 Only one error boundary** — natural follow-on once #2 exists; contains blast radius of failures.
 6. **#5 Prop drilling / WorkItemContext** — worth doing, but the dialog works today, so it's cleanup rather than a fix.
 
