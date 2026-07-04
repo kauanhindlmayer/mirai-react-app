@@ -13,6 +13,7 @@ class ResizeObserverStub {
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" })
   window.ResizeObserver ??= ResizeObserverStub
+  Element.prototype.scrollIntoView ??= () => {}
 })
 
 afterEach(() => {
