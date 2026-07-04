@@ -20,7 +20,7 @@ A snapshot of missing/inconsistent React patterns in this codebase, based on gre
 
 9. ~~**Inconsistent form strategy**~~ — **Reconsidered, not a fix.** This entry's premise (work item panel used raw `useState`) is stale: #3 already replaced that with the shared `useDraftField` hook. The remaining "inconsistency" with react-hook-form is intentional — the panel is an always-editable, autosave-per-field-on-blur UI, not a submit-the-whole-form flow, and react-hook-form's submit-oriented model doesn't fit that UX without working against the library. Not planned unless the panel's UX itself changes.
 
-10. **No tests** — **In progress.** Tooling now exists (Vitest + React Testing Library + MSW; see `docs/testing-strategy-plan.md`) and pure-logic coverage landed for `auth-storage.ts`, `lib/utils.ts`, and `api-client.ts`'s interceptor chain (26 tests). Hooks, components, and the work item dialog/board are still untested — the strategy doc's rollout order tracks what's next.
+10. **No tests** — **In progress.** Tooling now exists (Vitest + React Testing Library + MSW; see `docs/testing-strategy-plan.md`). Pure-logic coverage landed for `auth-storage.ts`, `lib/utils.ts`, and `api-client.ts`'s interceptor chain (26 tests), plus hook coverage for `useDraftField`, `useWorkItemContext`, and a representative `queries/` hook end-to-end via MSW (11 more tests). Components and the work item dialog/board are still untested — the strategy doc's rollout order tracks what's next.
 
 ## Suggested priority order
 
