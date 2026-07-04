@@ -79,6 +79,10 @@ Every page-level query branches on `isError` (using `getErrorMessage(error)` fro
 
 `@/*` → `src/*` (configured in both `vite.config.ts` and `tsconfig.app.json`) — always import via `@/...`, never deep-relative paths across domain folders.
 
+## Code Standards
+
+**IMPORTANT**: Follow all coding standards defined in `.claude/rules/code-standards.md`. This includes naming conventions, component structure, state management practices, and styling guidelines.
+
 ## Known gaps / in-flight priorities
 
 `docs/react-patterns-audit.md` tracks a running audit of React-pattern inconsistencies in this codebase (some resolved, some open — check its current state rather than assuming). `docs/github-oauth-sign-in-plan.md` is a not-yet-implemented design doc for GitHub OAuth login; it also documents the current backend auth architecture (Keycloak-brokered JWT, resource-owner-password-credentials grant) that this frontend's `api-client.ts`/`auth-storage.ts` assume.
