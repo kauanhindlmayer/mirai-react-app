@@ -4,8 +4,15 @@ import { cleanup } from "@testing-library/react"
 
 import { server } from "@/test/mocks/server"
 
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" })
+  window.ResizeObserver ??= ResizeObserverStub
 })
 
 afterEach(() => {

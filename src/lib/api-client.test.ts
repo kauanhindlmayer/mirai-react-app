@@ -135,4 +135,20 @@ describe("401 handling", () => {
     expect(getAccessToken()).toBeNull()
     expect(window.location.href).toBe("/login")
   })
+
+  it("does not clear storage or redirect for a 401 from a public path", async () => {
+    server.use(
+      http.post("*/api/users/login", () =>
+        HttpResponse.json(
+          { title: "Authentication with the provided credentials failed." },
+          { status: 401 }
+        )
+      )
+    )
+
+    await expect(
+      post("/users/login", { email: "a@b.com", password: "wrong" })
+    ).rejects.toBeInstanceOf(ApiError)
+    expect(window.location.href).toBe("http://localhost:3000/")
+  })
 })
