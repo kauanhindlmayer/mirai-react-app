@@ -1,9 +1,8 @@
+import axios, { type AxiosError, type AxiosResponse } from "axios"
 import { toast } from "sonner"
 
 import { clearAuthStorage, getAccessToken } from "@/lib/auth-storage"
 import type { ApiErrorResponse } from "@/types/common"
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
 
 const PUBLIC_PATHS = ["/users/login", "/users/register"]
 
@@ -17,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-function resolveErrorMessage(problem: ApiErrorResponse | null): string {
+function resolveErrorMessage(problem: ApiErrorResponse | undefined): string {
   if (!problem) return "Something went wrong."
 
   const validationMessages = Object.values(problem.errors ?? {}).flat()
@@ -26,114 +25,94 @@ function resolveErrorMessage(problem: ApiErrorResponse | null): string {
   return problem.detail ?? problem.title ?? "Something went wrong."
 }
 
-export type RequestConfig = {
-  headers?: Record<string, string>
-  params?: Record<string, string>
-  responseType?: "json" | "blob"
-}
-
-function buildUrl(path: string, params?: Record<string, string>): string {
-  const url = new URL(API_BASE_URL + path)
-  if (params) {
-    for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value)
-    }
-  }
-  return url.toString()
-}
-
 function handleUnauthorized(): void {
   toast.error("Your session has expired. Please log in again.")
   clearAuthStorage()
   window.location.href = "/login"
 }
 
-async function request<T>(
-  method: string,
-  path: string,
-  body?: unknown,
-  config?: RequestConfig
-): Promise<T> {
-  const isFormData = body instanceof FormData
-  const headers: Record<string, string> = { ...config?.headers }
+const client = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+})
 
-  if (!isFormData && body !== undefined) {
-    headers["Content-Type"] = "application/json"
-  }
-
+client.interceptors.request.use((config) => {
   const token = getAccessToken()
-  if (token && !PUBLIC_PATHS.includes(path)) {
-    headers["Authorization"] = `Bearer ${token}`
+  if (token && !PUBLIC_PATHS.includes(config.url ?? "")) {
+    config.headers.set("Authorization", `Bearer ${token}`)
   }
+  return config
+})
 
-  const response = await fetch(buildUrl(path, config?.params), {
-    method,
-    headers,
-    body: isFormData
-      ? body
-      : body !== undefined
-        ? JSON.stringify(body)
-        : undefined,
-  })
+client.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<ApiErrorResponse>) => {
+    if (!error.response) {
+      return Promise.reject(error)
+    }
 
-  if (response.status === 401) {
-    handleUnauthorized()
+    if (error.response.status === 401) {
+      handleUnauthorized()
+    }
+
+    return Promise.reject(
+      new ApiError(resolveErrorMessage(error.response.data), error.response.status)
+    )
   }
+)
 
-  if (!response.ok) {
-    const problem = (await response
-      .json()
-      .catch(() => null)) as ApiErrorResponse | null
-    throw new ApiError(resolveErrorMessage(problem), response.status)
-  }
-
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  if (config?.responseType === "blob") {
-    return (await response.blob()) as T
-  }
-
-  return (await response.json()) as T
+function unwrap<T>(response: AxiosResponse<T>): T {
+  if (response.status === 204) return undefined as T
+  return response.data
 }
 
-export function get<T>(path: string, config?: RequestConfig): Promise<T> {
-  return request<T>("GET", path, undefined, config)
+export type RequestConfig = {
+  headers?: Record<string, string>
+  params?: Record<string, string>
+  responseType?: "json" | "blob"
 }
 
-export function post<T>(
+export async function get<T>(
+  path: string,
+  config?: RequestConfig
+): Promise<T> {
+  return unwrap(await client.get<T>(path, config))
+}
+
+export async function post<T>(
   path: string,
   body?: unknown,
   config?: RequestConfig
 ): Promise<T> {
-  return request<T>("POST", path, body, config)
+  return unwrap(await client.post<T>(path, body, config))
 }
 
-export function put<T>(
+export async function put<T>(
   path: string,
   body?: unknown,
   config?: RequestConfig
 ): Promise<T> {
-  return request<T>("PUT", path, body, config)
+  return unwrap(await client.put<T>(path, body, config))
 }
 
-export function patch<T>(
+export async function patch<T>(
   path: string,
   body?: unknown,
   config?: RequestConfig
 ): Promise<T> {
-  return request<T>("PATCH", path, body, config)
+  return unwrap(await client.patch<T>(path, body, config))
 }
 
-export function del<T>(path: string, config?: RequestConfig): Promise<T> {
-  return request<T>("DELETE", path, undefined, config)
+export async function del<T>(
+  path: string,
+  config?: RequestConfig
+): Promise<T> {
+  return unwrap(await client.delete<T>(path, config))
 }
 
-export function delWithBody<T>(
+export async function delWithBody<T>(
   path: string,
   body: unknown,
   config?: RequestConfig
 ): Promise<T> {
-  return request<T>("DELETE", path, body, config)
+  return unwrap(await client.delete<T>(path, { ...config, data: body }))
 }
