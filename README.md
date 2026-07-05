@@ -1,11 +1,11 @@
 # Mirai
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/kauanhindlmayer/mirai-api)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/kauanhindlmayer/mirai-api)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/kauanhindlmayer/mirai-react-app)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/kauanhindlmayer/mirai-react-app)
 
 Mirai (Japanese word for "future") is a web-based project management tool that aims to help teams collaborate and manage their projects more effectively.
 
-![Mirai screenshot showing the Boards page](https://github.com/kauanhindlmayer/mirai-api/blob/develop/docs/images/boards.png)
+![Mirai screenshot showing the Boards page](https://github.com/kauanhindlmayer/mirai-react-app/blob/develop/docs/images/boards.png)
 
 Key features include:
 
