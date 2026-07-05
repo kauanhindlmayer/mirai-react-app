@@ -3,12 +3,27 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { useOrganizationUsersQuery } from "@/queries/organizations"
 import { useCreateTeamMutation, useTeamsQuery } from "@/queries/teams"
-import { useUpdateProjectMutation } from "@/queries/projects"
+import {
+  useAddUserToProjectMutation,
+  useProjectUsersQuery,
+  useUpdateProjectMutation,
+} from "@/queries/projects"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
+import { getInitials } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import {
   Dialog,
   DialogContent,
@@ -30,6 +45,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
+const MEMBERS_PAGE_SIZE = 10
+
 export default function ProjectSettingsPage() {
   const { projectId, project, isLoading, isError, error, refetch } =
     useCurrentProject()
@@ -43,6 +60,7 @@ export default function ProjectSettingsPage() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
+          <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="github">GitHub</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
@@ -60,6 +78,14 @@ export default function ProjectSettingsPage() {
         </TabsContent>
         <TabsContent value="teams">
           {projectId ? <ProjectTeamsTab projectId={projectId} /> : null}
+        </TabsContent>
+        <TabsContent value="members">
+          {projectId && project ? (
+            <ProjectMembersTab
+              organizationId={project.organizationId}
+              projectId={projectId}
+            />
+          ) : null}
         </TabsContent>
         <TabsContent value="github">
           <div className="flex flex-col items-start gap-2 py-4">
@@ -252,6 +278,163 @@ function CreateTeamForm({
           Create
         </Button>
       </DialogFooter>
+    </>
+  )
+}
+
+function ProjectMembersTab({
+  organizationId,
+  projectId,
+}: {
+  organizationId: string
+  projectId: string
+}) {
+  const [page, setPage] = useState(1)
+
+  const { data, isLoading, isError, error, refetch } = useProjectUsersQuery(
+    organizationId,
+    projectId,
+    "",
+    page,
+    MEMBERS_PAGE_SIZE
+  )
+
+  return (
+    <div className="flex flex-col gap-4 py-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium">Members</h2>
+        <AddProjectMemberDialog
+          organizationId={organizationId}
+          projectId={projectId}
+        />
+      </div>
+      {isError ? (
+        <ErrorState
+          error={error}
+          title="Failed to load members"
+          onRetry={() => refetch()}
+        />
+      ) : isLoading ? (
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ) : data && data.items.length > 0 ? (
+        <ul className="flex flex-col divide-y rounded-md border">
+          {data.items.map((member) => (
+            <li
+              key={member.id}
+              className="flex items-center gap-3 px-4 py-2 text-sm"
+            >
+              <Avatar className="size-7">
+                <AvatarImage src={member.imageUrl} alt={member.fullName} />
+                <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="font-medium">{member.fullName}</span>
+                <span className="text-xs text-muted-foreground">
+                  {member.email}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">No members yet.</p>
+      )}
+
+      {data && data.totalPages > 1 ? (
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!data.hasPreviousPage}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Page {data.page} of {data.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!data.hasNextPage}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function AddProjectMemberDialog({
+  organizationId,
+  projectId,
+}: {
+  organizationId: string
+  projectId: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+
+  const mutation = useAddUserToProjectMutation(organizationId, projectId)
+
+  const { data } = useOrganizationUsersQuery(
+    organizationId,
+    { page: 1, pageSize: 10, sort: "", searchTerm: search },
+    projectId,
+    { enabled: open }
+  )
+
+  function handleSelect(userId: string) {
+    mutation.mutate(userId, { onSuccess: () => setOpen(false) })
+  }
+
+  return (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)}>
+        Add member
+      </Button>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Add member"
+        description="Search organization members to add to this project."
+      >
+        <CommandInput
+          placeholder="Search people..."
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No users found.</CommandEmpty>
+          <CommandGroup>
+            {(data?.items ?? []).map((user) => (
+              <CommandItem
+                key={user.id}
+                disabled={mutation.isPending}
+                onSelect={() => handleSelect(user.id)}
+              >
+                <Avatar className="size-5">
+                  <AvatarImage src={user.imageUrl} alt={user.fullName} />
+                  <AvatarFallback className="text-[0.55rem]">
+                    {getInitials(user.fullName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span>{user.fullName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </>
   )
 }

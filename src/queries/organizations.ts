@@ -34,7 +34,8 @@ export function organizationUsersQueryKey(organizationId: string) {
 export function useOrganizationUsersQuery(
   organizationId: string,
   filters: PaginationFilter,
-  excludeProjectId?: string
+  excludeProjectId?: string,
+  options?: { enabled?: boolean }
 ) {
   return useQuery({
     queryKey: [
@@ -44,7 +45,7 @@ export function useOrganizationUsersQuery(
     ],
     queryFn: () =>
       getOrganizationUsers(organizationId, filters, excludeProjectId),
-    enabled: !!organizationId,
+    enabled: (options?.enabled ?? true) && !!organizationId,
     staleTime: 60_000,
     placeholderData: (previous) => previous,
   })
