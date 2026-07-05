@@ -15,6 +15,12 @@ export type RegisterRequest = {
   hasAcceptedTerms: boolean
 }
 
+export type ResetPasswordRequest = {
+  email: string
+  token: string
+  newPassword: string
+}
+
 export type User = {
   id: string
   email: string

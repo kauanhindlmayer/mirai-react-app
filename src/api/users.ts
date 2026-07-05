@@ -3,6 +3,7 @@ import type {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
+  ResetPasswordRequest,
   User,
 } from "@/types/users"
 
@@ -23,6 +24,14 @@ export function loginWithGitHub(
 
 export function getCurrentUser(): Promise<User> {
   return get("/users/me")
+}
+
+export function forgotPassword(email: string): Promise<void> {
+  return post("/users/forgot-password", { email })
+}
+
+export function resetPassword(request: ResetPasswordRequest): Promise<void> {
+  return post("/users/reset-password", request)
 }
 
 export function updateUserProfile(request: {

@@ -8,6 +8,8 @@ import {
 export default [
   route("login", "./pages/auth/LoginPage.tsx"),
   route("signup", "./pages/auth/SignupPage.tsx"),
+  route("forgot-password", "./pages/auth/ForgotPasswordPage.tsx"),
+  route("reset-password", "./pages/auth/ResetPasswordPage.tsx"),
   route("auth/github/callback", "./pages/auth/GitHubCallbackPage.tsx"),
 
   layout("./components/layout/root-layout.tsx", [

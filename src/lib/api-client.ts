@@ -4,7 +4,13 @@ import { toast } from "sonner"
 import { clearAuthStorage, getAccessToken } from "@/lib/auth-storage"
 import type { ApiErrorResponse } from "@/types/common"
 
-const PUBLIC_PATHS = ["/users/login", "/users/login/github", "/users/register"]
+const PUBLIC_PATHS = [
+  "/users/login",
+  "/users/login/github",
+  "/users/register",
+  "/users/forgot-password",
+  "/users/reset-password",
+]
 
 export class ApiError extends Error {
   status: number

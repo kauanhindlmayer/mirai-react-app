@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
+import { toast } from "sonner"
 
-import { getCurrentUser, loginUser, loginWithGitHub } from "@/api/users"
+import {
+  forgotPassword,
+  getCurrentUser,
+  loginUser,
+  loginWithGitHub,
+  resetPassword,
+} from "@/api/users"
 import {
   clearAuthStorage,
   getStoredUser,
@@ -9,7 +16,8 @@ import {
   setAccessToken,
   setStoredUser,
 } from "@/lib/auth-storage"
-import type { LoginRequest, User } from "@/types/users"
+import { createErrorToastHandler } from "@/lib/query-helpers"
+import type { LoginRequest, ResetPasswordRequest, User } from "@/types/users"
 
 export const CURRENT_USER_QUERY_KEY = ["current-user"]
 
@@ -63,6 +71,26 @@ export function useGitHubLoginMutation() {
     onSuccess: (user) => {
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
       navigate("/")
+    },
+  })
+}
+
+export function useForgotPasswordMutation() {
+  return useMutation({
+    mutationFn: forgotPassword,
+    onError: createErrorToastHandler("Forgot password request failed."),
+  })
+}
+
+export function useResetPasswordMutation() {
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: (request: ResetPasswordRequest) => resetPassword(request),
+    onError: createErrorToastHandler("Password reset failed."),
+    onSuccess: () => {
+      toast.success("Password reset successfully. Please log in.")
+      navigate("/login")
     },
   })
 }
