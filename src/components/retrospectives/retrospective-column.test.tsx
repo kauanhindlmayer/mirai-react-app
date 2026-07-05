@@ -142,4 +142,42 @@ describe("RetrospectiveColumnCard", () => {
     ).not.toBeInTheDocument()
     expect(requestCount).toBe(0)
   })
+
+  it("closes the form on blur when the content is empty", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <RetrospectiveColumnCard
+        retrospectiveId="retro-1"
+        column={buildColumn()}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: /add new item/i }))
+    await user.click(document.body)
+
+    expect(
+      screen.queryByPlaceholderText("Write a feedback item…")
+    ).not.toBeInTheDocument()
+  })
+
+  it("keeps the form open on blur when content has been typed", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <RetrospectiveColumnCard
+        retrospectiveId="retro-1"
+        column={buildColumn()}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: /add new item/i }))
+    await user.type(
+      screen.getByPlaceholderText("Write a feedback item…"),
+      "Great teamwork"
+    )
+    await user.click(document.body)
+
+    expect(
+      screen.getByPlaceholderText("Write a feedback item…")
+    ).toBeInTheDocument()
+  })
 })
