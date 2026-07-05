@@ -37,6 +37,23 @@ describe("GlobalSearch", () => {
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument()
   })
 
+  it("toggles the command dialog with the Cmd+K keyboard shortcut", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<GlobalSearch />, { route: "/organizations" })
+
+    expect(
+      screen.queryByPlaceholderText(SEARCH_PLACEHOLDER)
+    ).not.toBeInTheDocument()
+
+    await user.keyboard("{Meta>}k{/Meta}")
+    expect(screen.getByPlaceholderText(SEARCH_PLACEHOLDER)).toBeInTheDocument()
+
+    await user.keyboard("{Meta>}k{/Meta}")
+    expect(
+      screen.queryByPlaceholderText(SEARCH_PLACEHOLDER)
+    ).not.toBeInTheDocument()
+  })
+
   it("opens the command dialog and lists page items when clicked", async () => {
     const user = userEvent.setup()
     renderWithProviders(<GlobalSearch />, { route: "/organizations" })
@@ -171,6 +188,37 @@ describe("GlobalSearch", () => {
       expect(screen.getByText('Ask: "recent"')).toBeInTheDocument()
     )
     await user.click(screen.getByText('Ask: "recent"'))
+
+    expect(navigate).toHaveBeenCalledWith(
+      "/projects/project-1/wisdom-extractor?q=recent"
+    )
+  })
+
+  it("navigates to the Wisdom Extractor when Enter is pressed with no matching work items", async () => {
+    server.use(
+      http.get("*/api/projects/project-1/work-items", () =>
+        HttpResponse.json({
+          items: [],
+          totalCount: 0,
+          pageSize: 5,
+          page: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          totalPages: 1,
+        })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderInProject()
+
+    await user.click(screen.getByRole("button", { name: /search/i }))
+    const input = screen.getByPlaceholderText(SEARCH_PLACEHOLDER)
+    await user.type(input, "recent")
+    await waitFor(() =>
+      expect(screen.getByText('Ask: "recent"')).toBeInTheDocument()
+    )
+    await user.type(input, "{Enter}")
 
     expect(navigate).toHaveBeenCalledWith(
       "/projects/project-1/wisdom-extractor?q=recent"

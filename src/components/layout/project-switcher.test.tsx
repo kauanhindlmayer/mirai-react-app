@@ -8,14 +8,12 @@ vi.mock("react-router", async (importOriginal) => {
   return { ...actual, useNavigate: vi.fn() }
 })
 vi.mock("@/hooks/use-current-project", () => ({
-  useCurrentProject: () => ({
-    projectId: "project-1",
-    project: { id: "project-1", name: "Mirai", organizationId: "org-1" },
-  }),
+  useCurrentProject: vi.fn(),
 }))
 
 import { useNavigate } from "react-router"
 import { ProjectSwitcher } from "@/components/layout/project-switcher"
+import { useCurrentProject } from "@/hooks/use-current-project"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
@@ -25,6 +23,11 @@ const navigate = vi.fn()
 beforeEach(() => {
   navigate.mockClear()
   vi.mocked(useNavigate).mockReturnValue(navigate)
+  vi.mocked(useCurrentProject).mockReturnValue({
+    projectId: "project-1",
+    project: { id: "project-1", name: "Mirai", organizationId: "org-1" },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any)
   server.use(
     http.get("*/api/organizations/org-1/projects", () =>
       HttpResponse.json([
@@ -80,5 +83,17 @@ describe("ProjectSwitcher", () => {
     expect(
       screen.getByRole("menuitem", { name: /all projects/i })
     ).toHaveAttribute("href", "/organizations/org-1/projects")
+  })
+
+  it("shows a disabled loading state when there is no current project", () => {
+    vi.mocked(useCurrentProject).mockReturnValue({
+      projectId: undefined,
+      project: undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+    renderProjectSwitcher()
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
+    expect(screen.getByRole("button")).toBeDisabled()
   })
 })
