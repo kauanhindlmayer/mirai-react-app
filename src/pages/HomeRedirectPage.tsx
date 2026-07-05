@@ -5,10 +5,10 @@ import { useOrganizationsQuery } from "@/queries/organizations"
 
 export default function HomeRedirectPage() {
   const navigate = useNavigate()
-  const { data: organizations, isSuccess } = useOrganizationsQuery()
+  const { data: organizations, isSuccess, isFetching } = useOrganizationsQuery()
 
   useEffect(() => {
-    if (!isSuccess) return
+    if (!isSuccess || isFetching) return
 
     const firstOrganization = organizations?.[0]
     navigate(
@@ -17,7 +17,7 @@ export default function HomeRedirectPage() {
         : "/organizations",
       { replace: true }
     )
-  }, [isSuccess, organizations, navigate])
+  }, [isSuccess, isFetching, organizations, navigate])
 
   return null
 }

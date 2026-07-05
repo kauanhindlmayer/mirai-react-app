@@ -98,6 +98,16 @@ describe("useBreadcrumbs", () => {
     expect(result.current).toEqual([{ label: "Organizations" }])
   })
 
+  it("does not crash and returns just Organizations for the root path", () => {
+    mockContext({})
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/",
+    })
+
+    expect(result.current).toEqual([{ label: "Organizations" }])
+  })
+
   it("title-cases an unmapped path segment", () => {
     mockContext({ organizationId: "org-1", organization })
 

@@ -23,7 +23,9 @@ const PAGE_LABELS: Record<string, string> = {
   "wisdom-extractor": "Wisdom Extractor",
 }
 
-function labelFor(segment: string): string {
+function labelFor(segment: string | undefined): string {
+  if (!segment) return "Home"
+
   return (
     PAGE_LABELS[segment] ?? segment.charAt(0).toUpperCase() + segment.slice(1)
   )

@@ -10,8 +10,9 @@ vi.mock("react-router", async (importOriginal) => {
 import { useNavigate } from "react-router"
 
 import HomeRedirectPage from "@/pages/HomeRedirectPage"
+import { organizationsQueryKey } from "@/queries/organizations"
 import { server } from "@/test/mocks/server"
-import { renderWithProviders } from "@/test/test-utils"
+import { createTestQueryClient, renderWithProviders } from "@/test/test-utils"
 
 const navigate = vi.fn()
 
@@ -35,6 +36,7 @@ describe("HomeRedirectPage", () => {
         replace: true,
       })
     )
+    expect(navigate).toHaveBeenCalledTimes(1)
   })
 
   it("redirects to the organizations list when there are none", async () => {
@@ -47,5 +49,30 @@ describe("HomeRedirectPage", () => {
         replace: true,
       })
     )
+    expect(navigate).toHaveBeenCalledTimes(1)
+  })
+
+  it("redirects once even when a stale cached organization list from a previous session gets replaced by a background refetch", async () => {
+    server.use(
+      http.get("*/api/organizations", () =>
+        HttpResponse.json([{ id: "org-2", name: "New Org" }])
+      )
+    )
+
+    const queryClient = createTestQueryClient()
+    queryClient.setQueryData(
+      organizationsQueryKey(),
+      [{ id: "org-1", name: "Old Org" }],
+      { updatedAt: Date.now() - 120_000 }
+    )
+
+    renderWithProviders(<HomeRedirectPage />, { queryClient })
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith("/organizations/org-2/projects", {
+        replace: true,
+      })
+    )
+    expect(navigate).toHaveBeenCalledTimes(1)
   })
 })
