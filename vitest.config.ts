@@ -13,5 +13,18 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     execArgv: ["--no-experimental-webstorage"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/components/ui/**",
+        "src/test/**",
+        "src/types/**",
+        "src/main.tsx",
+        "src/routes.ts",
+        "src/vite-env.d.ts",
+        "**/*.test.{ts,tsx}",
+      ],
+    },
   },
 })
