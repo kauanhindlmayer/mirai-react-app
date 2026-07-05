@@ -253,6 +253,7 @@ function InviteUserForm({
       </DialogHeader>
       <form
         id="invite-user-form"
+        noValidate
         onSubmit={form.handleSubmit((values) =>
           mutation.mutate(values, { onSuccess: onDone })
         )}

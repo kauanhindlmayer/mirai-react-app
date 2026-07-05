@@ -123,6 +123,7 @@ export function SignupForm({
     <form
       className={cn("flex flex-col gap-6", className)}
       onSubmit={form.handleSubmit(handleSubmit)}
+      noValidate
       {...props}
     >
       <FieldGroup>
