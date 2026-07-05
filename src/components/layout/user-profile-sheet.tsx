@@ -85,11 +85,15 @@ function ProfileForm({
   })
 
   async function handleSave() {
-    if (firstName !== user.firstName || lastName !== user.lastName) {
-      await profileMutation.mutateAsync({ firstName, lastName })
-    }
-    if (avatarFile) {
-      await avatarMutation.mutateAsync(avatarFile)
+    try {
+      if (firstName !== user.firstName || lastName !== user.lastName) {
+        await profileMutation.mutateAsync({ firstName, lastName })
+      }
+      if (avatarFile) {
+        await avatarMutation.mutateAsync(avatarFile)
+      }
+    } catch {
+      return
     }
     await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY })
     toast.success("Profile updated.")
