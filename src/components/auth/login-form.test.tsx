@@ -38,6 +38,18 @@ describe("LoginForm", () => {
     expect(screen.getByText("Password is required.")).toBeInTheDocument()
   })
 
+  it("shows a validation error for a malformed but non-empty email", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<LoginForm />)
+
+    await user.type(screen.getByLabelText(/email/i), "not-an-email")
+    await user.click(screen.getByRole("button", { name: "Login" }))
+
+    expect(
+      await screen.findByText("Enter a valid email address.")
+    ).toBeInTheDocument()
+  })
+
   it("logs in and navigates home on success", async () => {
     server.use(
       http.post("*/api/users/login", () =>

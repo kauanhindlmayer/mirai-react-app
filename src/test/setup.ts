@@ -14,6 +14,9 @@ beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" })
   window.ResizeObserver ??= ResizeObserverStub
   Element.prototype.scrollIntoView ??= () => {}
+  Element.prototype.hasPointerCapture ??= () => false
+  Element.prototype.setPointerCapture ??= () => {}
+  Element.prototype.releasePointerCapture ??= () => {}
   window.matchMedia ??= (query: string) => ({
     matches: false,
     media: query,

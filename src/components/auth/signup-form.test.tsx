@@ -50,6 +50,18 @@ describe("SignupForm", () => {
     ).toBeInTheDocument()
   })
 
+  it("shows a validation error for a malformed but non-empty email", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<SignupForm />)
+
+    await user.type(screen.getByLabelText(/^email/i), "not-an-email")
+    await user.click(screen.getByRole("button", { name: /create account/i }))
+
+    expect(
+      await screen.findByText("Enter a valid email address.")
+    ).toBeInTheDocument()
+  })
+
   it("shows a mismatch error when passwords don't match", async () => {
     const user = userEvent.setup()
     renderWithProviders(<SignupForm />)
