@@ -16,7 +16,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react"
+import {
+  ChevronsUpDownIcon,
+  BadgeCheckIcon,
+  LogOutIcon,
+  CircleUserRoundIcon,
+} from "lucide-react"
 import { useLogout } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
 import { UserProfileSheet } from "@/components/layout/user-profile-sheet"
@@ -79,7 +84,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
-                <BadgeCheckIcon />
+                <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
             </DropdownMenuGroup>
