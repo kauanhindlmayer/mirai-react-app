@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar"
 import {
   ChevronsUpDownIcon,
-  BadgeCheckIcon,
   LogOutIcon,
   CircleUserRoundIcon,
 } from "lucide-react"
