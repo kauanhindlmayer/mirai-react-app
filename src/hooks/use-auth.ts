@@ -97,9 +97,11 @@ export function useResetPasswordMutation() {
 
 export function useLogout() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   return function logout() {
     clearAuthStorage()
+    queryClient.clear()
     navigate("/login")
   }
 }

@@ -12,4 +12,12 @@ describe("LoginPage", () => {
     expect(screen.getByLabelText("Email")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument()
   })
+
+  it("sets the document title, overriding any stale title from a previous page", () => {
+    document.title = "Boards - Acme - Mirai"
+
+    renderWithProviders(<LoginPage />)
+
+    expect(document.title).toBe("Log in - Mirai")
+  })
 })

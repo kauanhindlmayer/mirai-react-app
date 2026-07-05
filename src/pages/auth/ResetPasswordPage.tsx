@@ -1,11 +1,14 @@
 import { GalleryVerticalEnd } from "lucide-react"
 
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { redirectIfAuthenticated } from "@/lib/auth-middleware"
 
 export const clientMiddleware = [redirectIfAuthenticated]
 
 export default function ResetPasswordPage() {
+  useDocumentTitle("Reset password")
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">

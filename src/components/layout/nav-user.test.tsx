@@ -13,7 +13,7 @@ import { NavUser } from "@/components/layout/nav-user"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
-import { renderWithProviders } from "@/test/test-utils"
+import { createTestQueryClient, renderWithProviders } from "@/test/test-utils"
 
 function buildToken(payload: Record<string, unknown>): string {
   return `header.${btoa(JSON.stringify(payload))}.signature`
@@ -48,11 +48,12 @@ beforeEach(() => {
   vi.mocked(useNavigate).mockReturnValue(navigate)
 })
 
-function renderNavUser() {
+function renderNavUser(queryClient = createTestQueryClient()) {
   return renderWithProviders(
     <SidebarProvider>
       <NavUser user={user} />
-    </SidebarProvider>
+    </SidebarProvider>,
+    { queryClient }
   )
 }
 
@@ -88,6 +89,19 @@ describe("NavUser", () => {
 
     expect(localStorage.getItem("accessToken")).toBeNull()
     expect(navigate).toHaveBeenCalledWith("/login")
+  })
+
+  it("clears the query cache when Log out is clicked", async () => {
+    setAccessToken("token-abc")
+    const queryClient = createTestQueryClient()
+    queryClient.setQueryData(["current-user"], { id: "user-1" })
+    const clickUser = userEvent.setup()
+    renderNavUser(queryClient)
+
+    await clickUser.click(screen.getByText("John Doe"))
+    await clickUser.click(screen.getByRole("menuitem", { name: /log out/i }))
+
+    expect(queryClient.getQueryData(["current-user"])).toBeUndefined()
   })
 
   it("opens the profile sheet when Account is clicked", async () => {
