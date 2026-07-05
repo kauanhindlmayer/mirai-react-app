@@ -1,4 +1,6 @@
+import { http, HttpResponse } from "msw"
 import { describe, expect, it, vi } from "vitest"
+import { waitFor } from "@testing-library/react"
 
 vi.mock("@/hooks/use-current-organization", () => ({
   useCurrentOrganization: vi.fn(),
@@ -10,6 +12,7 @@ vi.mock("@/hooks/use-current-project", () => ({
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs"
+import { server } from "@/test/mocks/server"
 import { renderHookWithProviders } from "@/test/test-utils"
 import type { Organization } from "@/types/organizations"
 import type { Project } from "@/types/projects"
@@ -116,5 +119,50 @@ describe("useBreadcrumbs", () => {
       label: "Project",
       href: "/projects/project-1/summary",
     })
+  })
+
+  it("uses the wiki page's title instead of its id for a wiki page detail route", async () => {
+    mockContext({ projectId: "project-1", project })
+    server.use(
+      http.get("*/api/projects/project-1/wiki-pages/wiki-page-1", () =>
+        HttpResponse.json({
+          id: "wiki-page-1",
+          projectId: "project-1",
+          author: { id: "user-1", name: "John Doe", imageUrl: "" },
+          title: "Getting Started",
+          content: "",
+          comments: [],
+          createdAtUtc: "2026-01-01T00:00:00Z",
+        })
+      )
+    )
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/wiki-pages/wiki-page-1",
+    })
+
+    await waitFor(() =>
+      expect(result.current.at(-1)).toEqual({ label: "Getting Started" })
+    )
+  })
+
+  it("shows a placeholder label while the wiki page title is still loading", () => {
+    mockContext({ projectId: "project-1", project })
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/wiki-pages/wiki-page-1",
+    })
+
+    expect(result.current.at(-1)).toEqual({ label: "Wiki Page" })
+  })
+
+  it("still labels the new-wiki-page route as New rather than fetching a title", () => {
+    mockContext({ projectId: "project-1", project })
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/wiki-pages/new",
+    })
+
+    expect(result.current.at(-1)).toEqual({ label: "New" })
   })
 })

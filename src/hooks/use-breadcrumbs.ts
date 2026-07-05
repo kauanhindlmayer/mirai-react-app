@@ -2,6 +2,7 @@ import { useLocation } from "react-router"
 
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
 import { useCurrentProject } from "@/hooks/use-current-project"
+import { useWikiPageQuery } from "@/queries/wiki-pages"
 
 const PAGE_LABELS: Record<string, string> = {
   projects: "Projects",
@@ -41,13 +42,22 @@ export function useBreadcrumbs(): Breadcrumb[] {
   const segments = location.pathname.split("/").filter(Boolean)
   const lastSegment = segments[segments.length - 1]
 
+  const isWikiPageDetailRoute =
+    segments[segments.length - 2] === "wiki-pages" && lastSegment !== "new"
+  const wikiPageId = isWikiPageDetailRoute ? lastSegment : undefined
+  const { data: wikiPage } = useWikiPageQuery(projectId, wikiPageId)
+
+  const lastSegmentLabel = wikiPageId
+    ? (wikiPage?.title ?? "Wiki Page")
+    : labelFor(lastSegment)
+
   if (projectId) {
     return [
       {
         label: project?.name ?? "Project",
         href: `/projects/${projectId}/summary`,
       },
-      { label: labelFor(lastSegment) },
+      { label: lastSegmentLabel },
     ]
   }
 
