@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getGitHubSignInUrl } from "./github-oauth"
 
@@ -10,6 +10,11 @@ describe("getGitHubSignInUrl", () => {
       configurable: true,
       value: { origin: "http://localhost:5173" },
     })
+    vi.stubEnv(
+      "VITE_KEYCLOAK_ISSUER",
+      "https://keycloak.example.com/realms/mirai"
+    )
+    vi.stubEnv("VITE_KEYCLOAK_CLIENT_ID", "mirai-client")
   })
 
   afterEach(() => {
@@ -17,6 +22,7 @@ describe("getGitHubSignInUrl", () => {
       configurable: true,
       value: originalLocation,
     })
+    vi.unstubAllEnvs()
   })
 
   it("builds a Keycloak authorize URL with the GitHub broker hint and callback redirect", () => {
