@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { screen } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 vi.mock("@/queries/personas", async (importOriginal) => {
@@ -64,5 +64,36 @@ describe("CreatePersonaSheet", () => {
       { name: "Busy Bea", description: "Always in a rush", file },
       expect.objectContaining({ onSuccess: expect.any(Function) })
     )
+  })
+
+  it("closes the sheet when the mutation succeeds", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<CreatePersonaSheet projectId="project-1" />)
+
+    await user.click(screen.getByRole("button", { name: /new persona/i }))
+    await user.type(screen.getByLabelText("Name"), "Busy Bea")
+    await user.click(screen.getByRole("button", { name: "Create" }))
+
+    const onSuccess = mutate.mock.calls[0][1].onSuccess
+    act(() => {
+      onSuccess()
+    })
+
+    expect(screen.queryByText("Create persona")).not.toBeInTheDocument()
+  })
+
+  it("opens the file picker when the avatar is clicked", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<CreatePersonaSheet projectId="project-1" />)
+
+    await user.click(screen.getByRole("button", { name: /new persona/i }))
+    const fileInput = document.body.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement
+    const clickSpy = vi.spyOn(fileInput, "click")
+
+    await user.click(screen.getByRole("button", { name: "" }))
+
+    expect(clickSpy).toHaveBeenCalled()
   })
 })
