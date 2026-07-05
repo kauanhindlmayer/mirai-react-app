@@ -13,6 +13,7 @@ import {
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -327,7 +328,7 @@ function ProjectMembersTab({
               className="flex items-center gap-3 px-4 py-2 text-sm"
             >
               <Avatar className="size-7">
-                <AvatarImage src={member.imageUrl} alt={member.fullName} />
+                <AvatarImage src={getAvatarUrl(member.imageUrl)} alt={member.fullName} />
                 <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
@@ -419,7 +420,7 @@ function AddProjectMemberDialog({
                 onSelect={() => handleSelect(user.id)}
               >
                 <Avatar className="size-5">
-                  <AvatarImage src={user.imageUrl} alt={user.fullName} />
+                  <AvatarImage src={getAvatarUrl(user.imageUrl)} alt={user.fullName} />
                   <AvatarFallback className="text-[0.55rem]">
                     {getInitials(user.fullName)}
                   </AvatarFallback>

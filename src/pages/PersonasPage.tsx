@@ -3,6 +3,7 @@ import { UsersRoundIcon } from "lucide-react"
 
 import { CreatePersonaSheet } from "@/components/personas/create-persona-sheet"
 import { ErrorState } from "@/components/common/error-state"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { usePersonasQuery } from "@/queries/personas"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -44,7 +45,10 @@ export default function PersonasPage() {
             <Card key={persona.id}>
               <CardContent className="flex flex-col items-center gap-3 text-center">
                 <Avatar className="size-16 rounded-lg">
-                  <AvatarImage src={persona.imageUrl} alt={persona.name} />
+                  <AvatarImage
+                    src={getAvatarUrl(persona.imageUrl)}
+                    alt={persona.name}
+                  />
                   <AvatarFallback className="rounded-lg">
                     <UsersRoundIcon className="size-6 text-muted-foreground" />
                   </AvatarFallback>

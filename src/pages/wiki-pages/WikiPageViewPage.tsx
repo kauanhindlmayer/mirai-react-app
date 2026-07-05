@@ -8,6 +8,7 @@ import { WikiPageEditor } from "@/components/wiki-pages/wiki-page-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { useWikiPageQuery } from "@/queries/wiki-pages"
 
@@ -54,7 +55,7 @@ export default function WikiPageViewPage() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Avatar className="size-5">
               <AvatarImage
-                src={wikiPage.author.imageUrl}
+                src={getAvatarUrl(wikiPage.author.imageUrl)}
                 alt={wikiPage.author.name}
               />
               <AvatarFallback>

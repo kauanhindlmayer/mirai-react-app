@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getErrorMessage, getInitials } from "@/lib/utils"
 
 const PAGE_SIZE = 10
@@ -54,7 +55,7 @@ const columns: ColumnDef<OrganizationUserResponse>[] = [
       <div className="flex items-center gap-2">
         <Avatar className="size-7">
           <AvatarImage
-            src={row.original.imageUrl}
+            src={getAvatarUrl(row.original.imageUrl)}
             alt={row.original.fullName}
           />
           <AvatarFallback>{getInitials(row.original.fullName)}</AvatarFallback>

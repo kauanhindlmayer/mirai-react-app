@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react"
 
 import { useCurrentUserQuery } from "@/hooks/use-auth"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import {
   useAddWikiPageCommentMutation,
@@ -105,7 +106,10 @@ function CommentItem({
   return (
     <div className="flex gap-3">
       <Avatar className="size-7">
-        <AvatarImage src={comment.author.imageUrl} alt={comment.author.name} />
+        <AvatarImage
+          src={getAvatarUrl(comment.author.imageUrl)}
+          alt={comment.author.name}
+        />
         <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
       </Avatar>
       <div className="flex flex-1 flex-col gap-1">

@@ -5,6 +5,7 @@ import { useProjectUsersQuery } from "@/queries/projects"
 import { useUpdateWorkItemMutation } from "@/queries/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -59,7 +60,10 @@ export function WorkItemAssigneePicker({
           {assignee ? (
             <>
               <Avatar className="size-6">
-                <AvatarImage src={assignee.imageUrl} alt={assignee.fullName} />
+                <AvatarImage
+                  src={getAvatarUrl(assignee.imageUrl)}
+                  alt={assignee.fullName}
+                />
                 <AvatarFallback className="text-[0.6rem]">
                   {getInitials(assignee.fullName)}
                 </AvatarFallback>
@@ -95,7 +99,10 @@ export function WorkItemAssigneePicker({
               {(data?.items ?? []).map((user) => (
                 <CommandItem key={user.id} onSelect={() => handleSelect(user)}>
                   <Avatar className="size-5">
-                    <AvatarImage src={user.imageUrl} alt={user.fullName} />
+                    <AvatarImage
+                      src={getAvatarUrl(user.imageUrl)}
+                      alt={user.fullName}
+                    />
                     <AvatarFallback className="text-[0.55rem]">
                       {getInitials(user.fullName)}
                     </AvatarFallback>

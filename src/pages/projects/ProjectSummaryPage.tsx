@@ -4,6 +4,7 @@ import { useProjectUsersQuery } from "@/queries/projects"
 import { useWorkItemsStatsQuery } from "@/queries/work-items"
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -124,7 +125,7 @@ export default function ProjectSummaryPage() {
             membersQuery.data.items.map((member) => (
               <div key={member.id} className="flex items-center gap-3">
                 <Avatar className="size-8">
-                  <AvatarImage src={member.imageUrl} alt={member.fullName} />
+                  <AvatarImage src={getAvatarUrl(member.imageUrl)} alt={member.fullName} />
                   <AvatarFallback>
                     {getInitials(member.fullName)}
                   </AvatarFallback>

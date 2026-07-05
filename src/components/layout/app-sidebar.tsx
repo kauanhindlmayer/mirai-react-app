@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useCurrentUserQuery } from "@/hooks/use-auth"
 import { useNavMainItems } from "@/hooks/use-nav-main-items"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { projectId } = useParams<{ projectId?: string }>()
@@ -35,7 +36,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           user={{
             name: user?.fullName ?? "",
             email: user?.email ?? "",
-            avatar: user?.imageUrl ?? "",
+            avatar: getAvatarUrl(user?.imageUrl) ?? "",
           }}
         />
       </SidebarFooter>

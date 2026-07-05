@@ -7,6 +7,7 @@ import {
   useUpdateWorkItemCommentMutation,
 } from "@/queries/work-items"
 import type { Comment } from "@/types/common"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -89,7 +90,10 @@ function CommentItem({
   return (
     <div className="flex gap-3">
       <Avatar className="size-7">
-        <AvatarImage src={comment.author.imageUrl} alt={comment.author.name} />
+        <AvatarImage
+          src={getAvatarUrl(comment.author.imageUrl)}
+          alt={comment.author.name}
+        />
         <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
       </Avatar>
       <div className="flex flex-1 flex-col gap-1">

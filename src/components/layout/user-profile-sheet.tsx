@@ -4,6 +4,7 @@ import { toast } from "sonner"
 
 import { updateAvatar, updateUserProfile } from "@/api/users"
 import { CURRENT_USER_QUERY_KEY, useCurrentUserQuery } from "@/hooks/use-auth"
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import type { User } from "@/types/users"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -121,7 +122,7 @@ function ProfileForm({
           >
             <Avatar className="size-16">
               <AvatarImage
-                src={avatarPreview ?? user.imageUrl}
+                src={avatarPreview ?? getAvatarUrl(user.imageUrl)}
                 alt={user.fullName}
               />
               <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>

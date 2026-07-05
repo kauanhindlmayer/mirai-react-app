@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
+import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { cn, getInitials } from "@/lib/utils"
 import {
   WORK_ITEM_STATUS_COLORS,
@@ -97,7 +98,7 @@ function BoardCardBody({ workItem }: { workItem: BoardWorkItem }) {
           {workItem.assignee ? (
             <Avatar className="size-6">
               <AvatarImage
-                src={workItem.assignee.imageUrl}
+                src={getAvatarUrl(workItem.assignee.imageUrl)}
                 alt={workItem.assignee.name}
                 draggable={false}
               />
