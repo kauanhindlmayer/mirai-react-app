@@ -1,0 +1,125 @@
+import { http, HttpResponse } from "msw"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { Route, Routes } from "react-router"
+
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>()
+  return { ...actual, useNavigate: vi.fn() }
+})
+
+import { useNavigate } from "react-router"
+
+import WikiPageEditPage from "@/pages/wiki-pages/WikiPageEditPage"
+import { server } from "@/test/mocks/server"
+import { renderWithProviders } from "@/test/test-utils"
+import type { WikiPage } from "@/types/wiki-pages"
+
+const navigate = vi.fn()
+
+function buildWikiPage(overrides: Partial<WikiPage> = {}): WikiPage {
+  return {
+    id: "wiki-1",
+    projectId: "project-1",
+    title: "Getting started",
+    content: "<p>Hello</p>",
+    author: { id: "user-1", name: "Jane Doe", imageUrl: "" },
+    comments: [],
+    createdAtUtc: "2026-01-01T00:00:00Z",
+    ...overrides,
+  }
+}
+
+function renderPage() {
+  return renderWithProviders(
+    <Routes>
+      <Route
+        path="/projects/:projectId/wiki-pages/:wikiPageId/edit"
+        element={<WikiPageEditPage />}
+      />
+    </Routes>,
+    { route: "/projects/project-1/wiki-pages/wiki-1/edit" }
+  )
+}
+
+beforeEach(() => {
+  navigate.mockClear()
+  vi.mocked(useNavigate).mockReturnValue(navigate)
+})
+
+describe("WikiPageEditPage", () => {
+  it("pre-fills the title from the loaded wiki page", async () => {
+    server.use(
+      http.get("*/api/projects/project-1/wiki-pages/wiki-1", () =>
+        HttpResponse.json(buildWikiPage())
+      )
+    )
+
+    renderPage()
+
+    expect(
+      await screen.findByDisplayValue("Getting started")
+    ).toBeInTheDocument()
+  })
+
+  it("saves the edited title and navigates back to the view page", async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get("*/api/projects/project-1/wiki-pages/wiki-1", () =>
+        HttpResponse.json(buildWikiPage())
+      ),
+      http.put("*/api/projects/project-1/wiki-pages/wiki-1", () =>
+        HttpResponse.json(null, { status: 204 })
+      )
+    )
+
+    renderPage()
+
+    const titleInput = await screen.findByDisplayValue("Getting started")
+    await user.clear(titleInput)
+    await user.type(titleInput, "Updated title")
+    await user.click(screen.getByRole("button", { name: "Save" }))
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith(
+        "/projects/project-1/wiki-pages/wiki-1"
+      )
+    )
+  })
+
+  it("cancels back to the view page without saving", async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get("*/api/projects/project-1/wiki-pages/wiki-1", () =>
+        HttpResponse.json(buildWikiPage())
+      )
+    )
+
+    renderPage()
+
+    await screen.findByDisplayValue("Getting started")
+    await user.click(screen.getByRole("button", { name: "Cancel" }))
+
+    expect(navigate).toHaveBeenCalledWith(
+      "/projects/project-1/wiki-pages/wiki-1"
+    )
+  })
+
+  it("shows an error state when the wiki page fails to load", async () => {
+    server.use(
+      http.get("*/api/projects/project-1/wiki-pages/wiki-1", () =>
+        HttpResponse.json(
+          { title: "Not found", detail: "Wiki page not found" },
+          { status: 404 }
+        )
+      )
+    )
+
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByText("Failed to load wiki page")).toBeInTheDocument()
+    )
+  })
+})
