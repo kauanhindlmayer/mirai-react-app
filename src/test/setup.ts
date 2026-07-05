@@ -10,6 +10,20 @@ class ResizeObserverStub {
   disconnect() {}
 }
 
+function stubDOMRect(): DOMRect {
+  return {
+    x: 0,
+    y: 0,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    toJSON: () => ({}),
+  }
+}
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" })
   window.ResizeObserver ??= ResizeObserverStub
@@ -17,6 +31,10 @@ beforeAll(() => {
   Element.prototype.hasPointerCapture ??= () => false
   Element.prototype.setPointerCapture ??= () => {}
   Element.prototype.releasePointerCapture ??= () => {}
+  // jsdom has no layout engine, so Range never implements these (needed by
+  // Tiptap/ProseMirror's cursor-position calculations).
+  Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
+  Range.prototype.getBoundingClientRect ??= stubDOMRect
   window.matchMedia ??= (query: string) => ({
     matches: false,
     media: query,
