@@ -14,6 +14,16 @@ beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" })
   window.ResizeObserver ??= ResizeObserverStub
   Element.prototype.scrollIntoView ??= () => {}
+  window.matchMedia ??= (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })
 })
 
 afterEach(() => {
