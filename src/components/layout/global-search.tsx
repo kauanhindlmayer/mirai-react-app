@@ -89,7 +89,7 @@ export function GlobalSearch() {
             {navItems.flatMap((group) =>
               group.items.map((item) => (
                 <CommandItem
-                  key={item.url}
+                  key={`${group.title}-${item.url}`}
                   value={`${group.title} ${item.title}`}
                   onSelect={() => handleNavigate(item.url)}
                 >
