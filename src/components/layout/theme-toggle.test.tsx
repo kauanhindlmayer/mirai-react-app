@@ -50,4 +50,43 @@ describe("ThemeToggle", () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBe("dark")
     expect(document.documentElement.classList.contains("dark")).toBe(true)
   })
+
+  it("selects the light theme", async () => {
+    const user = userEvent.setup()
+    renderThemeToggle()
+
+    await user.click(screen.getByRole("button", { name: "Toggle theme" }))
+    await user.click(screen.getByRole("menuitem", { name: "Light" }))
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("light")
+    expect(document.documentElement.classList.contains("light")).toBe(true)
+  })
+
+  it("selects the system theme", async () => {
+    const user = userEvent.setup()
+    renderThemeToggle()
+
+    await user.click(screen.getByRole("button", { name: "Toggle theme" }))
+    await user.click(screen.getByRole("menuitem", { name: "System" }))
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("system")
+  })
+
+  it("marks the active theme's menu item", async () => {
+    const user = userEvent.setup()
+    renderThemeToggle()
+
+    await user.click(screen.getByRole("button", { name: "Toggle theme" }))
+    await user.click(screen.getByRole("menuitem", { name: "Dark" }))
+    await user.click(screen.getByRole("button", { name: "Toggle theme" }))
+
+    expect(screen.getByRole("menuitem", { name: "Dark" })).toHaveAttribute(
+      "data-active",
+      "true"
+    )
+    expect(screen.getByRole("menuitem", { name: "Light" })).toHaveAttribute(
+      "data-active",
+      "false"
+    )
+  })
 })

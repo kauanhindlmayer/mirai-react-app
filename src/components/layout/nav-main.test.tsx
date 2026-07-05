@@ -55,4 +55,12 @@ describe("NavMain", () => {
 
     expect(screen.getByText("Summary")).toBeInTheDocument()
   })
+
+  it("highlights the sub-item matching the current route", () => {
+    renderNavMain(buildItems(), "/projects/project-1/summary")
+
+    expect(screen.getByRole("link", { name: "Summary" })).toHaveClass(
+      "font-medium"
+    )
+  })
 })

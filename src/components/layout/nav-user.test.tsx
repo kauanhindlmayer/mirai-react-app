@@ -1,3 +1,4 @@
+import { http, HttpResponse } from "msw"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
@@ -11,7 +12,28 @@ import { useNavigate } from "react-router"
 import { NavUser } from "@/components/layout/nav-user"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { setAccessToken } from "@/lib/auth-storage"
+import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
+
+function buildToken(payload: Record<string, unknown>): string {
+  return `header.${btoa(JSON.stringify(payload))}.signature`
+}
+
+function signIn() {
+  setAccessToken(buildToken({ exp: Math.floor(Date.now() / 1000) + 3600 }))
+  server.use(
+    http.get("*/api/users/me", () =>
+      HttpResponse.json({
+        id: "user-1",
+        email: "john@mirai.com",
+        firstName: "John",
+        lastName: "Doe",
+        fullName: "John Doe",
+        imageUrl: "",
+      })
+    )
+  )
+}
 
 const navigate = vi.fn()
 const user = {
@@ -66,5 +88,16 @@ describe("NavUser", () => {
 
     expect(localStorage.getItem("accessToken")).toBeNull()
     expect(navigate).toHaveBeenCalledWith("/login")
+  })
+
+  it("opens the profile sheet when Account is clicked", async () => {
+    signIn()
+    const clickUser = userEvent.setup()
+    renderNavUser()
+
+    await clickUser.click(screen.getByText("John Doe"))
+    await clickUser.click(screen.getByRole("menuitem", { name: /account/i }))
+
+    expect(await screen.findByText("Edit profile")).toBeInTheDocument()
   })
 })
