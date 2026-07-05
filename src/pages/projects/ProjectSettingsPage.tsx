@@ -135,8 +135,13 @@ function ProjectOverviewForm({ project }: { project: Project }) {
 }
 
 function ProjectTeamsTab({ projectId }: { projectId: string }) {
-  const { data: teams = [], isLoading, isError, error, refetch } =
-    useTeamsQuery(projectId)
+  const {
+    data: teams = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useTeamsQuery(projectId)
 
   return (
     <div className="flex flex-col gap-4 py-4">

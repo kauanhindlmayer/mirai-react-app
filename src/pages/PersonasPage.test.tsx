@@ -36,9 +36,7 @@ describe("PersonasPage", () => {
 
   it("shows an empty-state message when there are no personas", async () => {
     server.use(
-      http.get("*/api/projects/project-1/personas", () =>
-        HttpResponse.json([])
-      )
+      http.get("*/api/projects/project-1/personas", () => HttpResponse.json([]))
     )
 
     renderPage("project-1")
@@ -65,9 +63,7 @@ describe("PersonasPage", () => {
     expect(screen.getByText("Something broke")).toBeInTheDocument()
 
     server.use(
-      http.get("*/api/projects/project-1/personas", () =>
-        HttpResponse.json([])
-      )
+      http.get("*/api/projects/project-1/personas", () => HttpResponse.json([]))
     )
     await userEvent.click(screen.getByRole("button", { name: /try again/i }))
 

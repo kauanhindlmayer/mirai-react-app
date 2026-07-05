@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { clearAuthStorage, getAccessToken } from "@/lib/auth-storage"
 import type { ApiErrorResponse } from "@/types/common"
 
-const PUBLIC_PATHS = ["/users/login", "/users/register"]
+const PUBLIC_PATHS = ["/users/login", "/users/login/github", "/users/register"]
 
 export class ApiError extends Error {
   status: number
@@ -56,7 +56,10 @@ client.interceptors.response.use(
     }
 
     return Promise.reject(
-      new ApiError(resolveErrorMessage(error.response.data), error.response.status)
+      new ApiError(
+        resolveErrorMessage(error.response.data),
+        error.response.status
+      )
     )
   }
 )
@@ -72,10 +75,7 @@ export type RequestConfig = {
   responseType?: "json" | "blob"
 }
 
-export async function get<T>(
-  path: string,
-  config?: RequestConfig
-): Promise<T> {
+export async function get<T>(path: string, config?: RequestConfig): Promise<T> {
   return unwrap(await client.get<T>(path, config))
 }
 
@@ -103,10 +103,7 @@ export async function patch<T>(
   return unwrap(await client.patch<T>(path, body, config))
 }
 
-export async function del<T>(
-  path: string,
-  config?: RequestConfig
-): Promise<T> {
+export async function del<T>(path: string, config?: RequestConfig): Promise<T> {
   return unwrap(await client.delete<T>(path, config))
 }
 

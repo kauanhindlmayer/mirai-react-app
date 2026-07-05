@@ -38,10 +38,7 @@ export function workItemQueryKey(projectId: string, workItemId: string) {
   return ["work-item", projectId, workItemId]
 }
 
-export function useWorkItemQuery(
-  projectId: string,
-  workItemId: string | null
-) {
+export function useWorkItemQuery(projectId: string, workItemId: string | null) {
   return useQuery({
     queryKey: workItemQueryKey(projectId, workItemId ?? ""),
     queryFn: () => getWorkItem(projectId, workItemId!),

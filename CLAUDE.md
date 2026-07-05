@@ -86,6 +86,8 @@ Every page-level query branches on `isError` (using `getErrorMessage(error)` fro
 
 **IMPORTANT**: Follow all coding standards defined in `.claude/rules/code-standards.md`. This includes naming conventions, component structure, state management practices, and styling guidelines.
 
+**IMPORTANT**: Follow all testing conventions defined in `.claude/rules/test-standards.md` when writing or updating any `*.test.ts(x)` file. This includes rendering/mocking helpers, MSW usage, and assertion style.
+
 ## Known gaps / in-flight priorities
 
 `docs/react-patterns-audit.md` tracks a running audit of React-pattern inconsistencies in this codebase (some resolved, some open — check its current state rather than assuming). `docs/github-oauth-sign-in-plan.md` is a not-yet-implemented design doc for GitHub OAuth login; it also documents the current backend auth architecture (Keycloak-brokered JWT, resource-owner-password-credentials grant) that this frontend's `api-client.ts`/`auth-storage.ts` assume.

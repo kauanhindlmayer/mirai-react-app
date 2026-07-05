@@ -211,7 +211,9 @@ function QuickAddWorkItem({
                 disabled={createWorkItemMutation.isPending}
                 className="w-full"
               >
-                {createWorkItemMutation.isPending ? <Spinner data-icon="inline-end" /> : null}
+                {createWorkItemMutation.isPending ? (
+                  <Spinner data-icon="inline-end" />
+                ) : null}
                 Add to Top
               </Button>
             </Field>

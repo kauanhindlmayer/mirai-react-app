@@ -64,6 +64,21 @@ describe("get", () => {
       post("/users/login", { email: "a@b.com", password: "pw" })
     ).resolves.toEqual({ authorization: null })
   })
+
+  it("does not attach an Authorization header for the GitHub login exchange", async () => {
+    setAccessToken("my-token")
+    server.use(
+      http.post("*/api/users/login/github", ({ request }) =>
+        HttpResponse.json({
+          authorization: request.headers.get("Authorization"),
+        })
+      )
+    )
+
+    await expect(
+      post("/users/login/github", { code: "abc", redirectUri: "/callback" })
+    ).resolves.toEqual({ authorization: null })
+  })
 })
 
 describe("error handling", () => {

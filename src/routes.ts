@@ -8,6 +8,7 @@ import {
 export default [
   route("login", "./pages/auth/LoginPage.tsx"),
   route("signup", "./pages/auth/SignupPage.tsx"),
+  route("auth/github/callback", "./pages/auth/GitHubCallbackPage.tsx"),
 
   layout("./components/layout/root-layout.tsx", [
     index("./pages/HomeRedirectPage.tsx", { id: "home" }),

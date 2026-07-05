@@ -8,7 +8,10 @@ import { renderWithProviders } from "@/test/test-utils"
 function renderPage(projectId: string) {
   return renderWithProviders(
     <Routes>
-      <Route path="/projects/:projectId/wiki-pages" element={<WikiPagesPage />} />
+      <Route
+        path="/projects/:projectId/wiki-pages"
+        element={<WikiPagesPage />}
+      />
     </Routes>,
     { route: `/projects/${projectId}/wiki-pages` }
   )

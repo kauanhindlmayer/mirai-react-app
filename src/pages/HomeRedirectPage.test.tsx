@@ -38,9 +38,7 @@ describe("HomeRedirectPage", () => {
   })
 
   it("redirects to the organizations list when there are none", async () => {
-    server.use(
-      http.get("*/api/organizations", () => HttpResponse.json([]))
-    )
+    server.use(http.get("*/api/organizations", () => HttpResponse.json([])))
 
     renderWithProviders(<HomeRedirectPage />)
 

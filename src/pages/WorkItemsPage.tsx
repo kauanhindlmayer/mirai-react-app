@@ -9,7 +9,10 @@ import {
 } from "@tanstack/react-table"
 import { toast } from "sonner"
 
-import { useDeleteWorkItemMutation, useWorkItemsQuery } from "@/queries/work-items"
+import {
+  useDeleteWorkItemMutation,
+  useWorkItemsQuery,
+} from "@/queries/work-items"
 import {
   WORK_ITEM_STATUS_COLORS,
   WORK_ITEM_TYPE_COLORS,

@@ -74,9 +74,10 @@ describe("WikiPageViewPage", () => {
     renderPage()
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("link", { name: /edit/i })
-      ).toHaveAttribute("href", "/projects/project-1/wiki-pages/wiki-1/edit")
+      expect(screen.getByRole("link", { name: /edit/i })).toHaveAttribute(
+        "href",
+        "/projects/project-1/wiki-pages/wiki-1/edit"
+      )
     )
   })
 
@@ -93,9 +94,7 @@ describe("WikiPageViewPage", () => {
     renderPage()
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Failed to load wiki page")
-      ).toBeInTheDocument()
+      expect(screen.getByText("Failed to load wiki page")).toBeInTheDocument()
     )
   })
 

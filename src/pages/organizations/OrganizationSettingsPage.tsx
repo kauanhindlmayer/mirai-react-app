@@ -81,10 +81,13 @@ export default function OrganizationSettingsPage() {
   const { organizationId, organization } = useCurrentOrganization()
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError, error, refetch } = useOrganizationUsersQuery(
-    organizationId!,
-    { page, pageSize: PAGE_SIZE, sort: "", searchTerm: "" }
-  )
+  const { data, isLoading, isError, error, refetch } =
+    useOrganizationUsersQuery(organizationId!, {
+      page,
+      pageSize: PAGE_SIZE,
+      sort: "",
+      searchTerm: "",
+    })
 
   const table = useReactTable({
     data: data?.items ?? [],

@@ -37,9 +37,7 @@ describe("OrganizationProjectsPage", () => {
 
     renderWithProviders(<OrganizationProjectsPage />)
 
-    await waitFor(() =>
-      expect(screen.getByText("Website")).toBeInTheDocument()
-    )
+    await waitFor(() => expect(screen.getByText("Website")).toBeInTheDocument())
     expect(screen.getByText("Marketing site")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /website/i })).toHaveAttribute(
       "href",

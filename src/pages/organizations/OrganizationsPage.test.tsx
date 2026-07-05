@@ -18,9 +18,7 @@ describe("OrganizationsPage", () => {
 
     renderWithProviders(<OrganizationsPage />)
 
-    await waitFor(() =>
-      expect(screen.getByText("Mirai")).toBeInTheDocument()
-    )
+    await waitFor(() => expect(screen.getByText("Mirai")).toBeInTheDocument())
     expect(screen.getByText("Project management")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /mirai/i })).toHaveAttribute(
       "href",
@@ -29,9 +27,7 @@ describe("OrganizationsPage", () => {
   })
 
   it("shows an empty-state message when there are no organizations", async () => {
-    server.use(
-      http.get("*/api/organizations", () => HttpResponse.json([]))
-    )
+    server.use(http.get("*/api/organizations", () => HttpResponse.json([])))
 
     renderWithProviders(<OrganizationsPage />)
 
@@ -43,9 +39,7 @@ describe("OrganizationsPage", () => {
   })
 
   it("renders the create-organization trigger", () => {
-    server.use(
-      http.get("*/api/organizations", () => HttpResponse.json([]))
-    )
+    server.use(http.get("*/api/organizations", () => HttpResponse.json([])))
 
     renderWithProviders(<OrganizationsPage />)
 

@@ -14,6 +14,13 @@ export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
   return post("/users/login", credentials)
 }
 
+export function loginWithGitHub(
+  code: string,
+  redirectUri: string
+): Promise<LoginResponse> {
+  return post("/users/login/github", { code, redirectUri })
+}
+
 export function getCurrentUser(): Promise<User> {
   return get("/users/me")
 }
