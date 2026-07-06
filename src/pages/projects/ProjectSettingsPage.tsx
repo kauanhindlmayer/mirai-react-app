@@ -4,7 +4,12 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { useOrganizationUsersQuery } from "@/queries/organizations"
-import { useCreateTeamMutation, useTeamsQuery } from "@/queries/teams"
+import {
+  useAddUserToTeamMutation,
+  useCreateTeamMutation,
+  useTeamMembersQuery,
+  useTeamsQuery,
+} from "@/queries/teams"
 import {
   useAddUserToProjectMutation,
   useProjectUsersQuery,
@@ -13,11 +18,14 @@ import {
 import { ErrorState } from "@/components/common/error-state"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
+import type { Team } from "@/types/teams"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -41,6 +49,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -78,7 +91,12 @@ export default function ProjectSettingsPage() {
           ) : null}
         </TabsContent>
         <TabsContent value="teams">
-          {projectId ? <ProjectTeamsTab projectId={projectId} /> : null}
+          {projectId && project ? (
+            <ProjectTeamsTab
+              organizationId={project.organizationId}
+              projectId={projectId}
+            />
+          ) : null}
         </TabsContent>
         <TabsContent value="members">
           {projectId && project ? (
@@ -161,7 +179,13 @@ function ProjectOverviewForm({ project }: { project: Project }) {
   )
 }
 
-function ProjectTeamsTab({ projectId }: { projectId: string }) {
+function ProjectTeamsTab({
+  organizationId,
+  projectId,
+}: {
+  organizationId: string
+  projectId: string
+}) {
   const {
     data: teams = [],
     isLoading,
@@ -169,6 +193,7 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
     error,
     refetch,
   } = useTeamsQuery(projectId)
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
 
   return (
     <div className="flex flex-col gap-4 py-4">
@@ -190,14 +215,35 @@ function ProjectTeamsTab({ projectId }: { projectId: string }) {
       ) : teams.length > 0 ? (
         <ul className="flex flex-col divide-y rounded-md border">
           {teams.map((team) => (
-            <li key={team.id} className="px-4 py-2 text-sm">
-              {team.name}
+            <li key={team.id}>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-muted"
+                onClick={() => setSelectedTeam(team)}
+              >
+                <span>{team.name}</span>
+                <Badge variant="outline">
+                  {team.memberCount}{" "}
+                  {team.memberCount === 1 ? "member" : "members"}
+                </Badge>
+              </button>
             </li>
           ))}
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground">No teams yet.</p>
       )}
+      {selectedTeam ? (
+        <TeamMembersDialog
+          organizationId={organizationId}
+          projectId={projectId}
+          team={selectedTeam}
+          open={!!selectedTeam}
+          onOpenChange={(open) => {
+            if (!open) setSelectedTeam(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 }
@@ -283,6 +329,179 @@ function CreateTeamForm({
   )
 }
 
+function TeamMembersDialog({
+  organizationId,
+  projectId,
+  team,
+  open,
+  onOpenChange,
+}: {
+  organizationId: string
+  projectId: string
+  team: Team
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const [page, setPage] = useState(1)
+  const { data, isLoading, isError, error, refetch } = useTeamMembersQuery(
+    projectId,
+    team.id,
+    page,
+    MEMBERS_PAGE_SIZE
+  )
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{team.name}</DialogTitle>
+          <DialogDescription>Manage who's on this team.</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">Members</h3>
+            <AddTeamMemberDialog
+              organizationId={organizationId}
+              projectId={projectId}
+              teamId={team.id}
+            />
+          </div>
+          {isError ? (
+            <ErrorState
+              error={error}
+              title="Failed to load team members"
+              onRetry={() => refetch()}
+            />
+          ) : isLoading ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ) : data && data.items.length > 0 ? (
+            <>
+              <ul className="flex flex-col divide-y rounded-md border">
+                {data.items.map((member) => (
+                  <li
+                    key={member.id}
+                    className="flex items-center gap-3 px-4 py-2 text-sm"
+                  >
+                    <Avatar className="size-7">
+                      <AvatarFallback>
+                        {getInitials(member.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{member.name}</span>
+                  </li>
+                ))}
+              </ul>
+              {data.totalPages > 1 ? (
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!data.hasPreviousPage}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Page {data.page} of {data.totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!data.hasNextPage}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">No members yet.</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AddTeamMemberDialog({
+  organizationId,
+  projectId,
+  teamId,
+}: {
+  organizationId: string
+  projectId: string
+  teamId: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+
+  const mutation = useAddUserToTeamMutation(projectId, teamId)
+
+  const { data } = useProjectUsersQuery(
+    organizationId,
+    projectId,
+    search,
+    1,
+    10,
+    { enabled: open }
+  )
+
+  const candidates = data?.items ?? []
+
+  function handleSelect(userId: string) {
+    mutation.mutate(userId, { onSuccess: () => setOpen(false) })
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="sm">Add member</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-0" align="end">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search people..."
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            <CommandEmpty>No users found.</CommandEmpty>
+            <CommandGroup>
+              {candidates.map((user) => (
+                <CommandItem
+                  key={user.id}
+                  disabled={mutation.isPending}
+                  onSelect={() => handleSelect(user.id)}
+                >
+                  <Avatar className="size-5">
+                    <AvatarImage
+                      src={getAvatarUrl(user.imageUrl)}
+                      alt={user.fullName}
+                    />
+                    <AvatarFallback className="text-[0.55rem]">
+                      {getInitials(user.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span>{user.fullName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.email}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 function ProjectMembersTab({
   organizationId,
   projectId,
@@ -328,7 +547,10 @@ function ProjectMembersTab({
               className="flex items-center gap-3 px-4 py-2 text-sm"
             >
               <Avatar className="size-7">
-                <AvatarImage src={getAvatarUrl(member.imageUrl)} alt={member.fullName} />
+                <AvatarImage
+                  src={getAvatarUrl(member.imageUrl)}
+                  alt={member.fullName}
+                />
                 <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
@@ -420,7 +642,10 @@ function AddProjectMemberDialog({
                 onSelect={() => handleSelect(user.id)}
               >
                 <Avatar className="size-5">
-                  <AvatarImage src={getAvatarUrl(user.imageUrl)} alt={user.fullName} />
+                  <AvatarImage
+                    src={getAvatarUrl(user.imageUrl)}
+                    alt={user.fullName}
+                  />
                   <AvatarFallback className="text-[0.55rem]">
                     {getInitials(user.fullName)}
                   </AvatarFallback>
