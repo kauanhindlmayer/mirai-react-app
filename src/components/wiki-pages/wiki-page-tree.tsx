@@ -23,7 +23,6 @@ import {
 } from "@/queries/wiki-pages"
 import type { WikiPageSummary } from "@/types/wiki-pages"
 import {
-  ROOT_DROPPABLE_ID,
   afterDropId,
   beforeDropId,
   buildPageMetaIndex,
@@ -114,7 +113,6 @@ export function WikiPageTree() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <RootDropZone />
         <div className="flex-1 overflow-y-auto">
           {nodes.length > 0 ? (
             <Tree
@@ -146,22 +144,6 @@ export function WikiPageTree() {
           ) : null}
         </DragOverlay>
       </DndContext>
-    </div>
-  )
-}
-
-function RootDropZone() {
-  const { setNodeRef, isOver } = useDroppable({ id: ROOT_DROPPABLE_ID })
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        "rounded border border-dashed px-2 py-1 text-center text-xs text-muted-foreground transition-colors",
-        isOver && "border-primary bg-accent text-foreground"
-      )}
-    >
-      Drop here to move to root
     </div>
   )
 }

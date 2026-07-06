@@ -1,8 +1,6 @@
 import type { TreeNodeData } from "@/components/common/tree"
 import type { WikiPageSummary } from "@/types/wiki-pages"
 
-export const ROOT_DROPPABLE_ID = "__wiki_page_root__"
-
 const BEFORE_PREFIX = "before:"
 const AFTER_PREFIX = "after:"
 const INSIDE_PREFIX = "inside:"
@@ -19,13 +17,12 @@ export function insideDropId(pageId: string): string {
   return `${INSIDE_PREFIX}${pageId}`
 }
 
-export type DropTarget =
-  { type: "root" } | { type: "before" | "after" | "inside"; pageId: string }
+export type DropTarget = {
+  type: "before" | "after" | "inside"
+  pageId: string
+}
 
 export function parseDropTarget(overId: string): DropTarget | undefined {
-  if (overId === ROOT_DROPPABLE_ID) {
-    return { type: "root" }
-  }
   if (overId.startsWith(BEFORE_PREFIX)) {
     return { type: "before", pageId: overId.slice(BEFORE_PREFIX.length) }
   }
@@ -91,7 +88,6 @@ export function isValidDropTarget(
   dropTarget: DropTarget,
   pageMeta: Map<string, PageMeta>
 ): boolean {
-  if (dropTarget.type === "root") return true
   if (dropTarget.pageId === draggedPageId) return false
 
   const draggedMeta = pageMeta.get(draggedPageId)
@@ -110,10 +106,6 @@ export function resolveMoveTarget(
   pages: WikiPageSummary[],
   pageMeta: Map<string, PageMeta>
 ): MoveTarget | undefined {
-  if (dropTarget.type === "root") {
-    return { targetParentId: undefined, targetPosition: pages.length }
-  }
-
   if (dropTarget.type === "inside") {
     const targetPage = findPage(pages, dropTarget.pageId)
     if (!targetPage) return undefined

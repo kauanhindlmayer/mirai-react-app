@@ -53,7 +53,7 @@ export default function WikiPageViewPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">{wikiPage.title}</h1>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Avatar className="size-5">
+            <Avatar size="sm">
               <AvatarImage
                 src={getAvatarUrl(wikiPage.author.imageUrl)}
                 alt={wikiPage.author.name}

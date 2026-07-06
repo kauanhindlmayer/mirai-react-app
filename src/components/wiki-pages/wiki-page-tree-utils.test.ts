@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import type { WikiPageSummary } from "@/types/wiki-pages"
 import {
-  ROOT_DROPPABLE_ID,
   afterDropId,
   beforeDropId,
   buildPageMetaIndex,
@@ -30,10 +29,6 @@ function buildTree(): WikiPageSummary[] {
 }
 
 describe("parseDropTarget", () => {
-  it("recognizes the root drop zone", () => {
-    expect(parseDropTarget(ROOT_DROPPABLE_ID)).toEqual({ type: "root" })
-  })
-
   it("parses before/after/inside ids back to their page id", () => {
     expect(parseDropTarget(beforeDropId("page-1"))).toEqual({
       type: "before",
@@ -93,10 +88,6 @@ describe("findPage", () => {
 describe("isValidDropTarget", () => {
   const pageMeta = buildPageMetaIndex(buildTree())
 
-  it("allows dropping onto the root zone", () => {
-    expect(isValidDropTarget("a1", { type: "root" }, pageMeta)).toBe(true)
-  })
-
   it("rejects dropping a page onto itself", () => {
     expect(
       isValidDropTarget("a", { type: "inside", pageId: "a" }, pageMeta)
@@ -125,13 +116,6 @@ describe("isValidDropTarget", () => {
 describe("resolveMoveTarget", () => {
   const tree = buildTree()
   const pageMeta = buildPageMetaIndex(tree)
-
-  it("moves to the end of the root list when dropped on the root zone", () => {
-    expect(resolveMoveTarget({ type: "root" }, tree, pageMeta)).toEqual({
-      targetParentId: undefined,
-      targetPosition: 3,
-    })
-  })
 
   it("nests as the last child when dropped inside a page", () => {
     expect(
