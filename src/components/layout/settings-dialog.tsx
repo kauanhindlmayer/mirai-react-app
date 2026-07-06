@@ -22,7 +22,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             Update your account settings.
           </DialogDescription>
         </DialogHeader>
-        <AccountSettingsSection />
+        <AccountSettingsSection onSaved={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   )
