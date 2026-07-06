@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import { screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 
 import { NavMain, type NavMainItem } from "@/components/layout/nav-main"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -9,22 +8,16 @@ import { renderWithProviders } from "@/test/test-utils"
 
 function buildItems(): NavMainItem[] {
   return [
-    {
-      title: "Overview",
-      items: [{ title: "Summary", url: "/projects/project-1/summary" }],
-    },
-    {
-      title: "Boards",
-      items: [{ title: "Work Items", url: "/projects/project-1/work-items" }],
-    },
+    { title: "Summary", url: "/projects/project-1/summary" },
+    { title: "Work Items", url: "/projects/project-1/work-items" },
   ]
 }
 
-function renderNavMain(items: NavMainItem[], route = "/") {
+function renderNavMain(items: NavMainItem[], route = "/", title?: string) {
   return renderWithProviders(
     <TooltipProvider>
       <SidebarProvider>
-        <NavMain items={items} />
+        <NavMain title={title} items={items} />
       </SidebarProvider>
     </TooltipProvider>,
     { route }
@@ -32,35 +25,41 @@ function renderNavMain(items: NavMainItem[], route = "/") {
 }
 
 describe("NavMain", () => {
-  it("renders each group's title as a collapsible trigger", () => {
+  it("renders a section title when given one", () => {
+    renderNavMain(buildItems(), "/", "Overview")
+
+    expect(screen.getByText("Overview")).toBeInTheDocument()
+  })
+
+  it("renders no section title when none is given", () => {
     renderNavMain(buildItems())
 
-    expect(screen.getByRole("button", { name: "Overview" })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Boards" })).toBeInTheDocument()
+    expect(screen.queryByText("Overview")).not.toBeInTheDocument()
   })
 
-  it("expands a group to reveal its sub-items when clicked", async () => {
-    const user = userEvent.setup()
+  it("renders each item as a link to its url", () => {
     renderNavMain(buildItems())
 
-    expect(screen.queryByText("Summary")).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "Overview" }))
-
-    expect(screen.getByText("Summary")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Summary" })).toHaveAttribute(
+      "href",
+      "/projects/project-1/summary"
+    )
+    expect(screen.getByRole("link", { name: "Work Items" })).toHaveAttribute(
+      "href",
+      "/projects/project-1/work-items"
+    )
   })
 
-  it("starts a group expanded when the current route matches one of its sub-items", () => {
+  it("marks the item matching the current route as active", () => {
     renderNavMain(buildItems(), "/projects/project-1/summary")
 
-    expect(screen.getByText("Summary")).toBeInTheDocument()
-  })
-
-  it("highlights the sub-item matching the current route", () => {
-    renderNavMain(buildItems(), "/projects/project-1/summary")
-
-    expect(screen.getByRole("link", { name: "Summary" })).toHaveClass(
-      "font-medium"
+    expect(screen.getByRole("link", { name: "Summary" })).toHaveAttribute(
+      "data-active",
+      "true"
+    )
+    expect(screen.getByRole("link", { name: "Work Items" })).toHaveAttribute(
+      "data-active",
+      "false"
     )
   })
 })

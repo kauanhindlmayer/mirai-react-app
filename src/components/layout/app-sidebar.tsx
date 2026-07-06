@@ -13,6 +13,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useCurrentUserQuery } from "@/hooks/use-auth"
 import { useNavMainItems } from "@/hooks/use-nav-main-items"
@@ -20,7 +21,7 @@ import { getAvatarUrl } from "@/lib/get-avatar-url"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { projectId } = useParams<{ projectId?: string }>()
-  const navMainItems = useNavMainItems()
+  const { sections, settingsItems } = useNavMainItems()
   const { data: user } = useCurrentUserQuery()
 
   return (
@@ -29,9 +30,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {projectId ? <ProjectSwitcher /> : <TeamSwitcher />}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMainItems} />
+        {sections.map((section) => (
+          <NavMain
+            key={section.title}
+            title={section.title}
+            items={section.items}
+          />
+        ))}
       </SidebarContent>
       <SidebarFooter>
+        <NavMain items={settingsItems} />
+        <SidebarSeparator className="mx-0" />
         <NavUser
           user={{
             name: user?.fullName ?? "",

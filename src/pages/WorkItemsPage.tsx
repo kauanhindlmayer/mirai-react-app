@@ -36,7 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 15
 
 const columns: ColumnDef<WorkItemSummary>[] = [
   {

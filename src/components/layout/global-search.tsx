@@ -22,7 +22,7 @@ export function GlobalSearch() {
   const [query, setQuery] = useState("")
   const navigate = useNavigate()
   const { projectId } = useParams<{ projectId?: string }>()
-  const navItems = useNavMainItems()
+  const { sections, settingsItems } = useNavMainItems()
 
   const { data } = useWorkItemsSearchQuery(projectId ?? "", query, {
     pageSize: 5,
@@ -86,21 +86,33 @@ export function GlobalSearch() {
               : "Open a project to search work items."}
           </CommandEmpty>
           <CommandGroup heading="Pages">
-            {navItems.flatMap((group) =>
-              group.items.map((item) => (
+            {sections.flatMap((section) =>
+              section.items.map((item) => (
                 <CommandItem
-                  key={`${group.title}-${item.url}`}
-                  value={`${group.title} ${item.title}`}
+                  key={item.url}
+                  value={`${section.title} ${item.title}`}
                   onSelect={() => handleNavigate(item.url)}
                 >
                   {item.icon}
                   <span className="flex-1 truncate">{item.title}</span>
                   <span className="text-xs text-muted-foreground">
-                    {group.title}
+                    {section.title}
                   </span>
                 </CommandItem>
               ))
             )}
+          </CommandGroup>
+          <CommandGroup heading="Settings">
+            {settingsItems.map((item) => (
+              <CommandItem
+                key={item.url}
+                value={item.title}
+                onSelect={() => handleNavigate(item.url)}
+              >
+                {item.icon}
+                <span className="flex-1 truncate">{item.title}</span>
+              </CommandItem>
+            ))}
           </CommandGroup>
           {query.trim() && projectId ? (
             <CommandGroup heading="Work Items">
