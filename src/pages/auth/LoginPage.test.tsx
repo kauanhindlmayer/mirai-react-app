@@ -8,7 +8,7 @@ describe("LoginPage", () => {
   it("renders the brand heading and the login form", () => {
     renderWithProviders(<LoginPage />)
 
-    expect(screen.getByText("Mirai Technologies")).toBeInTheDocument()
+    expect(screen.getByText("Mirai")).toBeInTheDocument()
     expect(screen.getByLabelText("Email")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument()
   })

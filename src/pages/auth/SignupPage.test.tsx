@@ -8,7 +8,7 @@ describe("SignupPage", () => {
   it("renders the brand heading and the signup form", () => {
     renderWithProviders(<SignupPage />)
 
-    expect(screen.getByText("Mirai Technologies")).toBeInTheDocument()
+    expect(screen.getByText("Mirai")).toBeInTheDocument()
     expect(screen.getByLabelText("Email")).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: /create account/i })
