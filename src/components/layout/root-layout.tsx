@@ -3,9 +3,7 @@ import { Outlet, Link } from "react-router"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { GlobalSearch } from "@/components/layout/global-search"
-import { KeyboardShortcutsDialog } from "@/components/layout/keyboard-shortcuts-dialog"
 import { RouteErrorBoundary } from "@/components/layout/route-error-boundary"
-import { ThemeToggle } from "@/components/layout/theme-toggle"
 import {
   SidebarInset,
   SidebarProvider,
@@ -72,8 +70,6 @@ export default function RootLayout() {
             </div>
             <div className="flex items-center gap-2 px-4">
               <GlobalSearch />
-              <KeyboardShortcutsDialog />
-              <ThemeToggle />
             </div>
           </header>
           <div className="flex flex-1 flex-col">

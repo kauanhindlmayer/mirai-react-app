@@ -1,13 +1,18 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -18,12 +23,18 @@ import {
 } from "@/components/ui/sidebar"
 import {
   ChevronsUpDownIcon,
+  CircleHelpIcon,
+  GlobeIcon,
   LogOutIcon,
-  CircleUserRoundIcon,
+  SettingsIcon,
 } from "lucide-react"
 import { useLogout } from "@/hooks/use-auth"
-import { getInitials } from "@/lib/utils"
-import { UserProfileSheet } from "@/components/layout/user-profile-sheet"
+import { getInitials, isEditableTarget } from "@/lib/utils"
+import { AppearanceMenu } from "@/components/layout/appearance-menu"
+import { KeyboardShortcutsDialog } from "@/components/layout/keyboard-shortcuts-dialog"
+import { SettingsDialog } from "@/components/layout/settings-dialog"
+
+const LANGUAGE_OPTIONS = ["English (United States)", "Português (Brasil)"]
 
 export function NavUser({
   user,
@@ -36,7 +47,30 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const logout = useLogout()
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat || isEditableTarget(event.target)) {
+        return
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key === ",") {
+        event.preventDefault()
+        setIsSettingsOpen(true)
+        return
+      }
+
+      if (event.key === "?" && !event.metaKey && !event.ctrlKey) {
+        event.preventDefault()
+        setIsShortcutsOpen(true)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   return (
     <SidebarMenu>
@@ -82,10 +116,44 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
-                <CircleUserRoundIcon />
-                Account
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                <SettingsIcon />
+                Settings
+                <DropdownMenuShortcut>Ctrl+,</DropdownMenuShortcut>
               </DropdownMenuItem>
+              <AppearanceMenu />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <GlobeIcon />
+                  Language
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {LANGUAGE_OPTIONS.map((language) => (
+                    <DropdownMenuCheckboxItem
+                      key={language}
+                      checked={language === LANGUAGE_OPTIONS[0]}
+                      disabled
+                    >
+                      {language}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <CircleHelpIcon />
+                  Learn more
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem disabled>Documentation</DropdownMenuItem>
+                  <DropdownMenuItem disabled>Release notes</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsShortcutsOpen(true)}>
+                    Keyboard shortcuts
+                    <DropdownMenuShortcut>?</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
@@ -95,7 +163,11 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-      <UserProfileSheet open={isProfileOpen} onOpenChange={setIsProfileOpen} />
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+      <KeyboardShortcutsDialog
+        open={isShortcutsOpen}
+        onOpenChange={setIsShortcutsOpen}
+      />
     </SidebarMenu>
   )
 }

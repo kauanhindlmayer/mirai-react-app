@@ -10,7 +10,7 @@ vi.mock("@/api/users", async (importOriginal) => {
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
 
 import { updateAvatar } from "@/api/users"
-import { UserProfileSheet } from "@/components/layout/user-profile-sheet"
+import { AccountSettingsSection } from "@/components/layout/account-settings-section"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
@@ -43,35 +43,25 @@ beforeEach(() => {
   vi.mocked(toast.error).mockClear()
 })
 
-describe("UserProfileSheet", () => {
-  it("renders nothing when closed", () => {
+describe("AccountSettingsSection", () => {
+  it("shows the form pre-filled with the current user's name", async () => {
     signIn()
-    renderWithProviders(
-      <UserProfileSheet open={false} onOpenChange={vi.fn()} />
-    )
+    renderWithProviders(<AccountSettingsSection />)
 
-    expect(screen.queryByText("Edit profile")).not.toBeInTheDocument()
-  })
-
-  it("shows the form pre-filled with the current user's name when open", async () => {
-    signIn()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
-
-    expect(await screen.findByText("Edit profile")).toBeInTheDocument()
-    expect(screen.getByLabelText("First Name")).toHaveValue("John")
+    expect(await screen.findByLabelText("First Name")).toHaveValue("John")
     expect(screen.getByLabelText("Last Name")).toHaveValue("Doe")
   })
 
   it("disables Save until a change is made", async () => {
     signIn()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
+    await screen.findByLabelText("First Name")
 
     expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled()
   })
 
-  it("saves the updated name and closes the sheet", async () => {
+  it("saves the updated name", async () => {
     signIn()
     let requestBody: unknown
     server.use(
@@ -82,13 +72,9 @@ describe("UserProfileSheet", () => {
     )
 
     const user = userEvent.setup()
-    const onOpenChange = vi.fn()
-    renderWithProviders(
-      <UserProfileSheet open={true} onOpenChange={onOpenChange} />
-    )
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
-    const lastNameInput = screen.getByLabelText("Last Name")
+    const lastNameInput = await screen.findByLabelText("Last Name")
     await user.clear(lastNameInput)
     await user.type(lastNameInput, "Smith")
     await user.click(screen.getByRole("button", { name: "Save changes" }))
@@ -96,16 +82,14 @@ describe("UserProfileSheet", () => {
     await waitFor(() =>
       expect(requestBody).toEqual({ firstName: "John", lastName: "Smith" })
     )
-    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
   it("enables Save when the first name is edited", async () => {
     signIn()
     const user = userEvent.setup()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
-    const firstNameInput = screen.getByLabelText("First Name")
+    const firstNameInput = await screen.findByLabelText("First Name")
     await user.clear(firstNameInput)
     await user.type(firstNameInput, "Jonathan")
 
@@ -115,9 +99,9 @@ describe("UserProfileSheet", () => {
   it("opens the file picker when the avatar is clicked", async () => {
     signIn()
     const user = userEvent.setup()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
+    await screen.findByLabelText("First Name")
     const fileInput = document.body.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement
@@ -133,10 +117,9 @@ describe("UserProfileSheet", () => {
     server.use(http.put("*/api/users/profile", () => HttpResponse.error()))
 
     const user = userEvent.setup()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
-    const lastNameInput = screen.getByLabelText("Last Name")
+    const lastNameInput = await screen.findByLabelText("Last Name")
     await user.clear(lastNameInput)
     await user.type(lastNameInput, "Smith")
     await user.click(screen.getByRole("button", { name: "Save changes" }))
@@ -155,9 +138,9 @@ describe("UserProfileSheet", () => {
     vi.mocked(updateAvatar).mockRejectedValueOnce(new Error("Upload failed"))
 
     const user = userEvent.setup()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
+    await screen.findByLabelText("First Name")
     const file = new File(["contents"], "avatar.png", { type: "image/png" })
     const fileInput = document.body.querySelector(
       'input[type="file"]'
@@ -178,9 +161,9 @@ describe("UserProfileSheet", () => {
     URL.createObjectURL = vi.fn(() => "blob:mock-url")
 
     const user = userEvent.setup()
-    renderWithProviders(<UserProfileSheet open={true} onOpenChange={vi.fn()} />)
+    renderWithProviders(<AccountSettingsSection />)
 
-    await screen.findByText("Edit profile")
+    await screen.findByLabelText("First Name")
     const file = new File(["contents"], "avatar.png", { type: "image/png" })
     const fileInput = document.body.querySelector(
       'input[type="file"]'

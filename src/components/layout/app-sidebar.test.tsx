@@ -21,6 +21,7 @@ vi.mock("@/hooks/use-auth", async (importOriginal) => {
 
 import { useCurrentUserQuery } from "@/hooks/use-auth"
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { ThemeProvider } from "@/components/layout/theme-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithProviders } from "@/test/test-utils"
@@ -46,14 +47,19 @@ function mockCurrentUser(
 
 function renderAppSidebar(route: string) {
   return renderWithProviders(
-    <TooltipProvider>
-      <SidebarProvider>
-        <Routes>
-          <Route path="/organizations" element={<AppSidebar />} />
-          <Route path="/projects/:projectId/summary" element={<AppSidebar />} />
-        </Routes>
-      </SidebarProvider>
-    </TooltipProvider>,
+    <ThemeProvider storageKey="app-sidebar-test">
+      <TooltipProvider>
+        <SidebarProvider>
+          <Routes>
+            <Route path="/organizations" element={<AppSidebar />} />
+            <Route
+              path="/projects/:projectId/summary"
+              element={<AppSidebar />}
+            />
+          </Routes>
+        </SidebarProvider>
+      </TooltipProvider>
+    </ThemeProvider>,
     { route }
   )
 }

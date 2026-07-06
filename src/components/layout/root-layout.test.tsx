@@ -8,12 +8,6 @@ vi.mock("@/components/layout/app-sidebar", () => ({
 vi.mock("@/components/layout/global-search", () => ({
   GlobalSearch: () => <p>Global search</p>,
 }))
-vi.mock("@/components/layout/keyboard-shortcuts-dialog", () => ({
-  KeyboardShortcutsDialog: () => <p>Keyboard shortcuts</p>,
-}))
-vi.mock("@/components/layout/theme-toggle", () => ({
-  ThemeToggle: () => <p>Theme toggle</p>,
-}))
 vi.mock("@/hooks/use-current-project", () => ({
   useCurrentProject: () => ({
     projectId: "project-1",
@@ -70,12 +64,10 @@ describe("RootLayout", () => {
     expect(document.title).toBe("Summary - Acme - Mirai")
   })
 
-  it("renders the sidebar, search, and header actions", () => {
+  it("renders the sidebar and search", () => {
     renderRootLayout("/projects/project-1/summary")
 
     expect(screen.getByText("App sidebar")).toBeInTheDocument()
     expect(screen.getByText("Global search")).toBeInTheDocument()
-    expect(screen.getByText("Keyboard shortcuts")).toBeInTheDocument()
-    expect(screen.getByText("Theme toggle")).toBeInTheDocument()
   })
 })

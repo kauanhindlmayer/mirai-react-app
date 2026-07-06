@@ -10,6 +10,7 @@ vi.mock("react-router", async (importOriginal) => {
 
 import { useNavigate } from "react-router"
 import { NavUser } from "@/components/layout/nav-user"
+import { ThemeProvider } from "@/components/layout/theme-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
@@ -44,15 +45,18 @@ const user = {
 
 beforeEach(() => {
   localStorage.clear()
+  document.documentElement.classList.remove("light", "dark")
   navigate.mockClear()
   vi.mocked(useNavigate).mockReturnValue(navigate)
 })
 
 function renderNavUser(queryClient = createTestQueryClient()) {
   return renderWithProviders(
-    <SidebarProvider>
-      <NavUser user={user} />
-    </SidebarProvider>,
+    <ThemeProvider storageKey="nav-user-test">
+      <SidebarProvider>
+        <NavUser user={user} />
+      </SidebarProvider>
+    </ThemeProvider>,
     { queryClient }
   )
 }
@@ -65,18 +69,71 @@ describe("NavUser", () => {
     expect(screen.getByText("john@mirai.com")).toBeInTheDocument()
   })
 
-  it("shows Account and Log out actions in the dropdown", async () => {
+  it("shows Settings and Log out actions in the dropdown", async () => {
     const clickUser = userEvent.setup()
     renderNavUser()
 
     await clickUser.click(screen.getByText("John Doe"))
 
     expect(
-      screen.getByRole("menuitem", { name: /account/i })
+      screen.getByRole("menuitem", { name: /settings/i })
     ).toBeInTheDocument()
     expect(
       screen.getByRole("menuitem", { name: /log out/i })
     ).toBeInTheDocument()
+  })
+
+  it("shows Light, Dark, and System options under the Appearance submenu", async () => {
+    const clickUser = userEvent.setup()
+    renderNavUser()
+
+    await clickUser.click(screen.getByText("John Doe"))
+    await clickUser.click(screen.getByRole("menuitem", { name: /appearance/i }))
+
+    expect(
+      await screen.findByRole("menuitemcheckbox", { name: /light/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("menuitemcheckbox", { name: /dark/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("menuitemcheckbox", { name: /system/i })
+    ).toBeInTheDocument()
+  })
+
+  it("shows disabled language options under the Language submenu", async () => {
+    const clickUser = userEvent.setup()
+    renderNavUser()
+
+    await clickUser.click(screen.getByText("John Doe"))
+    await clickUser.click(screen.getByRole("menuitem", { name: /language/i }))
+
+    const englishOption = await screen.findByRole("menuitemcheckbox", {
+      name: /english/i,
+    })
+    expect(englishOption).toHaveAttribute("data-disabled")
+    expect(englishOption).toHaveAttribute("data-state", "checked")
+    expect(
+      screen.getByRole("menuitemcheckbox", { name: /português/i })
+    ).toHaveAttribute("data-disabled")
+  })
+
+  it("shows disabled stub links and a working shortcuts action under Learn more", async () => {
+    const clickUser = userEvent.setup()
+    renderNavUser()
+
+    await clickUser.click(screen.getByText("John Doe"))
+    await clickUser.click(screen.getByRole("menuitem", { name: /learn more/i }))
+
+    expect(
+      await screen.findByRole("menuitem", { name: /documentation/i })
+    ).toHaveAttribute("data-disabled")
+    expect(
+      screen.getByRole("menuitem", { name: /release notes/i })
+    ).toHaveAttribute("data-disabled")
+    expect(
+      screen.getByRole("menuitem", { name: /keyboard shortcuts/i })
+    ).not.toHaveAttribute("data-disabled")
   })
 
   it("clears auth storage and navigates to login when Log out is clicked", async () => {
@@ -104,14 +161,33 @@ describe("NavUser", () => {
     expect(queryClient.getQueryData(["current-user"])).toBeUndefined()
   })
 
-  it("opens the profile sheet when Account is clicked", async () => {
+  it("opens the settings dialog when Settings is clicked", async () => {
     signIn()
     const clickUser = userEvent.setup()
     renderNavUser()
 
     await clickUser.click(screen.getByText("John Doe"))
-    await clickUser.click(screen.getByRole("menuitem", { name: /account/i }))
+    await clickUser.click(screen.getByRole("menuitem", { name: /settings/i }))
 
-    expect(await screen.findByText("Edit profile")).toBeInTheDocument()
+    expect(await screen.findByLabelText("First Name")).toBeInTheDocument()
+  })
+
+  it("opens the settings dialog on Ctrl+,", async () => {
+    signIn()
+    const user = userEvent.setup()
+    renderNavUser()
+
+    await user.keyboard("{Control>},{/Control}")
+
+    expect(await screen.findByLabelText("First Name")).toBeInTheDocument()
+  })
+
+  it("opens the keyboard shortcuts dialog on ?", async () => {
+    const user = userEvent.setup()
+    renderNavUser()
+
+    await user.keyboard("?")
+
+    expect(await screen.findByText("Open global search")).toBeInTheDocument()
   })
 })

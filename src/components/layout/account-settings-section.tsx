@@ -9,48 +9,26 @@ import { getInitials } from "@/lib/utils"
 import type { User } from "@/types/users"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 
-type UserProfileSheetProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
-
-export function UserProfileSheet({
-  open,
-  onOpenChange,
-}: UserProfileSheetProps) {
+export function AccountSettingsSection() {
   const { data: user } = useCurrentUserQuery()
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
-        {open && user ? (
-          <ProfileForm user={user} onOpenChange={onOpenChange} />
-        ) : null}
-      </SheetContent>
-    </Sheet>
-  )
+  if (!user) {
+    return null
+  }
+
+  return <AccountForm user={user} />
 }
 
-function ProfileForm({
-  user,
-  onOpenChange,
-}: {
-  user: User
-  onOpenChange: (open: boolean) => void
-}) {
+function AccountForm({ user }: { user: User }) {
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -97,7 +75,6 @@ function ProfileForm({
     }
     await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY })
     toast.success("Profile updated.")
-    onOpenChange(false)
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -110,62 +87,52 @@ function ProfileForm({
   const isSaving = profileMutation.isPending || avatarMutation.isPending
 
   return (
-    <>
-      <SheetHeader>
-        <SheetTitle>Edit profile</SheetTitle>
-        <SheetDescription>
-          Update your name and profile picture.
-        </SheetDescription>
-      </SheetHeader>
-      <FieldGroup className="px-4">
-        <Field>
-          <button
-            type="button"
-            className="w-fit cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Avatar className="size-16">
-              <AvatarImage
-                src={avatarPreview ?? getAvatarUrl(user.imageUrl)}
-                alt={user.fullName}
-              />
-              <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
-            </Avatar>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="profile-first-name">First Name</FieldLabel>
-          <Input
-            id="profile-first-name"
-            value={firstName}
-            onChange={(event) => setFirstName(event.target.value)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="profile-last-name">Last Name</FieldLabel>
-          <Input
-            id="profile-last-name"
-            value={lastName}
-            onChange={(event) => setLastName(event.target.value)}
-          />
-        </Field>
-      </FieldGroup>
-      <SheetFooter>
+    <FieldGroup>
+      <FieldDescription>Update your name and profile picture.</FieldDescription>
+      <Field>
+        <button
+          type="button"
+          className="w-fit cursor-pointer"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Avatar className="size-16">
+            <AvatarImage
+              src={avatarPreview ?? getAvatarUrl(user.imageUrl)}
+              alt={user.fullName}
+            />
+            <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+          </Avatar>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="profile-first-name">First Name</FieldLabel>
+        <Input
+          id="profile-first-name"
+          value={firstName}
+          onChange={(event) => setFirstName(event.target.value)}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="profile-last-name">Last Name</FieldLabel>
+        <Input
+          id="profile-last-name"
+          value={lastName}
+          onChange={(event) => setLastName(event.target.value)}
+        />
+      </Field>
+      <Field>
         <Button onClick={handleSave} disabled={!hasUnsavedChanges || isSaving}>
           {isSaving ? <Spinner data-icon="inline-end" /> : null}
           Save changes
         </Button>
-        <SheetClose asChild>
-          <Button variant="outline">Cancel</Button>
-        </SheetClose>
-      </SheetFooter>
-    </>
+      </Field>
+    </FieldGroup>
   )
 }

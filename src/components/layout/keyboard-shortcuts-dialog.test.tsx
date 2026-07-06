@@ -1,27 +1,22 @@
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { KeyboardShortcutsDialog } from "@/components/layout/keyboard-shortcuts-dialog"
 
 describe("KeyboardShortcutsDialog", () => {
-  it("renders a trigger button", () => {
-    render(<KeyboardShortcutsDialog />)
+  it("renders nothing when closed", () => {
+    render(<KeyboardShortcutsDialog open={false} onOpenChange={vi.fn()} />)
 
-    expect(
-      screen.getByRole("button", { name: "Keyboard shortcuts" })
-    ).toBeInTheDocument()
+    expect(screen.queryByText("Keyboard shortcuts")).not.toBeInTheDocument()
   })
 
-  it("lists the available shortcuts when opened", async () => {
-    const user = userEvent.setup()
-    render(<KeyboardShortcutsDialog />)
-
-    await user.click(screen.getByRole("button", { name: "Keyboard shortcuts" }))
+  it("lists the available shortcuts when open", () => {
+    render(<KeyboardShortcutsDialog open={true} onOpenChange={vi.fn()} />)
 
     expect(screen.getByText("Open global search")).toBeInTheDocument()
     expect(screen.getByText("Toggle dark mode")).toBeInTheDocument()
-    expect(screen.getByText("K")).toBeInTheDocument()
-    expect(screen.getByText("D")).toBeInTheDocument()
+    expect(screen.getByText("Toggle sidebar")).toBeInTheDocument()
+    expect(screen.getByText("Open settings")).toBeInTheDocument()
+    expect(screen.getByText("Open keyboard shortcuts")).toBeInTheDocument()
   })
 })

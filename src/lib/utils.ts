@@ -21,3 +21,22 @@ export function getInitials(name?: string): string {
   const lastNameInitial = parts[parts.length - 1][0]
   return (firstNameInitial + lastNameInitial).toUpperCase()
 }
+
+export function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false
+  }
+
+  if (target.isContentEditable) {
+    return true
+  }
+
+  const editableParent = target.closest(
+    "input, textarea, select, [contenteditable='true']"
+  )
+  if (editableParent) {
+    return true
+  }
+
+  return false
+}

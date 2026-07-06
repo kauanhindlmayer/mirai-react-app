@@ -1,31 +1,30 @@
-import { useState } from "react"
-import { KeyboardIcon } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 
 const SHORTCUTS = [
   { keys: ["Ctrl", "K"], description: "Open global search" },
   { keys: ["D"], description: "Toggle dark mode" },
+  { keys: ["Ctrl", "B"], description: "Toggle sidebar" },
+  { keys: ["Ctrl", ","], description: "Open settings" },
+  { keys: ["?"], description: "Open keyboard shortcuts" },
 ]
 
-export function KeyboardShortcutsDialog() {
-  const [open, setOpen] = useState(false)
+type KeyboardShortcutsDialogProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
 
+export function KeyboardShortcutsDialog({
+  open,
+  onOpenChange,
+}: KeyboardShortcutsDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Keyboard shortcuts">
-          <KeyboardIcon />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Keyboard shortcuts</DialogTitle>

@@ -31,7 +31,11 @@ export function NavMain({ title, items }: NavMainProps) {
 
           return (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                isActive={isActive}
+              >
                 <NavLink to={item.url}>
                   {item.icon}
                   <span>{item.title}</span>
