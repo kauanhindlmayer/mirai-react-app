@@ -71,7 +71,7 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm />)
 
     await user.type(screen.getByLabelText(/email/i), "john.doe@mirai.com")
-    await user.type(screen.getByLabelText(/password/i), "Password123")
+    await user.type(screen.getByLabelText("Password"), "Password123")
     await user.click(screen.getByRole("button", { name: "Login" }))
 
     await waitFor(() => expect(navigate).toHaveBeenCalledWith("/"))
@@ -91,7 +91,7 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm />)
 
     await user.type(screen.getByLabelText(/email/i), "john.doe@mirai.com")
-    await user.type(screen.getByLabelText(/password/i), "wrong-password")
+    await user.type(screen.getByLabelText("Password"), "wrong-password")
     await user.click(screen.getByRole("button", { name: "Login" }))
 
     await waitFor(() =>
@@ -100,5 +100,19 @@ describe("LoginForm", () => {
       })
     )
     expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it("toggles the password field's visibility", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<LoginForm />)
+
+    const passwordInput = screen.getByLabelText("Password")
+    expect(passwordInput).toHaveAttribute("type", "password")
+
+    await user.click(screen.getByRole("button", { name: "Show password" }))
+    expect(passwordInput).toHaveAttribute("type", "text")
+
+    await user.click(screen.getByRole("button", { name: "Hide password" }))
+    expect(passwordInput).toHaveAttribute("type", "password")
   })
 })

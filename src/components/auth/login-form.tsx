@@ -19,6 +19,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email address."),
@@ -86,9 +87,8 @@ export function LoginForm({
               Forgot your password?
             </Link>
           </div>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             className="bg-background"
             aria-invalid={!!form.formState.errors.password}
             {...form.register("password")}
