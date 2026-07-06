@@ -1,15 +1,17 @@
 import { useMemo, useState } from "react"
-import { Link, useParams } from "react-router"
+import { Link, useNavigate, useParams } from "react-router"
 import {
   DndContext,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useDraggable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { CSS } from "@dnd-kit/utilities"
 import { FileTextIcon, PlusIcon } from "lucide-react"
 
 import { Tree, type TreeNodeData } from "@/components/common/tree"
@@ -20,21 +22,18 @@ import {
   useWikiPagesQuery,
 } from "@/queries/wiki-pages"
 import type { WikiPageSummary } from "@/types/wiki-pages"
-
-function toTreeNodes(
-  pages: WikiPageSummary[]
-): TreeNodeData<WikiPageSummary>[] {
-  return pages.map((page) => ({
-    id: page.id,
-    data: page,
-    children:
-      page.subPages && page.subPages.length > 0
-        ? toTreeNodes(page.subPages)
-        : undefined,
-  }))
-}
-
-const ROOT_DROPPABLE_ID = "__wiki_page_root__"
+import {
+  ROOT_DROPPABLE_ID,
+  afterDropId,
+  beforeDropId,
+  buildPageMetaIndex,
+  findPage,
+  insideDropId,
+  isValidDropTarget,
+  parseDropTarget,
+  resolveMoveTarget,
+  toTreeNodes,
+} from "@/components/wiki-pages/wiki-page-tree-utils"
 
 export function WikiPageTree() {
   const { projectId, wikiPageId } = useParams<{
@@ -42,10 +41,18 @@ export function WikiPageTree() {
     wikiPageId?: string
   }>()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   const { data: pages = [] } = useWikiPagesQuery(projectId)
 
   const nodes = useMemo(() => toTreeNodes(pages), [pages])
+  const pageMeta = useMemo(() => buildPageMetaIndex(pages), [pages])
+
+  const disabledDropIds = useMemo(() => {
+    if (!activeId) return new Set<string>()
+    const descendantIds = pageMeta.get(activeId)?.descendantIds ?? new Set()
+    return new Set([activeId, ...descendantIds])
+  }, [activeId, pageMeta])
 
   const moveMutation = useMoveWikiPageMutation(projectId!)
 
@@ -65,19 +72,28 @@ export function WikiPageTree() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
 
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(String(event.active.id))
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    setActiveId(null)
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over) return
+
+    const dropTarget = parseDropTarget(String(over.id))
+    if (!dropTarget) return
 
     const pageId = String(active.id)
-    const targetParentId =
-      over.id === ROOT_DROPPABLE_ID ? undefined : String(over.id)
+    if (!isValidDropTarget(pageId, dropTarget, pageMeta)) return
 
-    moveMutation.mutate({
-      wikiPageId: pageId,
-      request: { targetParentId, targetPosition: 0 },
-    })
+    const moveTarget = resolveMoveTarget(dropTarget, pages, pageMeta)
+    if (!moveTarget) return
+
+    moveMutation.mutate({ wikiPageId: pageId, request: moveTarget })
   }
+
+  const activePage = activeId ? findPage(pages, activeId) : undefined
 
   return (
     <div className="flex w-64 shrink-0 flex-col gap-2 border-r p-3">
@@ -92,7 +108,12 @@ export function WikiPageTree() {
           </Link>
         </Button>
       </div>
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         <RootDropZone />
         <div className="flex-1 overflow-y-auto">
           {nodes.length > 0 ? (
@@ -104,6 +125,8 @@ export function WikiPageTree() {
                 <WikiPageTreeLabel
                   node={node}
                   isActive={node.data.id === wikiPageId}
+                  isDropDisabled={disabledDropIds.has(node.data.id)}
+                  isAnyDragActive={activeId !== null}
                   projectId={projectId!}
                 />
               )}
@@ -114,6 +137,14 @@ export function WikiPageTree() {
             </p>
           )}
         </div>
+        <DragOverlay>
+          {activePage ? (
+            <div className="flex items-center gap-1.5 rounded bg-popover px-1.5 py-1 text-sm shadow-lg ring-1 ring-border">
+              <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate">{activePage.title}</span>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   )
@@ -135,49 +166,97 @@ function RootDropZone() {
   )
 }
 
+type WikiPageTreeLabelProps = {
+  node: TreeNodeData<WikiPageSummary>
+  isActive: boolean
+  isDropDisabled: boolean
+  isAnyDragActive: boolean
+  projectId: string
+}
+
 function WikiPageTreeLabel({
   node,
   isActive,
+  isDropDisabled,
+  isAnyDragActive,
   projectId,
-}: {
-  node: TreeNodeData<WikiPageSummary>
-  isActive: boolean
-  projectId: string
-}) {
+}: WikiPageTreeLabelProps) {
+  const navigate = useNavigate()
   const {
     attributes,
     listeners,
     setNodeRef: setDragRef,
-    transform,
     isDragging,
   } = useDraggable({ id: node.id })
-  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: node.id })
+  const { setNodeRef: setBeforeRef, isOver: isBeforeOver } = useDroppable({
+    id: beforeDropId(node.id),
+    disabled: isDropDisabled,
+  })
+  const { setNodeRef: setAfterRef, isOver: isAfterOver } = useDroppable({
+    id: afterDropId(node.id),
+    disabled: isDropDisabled,
+  })
+  const { setNodeRef: setInsideRef, isOver: isInsideOver } = useDroppable({
+    id: insideDropId(node.id),
+    disabled: isDropDisabled,
+  })
+
+  function navigateToPage() {
+    navigate(`/projects/${projectId}/wiki-pages/${node.id}`)
+  }
 
   return (
-    <Link
-      ref={(element) => {
-        setDragRef(element)
-        setDropRef(element)
-      }}
-      to={`/projects/${projectId}/wiki-pages/${node.id}`}
-      draggable={false}
-      onDragStart={(event) => event.preventDefault()}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        touchAction: "none",
-      }}
-      {...attributes}
-      {...listeners}
-      className={cn(
-        "flex flex-1 cursor-grab items-center gap-1.5 truncate rounded px-1.5 py-1 text-sm active:cursor-grabbing",
-        isActive && "bg-accent font-medium",
-        isOver && "bg-accent/70 ring-1 ring-primary",
-        isDragging &&
-          "relative z-10 bg-popover opacity-90 shadow-lg ring-1 ring-border"
-      )}
-    >
-      <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
-      <span className="truncate">{node.data.title}</span>
-    </Link>
+    <div className="relative min-w-0 flex-1">
+      <div
+        ref={setBeforeRef}
+        className={cn(
+          "absolute inset-x-0 top-0 z-10 h-1/3",
+          isAnyDragActive && !isDropDisabled
+            ? "pointer-events-auto"
+            : "pointer-events-none"
+        )}
+      />
+      <div
+        ref={setAfterRef}
+        className={cn(
+          "absolute inset-x-0 bottom-0 z-10 h-1/3",
+          isAnyDragActive && !isDropDisabled
+            ? "pointer-events-auto"
+            : "pointer-events-none"
+        )}
+      />
+      <div
+        ref={(element) => {
+          setDragRef(element)
+          setInsideRef(element)
+        }}
+        draggable={false}
+        onDragStart={(event) => event.preventDefault()}
+        onClick={navigateToPage}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault()
+            navigateToPage()
+          }
+        }}
+        {...attributes}
+        {...listeners}
+        className={cn(
+          "flex min-w-0 flex-1 cursor-grab items-center gap-1.5 rounded px-1.5 py-1 text-sm active:cursor-grabbing",
+          isActive && "bg-accent font-medium",
+          isInsideOver && !isDropDisabled && "bg-accent/70 ring-1 ring-primary",
+          isDragging && "opacity-40"
+        )}
+      >
+        <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1 truncate">{node.data.title}</span>
+      </div>
+      {isBeforeOver && !isDropDisabled ? (
+        <div className="pointer-events-none absolute inset-x-1.5 top-0 z-20 h-0.5 rounded-full bg-primary" />
+      ) : null}
+      {isAfterOver && !isDropDisabled ? (
+        <div className="pointer-events-none absolute inset-x-1.5 bottom-0 z-20 h-0.5 rounded-full bg-primary" />
+      ) : null}
+    </div>
   )
 }

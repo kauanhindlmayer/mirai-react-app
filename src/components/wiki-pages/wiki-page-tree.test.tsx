@@ -1,13 +1,25 @@
 import { http, HttpResponse } from "msw"
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { Route, Routes } from "react-router"
 
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>()
+  return { ...actual, useNavigate: vi.fn() }
+})
+
+import { Route, Routes, useNavigate } from "react-router"
 import { WikiPageTree } from "@/components/wiki-pages/wiki-page-tree"
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
 import type { WikiPageSummary } from "@/types/wiki-pages"
+
+const navigate = vi.fn()
+
+beforeEach(() => {
+  navigate.mockClear()
+  vi.mocked(useNavigate).mockReturnValue(navigate)
+})
 
 function buildPage(overrides: Partial<WikiPageSummary> = {}): WikiPageSummary {
   return {
@@ -50,14 +62,29 @@ describe("WikiPageTree", () => {
     expect(await screen.findByText("No wiki pages yet.")).toBeInTheDocument()
   })
 
-  it("renders top-level pages as links into the project's wiki", async () => {
+  it("renders top-level pages as rows and navigates on click", async () => {
     mockPages([buildPage()])
     renderWikiPageTree()
 
-    const link = await screen.findByRole("button", { name: "Getting Started" })
-    expect(link.tagName).toBe("A")
-    expect(link).toHaveAttribute(
-      "href",
+    const row = await screen.findByRole("button", { name: "Getting Started" })
+    const user = userEvent.setup()
+    await user.click(row)
+
+    expect(navigate).toHaveBeenCalledWith(
+      "/projects/project-1/wiki-pages/page-1"
+    )
+  })
+
+  it("navigates when the row is activated with the keyboard", async () => {
+    mockPages([buildPage()])
+    renderWikiPageTree()
+
+    const row = await screen.findByRole("button", { name: "Getting Started" })
+    row.focus()
+    const user = userEvent.setup()
+    await user.keyboard("{Enter}")
+
+    expect(navigate).toHaveBeenCalledWith(
       "/projects/project-1/wiki-pages/page-1"
     )
   })
@@ -94,7 +121,7 @@ describe("WikiPageTree", () => {
     mockPages([buildPage()])
     renderWikiPageTree("/projects/project-1/wiki-pages/page-1")
 
-    const link = await screen.findByRole("button", { name: "Getting Started" })
-    expect(link.className).toContain("bg-accent")
+    const row = await screen.findByRole("button", { name: "Getting Started" })
+    expect(row.className).toContain("bg-accent")
   })
 })
