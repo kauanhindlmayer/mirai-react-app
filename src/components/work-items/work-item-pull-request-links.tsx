@@ -17,6 +17,7 @@ import {
   type WorkItemPullRequestLink,
 } from "@/types/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useSignalR } from "@/hooks/use-signalr"
 import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Badge } from "@/components/ui/badge"
@@ -121,13 +122,14 @@ function AddPullRequestLinkPopover({
   const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search)
   const createLink = useLinkPullRequestToWorkItemMutation(projectId, workItemId)
 
   const { data: pullRequests } = useGitHubPullRequestsSearchQuery(
     organizationId,
     projectId,
-    search,
-    { enabled: open && search.trim().length > 0 }
+    debouncedSearch,
+    { enabled: open && debouncedSearch.trim().length > 0 }
   )
 
   function handleSelect(pullRequestNumber: number) {
