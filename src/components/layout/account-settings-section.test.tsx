@@ -175,4 +175,22 @@ describe("AccountSettingsSection", () => {
     await waitFor(() => expect(updateAvatar).toHaveBeenCalled())
     expect(vi.mocked(updateAvatar).mock.calls[0][0]).toBe(file)
   })
+
+  it("calls onSaved after a successful save", async () => {
+    signIn()
+    server.use(
+      http.put("*/api/users/profile", () => new HttpResponse(null, { status: 204 }))
+    )
+    const onSaved = vi.fn()
+
+    const user = userEvent.setup()
+    renderWithProviders(<AccountSettingsSection onSaved={onSaved} />)
+
+    const lastNameInput = await screen.findByLabelText("Last Name")
+    await user.clear(lastNameInput)
+    await user.type(lastNameInput, "Smith")
+    await user.click(screen.getByRole("button", { name: "Save changes" }))
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled())
+  })
 })

@@ -17,6 +17,7 @@ export type WorkItem = {
   attachments: WorkItemAttachment[]
   outgoingLinks: WorkItemLink[]
   incomingLinks: WorkItemLink[]
+  pullRequestLinks: WorkItemPullRequestLink[]
   assigneeId?: string
   assignee?: AssigneeResponse
   createdAtUtc: string
@@ -153,4 +154,36 @@ export type WorkItemAttachment = {
   fileSizeBytes: number
   authorId: string
   createdAtUtc: string
+}
+
+export const PullRequestLinkState = {
+  Open: "Open",
+  Merged: "Merged",
+  Closed: "Closed",
+} as const
+
+export type PullRequestLinkState =
+  (typeof PullRequestLinkState)[keyof typeof PullRequestLinkState]
+
+export const PullRequestLinkSource = {
+  Automatic: "Automatic",
+  Manual: "Manual",
+} as const
+
+export type PullRequestLinkSource =
+  (typeof PullRequestLinkSource)[keyof typeof PullRequestLinkSource]
+
+export type WorkItemPullRequestLink = {
+  id: string
+  pullRequestNumber: number
+  title: string
+  htmlUrl: string
+  state: PullRequestLinkState
+  authorLogin?: string
+  source: PullRequestLinkSource
+  linkedAtUtc: string
+}
+
+export type LinkPullRequestRequest = {
+  pullRequestNumber: number
 }

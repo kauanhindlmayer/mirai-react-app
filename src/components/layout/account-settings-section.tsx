@@ -18,17 +18,28 @@ import {
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
-export function AccountSettingsSection() {
+type AccountSettingsSectionProps = {
+  onSaved?: () => void
+}
+
+export function AccountSettingsSection({
+  onSaved,
+}: AccountSettingsSectionProps) {
   const { data: user } = useCurrentUserQuery()
 
   if (!user) {
     return null
   }
 
-  return <AccountForm user={user} />
+  return <AccountForm user={user} onSaved={onSaved} />
 }
 
-function AccountForm({ user }: { user: User }) {
+type AccountFormProps = {
+  user: User
+  onSaved?: () => void
+}
+
+function AccountForm({ user, onSaved }: AccountFormProps) {
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -75,6 +86,7 @@ function AccountForm({ user }: { user: User }) {
     }
     await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY })
     toast.success("Profile updated.")
+    onSaved?.()
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {

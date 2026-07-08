@@ -1,9 +1,11 @@
 import { get, post } from "@/lib/api-client"
+import type { PaginatedList } from "@/types/common"
 import type {
   BacklogLevel,
   BacklogResponse,
   CreateTeamRequest,
   Team,
+  TeamMember,
 } from "@/types/teams"
 
 export function createTeam(
@@ -15,6 +17,25 @@ export function createTeam(
 
 export function listTeams(projectId: string): Promise<Team[]> {
   return get(`/projects/${projectId}/teams`)
+}
+
+export function getTeamMembers(
+  projectId: string,
+  teamId: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<PaginatedList<TeamMember>> {
+  return get(`/projects/${projectId}/teams/${teamId}/members`, {
+    params: { page: page.toString(), pageSize: pageSize.toString() },
+  })
+}
+
+export function addUserToTeam(
+  projectId: string,
+  teamId: string,
+  userId: string
+): Promise<void> {
+  return post(`/projects/${projectId}/teams/${teamId}/members`, { userId })
 }
 
 export function getBacklog(

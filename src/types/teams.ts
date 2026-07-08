@@ -12,6 +12,11 @@ export type Team = {
   memberCount: number
 }
 
+export type TeamMember = {
+  id: string
+  name: string
+}
+
 export type BacklogResponse = {
   id: string
   code: number
