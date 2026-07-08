@@ -1,6 +1,6 @@
 # Test Standards
 
-See `docs/testing-strategy-plan.md` for the full framework rationale and rollout tracking. This file covers the conventions to follow when writing a new test.
+This file covers the conventions to follow when writing a new test.
 
 ## Stack
 
@@ -57,5 +57,5 @@ See `docs/testing-strategy-plan.md` for the full framework rationale and rollout
 ## What not to do
 
 - Don't test the `components/ui/` shadcn primitives themselves — they're generated code, exempt like elsewhere in this codebase.
-- Don't chase coverage on `@dnd-kit` drag interactions or the large `work-item-detail-dialog.tsx` before simpler, isolated components are covered — expensive to simulate credibly for low marginal value at a low-baseline stage (see `docs/testing-strategy-plan.md`'s rollout order).
+- Don't chase coverage on `@dnd-kit` drag interactions or the large `work-item-detail-dialog.tsx` before simpler, isolated components are covered — expensive to simulate credibly for low marginal value at a low-baseline stage.
 - Don't add a loading-skeleton assertion for a query using `placeholderData` — `isLoading` is `false` from the first render in that case (TanStack Query treats placeholder data as an immediate `success` status), so that branch is unreachable and asserting it is testing dead code.

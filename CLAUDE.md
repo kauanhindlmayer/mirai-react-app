@@ -20,7 +20,7 @@ pnpm test:watch     # vitest (interactive)
 pnpm test:coverage  # vitest run --coverage
 ```
 
-Test tooling (Vitest + React Testing Library + MSW) is new and coverage is still sparse — see `docs/testing-strategy-plan.md` for the framework rationale, conventions (co-located `*.test.ts(x)`, no `test.globals`, `src/test/test-utils.tsx`'s `renderWithProviders`, MSW handlers in `src/test/mocks/`), and the rollout order for what to test next. Don't assume a given file has tests just because the tooling exists — check first.
+Test tooling (Vitest + React Testing Library + MSW) is new and coverage is still sparse — see `.claude/rules/test-standards.md` for conventions (co-located `*.test.ts(x)`, no `test.globals`, `src/test/test-utils.tsx`'s `renderWithProviders`, MSW handlers in `src/test/mocks/`). Don't assume a given file has tests just because the tooling exists — check first.
 
 Style: no semicolons, double quotes, 80-col width, Tailwind class sorting via `prettier-plugin-tailwindcss` (see `.prettierrc`). Always run `pnpm typecheck` and `pnpm lint` after non-trivial changes — both must be clean (lint has zero tolerance for errors; a handful of pre-existing `react-hooks/incompatible-library`/`react-refresh` warnings are expected and fine).
 
@@ -36,7 +36,7 @@ The work item detail view is a modal, not a route: `WorkItemDetailDialog` mounts
 
 ### Data flow: `api/` → `queries/` → components/pages
 
-Three parallel layers, one file per domain in each, with matching names (`boards`, `dashboards`, `organizations`, `personas`, `projects`, `retrospectives`, `sprints`, `tags`, `tag-import-jobs`, `teams`, `wiki-pages`, `work-items`, plus `users`/`wisdom-extractor`):
+Three parallel layers, one file per domain in each, with matching names (`boards`, `dashboards`, `organizations`, `personas`, `projects`, `retrospectives`, `sprints`, `tags`, `tag-import-jobs`, `teams`, `wiki-pages`, `wisdom-extractor`, `work-items`, plus `users`):
 
 - **`src/api/<domain>.ts`** — thin functions calling `get`/`post`/`put`/`patch`/`del`/`delWithBody` from `src/lib/api-client.ts`. No React/query code here, just HTTP calls typed against `src/types/<domain>.ts`.
 - **`src/queries/<domain>.ts`** — the only place components should call `useQuery`/`useMutation`. **Deliberately plain**, not wrapped in TanStack's `queryOptions()` — a query-key-factory helper + inline `useQuery`/`useMutation` call is enough; don't reintroduce a `queryOptions()`/`xOptions()` indirection layer. Two naming conventions to follow exactly:
@@ -90,4 +90,4 @@ Every page-level query branches on `isError` (using `getErrorMessage(error)` fro
 
 ## Known gaps / in-flight priorities
 
-`docs/react-patterns-audit.md` tracks a running audit of React-pattern inconsistencies in this codebase (some resolved, some open — check its current state rather than assuming). `docs/github-oauth-sign-in-plan.md` is a not-yet-implemented design doc for GitHub OAuth login; it also documents the current backend auth architecture (Keycloak-brokered JWT, resource-owner-password-credentials grant) that this frontend's `api-client.ts`/`auth-storage.ts` assume.
+GitHub OAuth login is not yet implemented. The current backend auth architecture (Keycloak-brokered JWT, resource-owner-password-credentials grant) that this frontend's `api-client.ts`/`auth-storage.ts` assume would need to be revisited as part of that work.
