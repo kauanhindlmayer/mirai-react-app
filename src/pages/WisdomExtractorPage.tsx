@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useMutation } from "@tanstack/react-query"
 import { SendIcon, SparklesIcon } from "lucide-react"
-import { toast } from "sonner"
 
-import { extractWisdom } from "@/api/wisdom-extractor"
+import { useExtractWisdomMutation } from "@/queries/wisdom-extractor"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,15 +19,7 @@ export default function WisdomExtractorPage() {
   const [question, setQuestion] = useState(initialQuestion)
   const autoAskedRef = useRef(false)
 
-  const mutation = useMutation({
-    mutationFn: (q: string) => extractWisdom(projectId!, q),
-    onError: (error) => {
-      toast.error("Failed to extract wisdom.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-  })
+  const mutation = useExtractWisdomMutation(projectId!)
 
   const askedQuestion = mutation.variables ?? ""
 
