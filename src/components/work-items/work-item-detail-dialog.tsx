@@ -22,6 +22,7 @@ import {
   WorkItemProvider,
 } from "@/components/work-items/work-item-context"
 import { WorkItemLinks } from "@/components/work-items/work-item-links"
+import { WorkItemPullRequestLinks } from "@/components/work-items/work-item-pull-request-links"
 import { WorkItemTagsEditor } from "@/components/work-items/work-item-tags-editor"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -250,6 +251,15 @@ function WorkItemDetailContent({
               <WorkItemLinks
                 outgoingLinks={workItem.outgoingLinks}
                 incomingLinks={workItem.incomingLinks}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="flex flex-col gap-2">
+              <Label>Pull requests</Label>
+              <WorkItemPullRequestLinks
+                pullRequestLinks={workItem.pullRequestLinks}
               />
             </div>
 

@@ -12,7 +12,9 @@ import {
   deleteWorkItemLink,
   getWorkItem,
   getWorkItemsStats,
+  linkPullRequestToWorkItem,
   listWorkItems,
+  removePullRequestLink,
   removeTagFromWorkItem,
   updateWorkItem,
   updateWorkItemComment,
@@ -27,6 +29,7 @@ import type {
 import type {
   CreateWorkItemLinkRequest,
   CreateWorkItemRequest,
+  LinkPullRequestRequest,
   WorkItem,
 } from "@/types/work-items"
 
@@ -259,6 +262,32 @@ export function useDeleteWorkItemLinkMutation(
     mutationFn: (linkId: string) =>
       deleteWorkItemLink(projectId, workItemId, linkId),
     onError: createErrorToastHandler("Failed to remove link."),
+    onSuccess: invalidate,
+  })
+}
+
+export function useLinkPullRequestToWorkItemMutation(
+  projectId: string,
+  workItemId: string
+) {
+  const invalidate = useInvalidateWorkItem(projectId, workItemId)
+  return useMutation({
+    mutationFn: (request: LinkPullRequestRequest) =>
+      linkPullRequestToWorkItem(projectId, workItemId, request),
+    onError: createErrorToastHandler("Failed to link pull request."),
+    onSuccess: invalidate,
+  })
+}
+
+export function useRemovePullRequestLinkMutation(
+  projectId: string,
+  workItemId: string
+) {
+  const invalidate = useInvalidateWorkItem(projectId, workItemId)
+  return useMutation({
+    mutationFn: (linkId: string) =>
+      removePullRequestLink(projectId, workItemId, linkId),
+    onError: createErrorToastHandler("Failed to remove pull request link."),
     onSuccess: invalidate,
   })
 }

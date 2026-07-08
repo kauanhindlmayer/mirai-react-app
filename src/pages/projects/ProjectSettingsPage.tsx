@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useSearchParams } from "react-router"
 import { z } from "zod"
 
 import { useOrganizationUsersQuery } from "@/queries/organizations"
@@ -16,6 +17,7 @@ import {
   useUpdateProjectMutation,
 } from "@/queries/projects"
 import { ErrorState } from "@/components/common/error-state"
+import { ProjectGitHubTab } from "@/components/projects/project-github-tab"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { Project } from "@/types/projects"
 import type { Team } from "@/types/teams"
@@ -64,13 +66,15 @@ const MEMBERS_PAGE_SIZE = 10
 export default function ProjectSettingsPage() {
   const { projectId, project, isLoading, isError, error, refetch } =
     useCurrentProject()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = searchParams.get("tab") ?? "overview"
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <h1 className="text-xl font-semibold">
         {project?.name ?? "Project"} — Settings
       </h1>
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={(tab) => setSearchParams({ tab })}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -107,14 +111,13 @@ export default function ProjectSettingsPage() {
           ) : null}
         </TabsContent>
         <TabsContent value="github">
-          <div className="flex flex-col items-start gap-2 py-4">
-            <p className="text-sm text-muted-foreground">
-              Connect this project to a GitHub repository.
-            </p>
-            <Button variant="outline" disabled>
-              Connect your GitHub Account
-            </Button>
-          </div>
+          {projectId && project ? (
+            <ProjectGitHubTab
+              organizationId={project.organizationId}
+              projectId={projectId}
+              connection={project.gitHubRepositoryConnection}
+            />
+          ) : null}
         </TabsContent>
       </Tabs>
     </div>

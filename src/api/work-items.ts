@@ -8,6 +8,7 @@ import type {
 import type {
   CreateWorkItemLinkRequest,
   CreateWorkItemRequest,
+  LinkPullRequestRequest,
   WorkItem,
   WorkItemsStats,
   WorkItemSummary,
@@ -132,6 +133,27 @@ export function deleteWorkItemLink(
   linkId: string
 ): Promise<void> {
   return del(`/projects/${projectId}/work-items/${workItemId}/links/${linkId}`)
+}
+
+export function linkPullRequestToWorkItem(
+  projectId: string,
+  workItemId: string,
+  request: LinkPullRequestRequest
+): Promise<string> {
+  return post(
+    `/projects/${projectId}/work-items/${workItemId}/pull-request-links`,
+    request
+  )
+}
+
+export function removePullRequestLink(
+  projectId: string,
+  workItemId: string,
+  linkId: string
+): Promise<void> {
+  return del(
+    `/projects/${projectId}/work-items/${workItemId}/pull-request-links/${linkId}`
+  )
 }
 
 export function uploadWorkItemAttachment(

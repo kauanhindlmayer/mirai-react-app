@@ -11,6 +11,10 @@ export default [
   route("forgot-password", "./pages/auth/ForgotPasswordPage.tsx"),
   route("reset-password", "./pages/auth/ResetPasswordPage.tsx"),
   route("auth/github/callback", "./pages/auth/GitHubCallbackPage.tsx"),
+  route(
+    "auth/github/installation-callback",
+    "./pages/projects/GitHubInstallationCallbackPage.tsx"
+  ),
 
   layout("./components/layout/root-layout.tsx", [
     index("./pages/HomeRedirectPage.tsx", { id: "home" }),
