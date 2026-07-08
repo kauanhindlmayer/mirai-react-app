@@ -3,19 +3,8 @@ import { Link, useParams } from "react-router"
 import { TrashIcon, UploadIcon } from "lucide-react"
 
 import { CreateTagPopover } from "@/components/tags/create-tag-popover"
-import { InlineEditableCell } from "@/components/tags/inline-editable-cell"
-import { TagColorPicker } from "@/components/tags/tag-color-picker"
+import { TagsTable } from "@/components/tags/tags-table"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { getErrorMessage } from "@/lib/utils"
 import {
   useDeleteTagMutation,
   useDeleteTagsMutation,
@@ -104,101 +93,17 @@ export default function TagsPage() {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10" />
-              <TableHead className="w-10" />
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Work items</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isError ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24">
-                  <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                    <span className="text-sm">{getErrorMessage(error)}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => refetch()}
-                    >
-                      Try again
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  Loading…
-                </TableCell>
-              </TableRow>
-            ) : tags.length > 0 ? (
-              tags.map((tag) => (
-                <TableRow key={tag.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedIds.has(tag.id)}
-                      onCheckedChange={() => toggleSelected(tag.id)}
-                      aria-label={`Select ${tag.name}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <TagColorPicker
-                      color={tag.color}
-                      onChange={(color) => updateField(tag, "color", color)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <InlineEditableCell
-                      value={tag.name}
-                      onSave={(value) => updateField(tag, "name", value)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <InlineEditableCell
-                      value={tag.description ?? ""}
-                      onSave={(value) => updateField(tag, "description", value)}
-                      placeholder="Add a description"
-                    />
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {tag.workItemsCount}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7"
-                      onClick={() => deleteTagMutation.mutate(tag.id)}
-                      aria-label={`Delete ${tag.name}`}
-                    >
-                      <TrashIcon className="size-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No tags yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <TagsTable
+        tags={tags}
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        onRetry={() => refetch()}
+        selectedIds={selectedIds}
+        onToggleSelected={toggleSelected}
+        onUpdateField={updateField}
+        onDeleteTag={(tagId) => deleteTagMutation.mutate(tagId)}
+      />
 
       {data && data.totalPages > 1 ? (
         <div className="flex items-center justify-between">

@@ -1,43 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import {
-  EllipsisIcon,
-  LinkIcon,
-  PencilIcon,
-  PlusIcon,
-  TrashIcon,
-} from "lucide-react"
-import { toast } from "sonner"
+import { PlusIcon } from "lucide-react"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/common/error-state"
+import { DeleteRetrospectiveDialog } from "@/components/retrospectives/delete-retrospective-dialog"
 import { RetrospectiveBoard } from "@/components/retrospectives/retrospective-board"
 import { RetrospectiveDialog } from "@/components/retrospectives/retrospective-dialog"
+import { RetrospectiveToolbar } from "@/components/retrospectives/retrospective-toolbar"
 import { useSignalR } from "@/hooks/use-signalr"
 import { useCurrentTeam } from "@/hooks/use-current-team"
 import {
@@ -106,13 +77,6 @@ export default function RetrospectivesPage() {
     setDialogOpen(true)
   }
 
-  function copyRetrospectiveLink() {
-    navigator.clipboard.writeText(window.location.href)
-    toast.success(
-      "The link to the retrospective has been copied to the clipboard."
-    )
-  }
-
   const deleteMutation = useDeleteRetrospectiveMutation()
 
   function handleDeleteRetrospective() {
@@ -126,79 +90,20 @@ export default function RetrospectivesPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <Select
-          value={team?.id}
-          onValueChange={(value) => {
-            const nextTeam = teams.find((t) => t.id === value)
-            if (nextTeam) selectTeam(nextTeam)
-          }}
-        >
-          <SelectTrigger className="w-56">
-            <SelectValue
-              placeholder={isLoadingTeams ? "Loading teams…" : "Select a team"}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {teams.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {retrospectives.length > 0 ? (
-          <div className="flex items-center gap-2">
-            <Select
-              value={selected?.id}
-              onValueChange={(value) =>
-                navigate(`/projects/${projectId}/retrospectives/${value}`)
-              }
-            >
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder="Select a retrospective" />
-              </SelectTrigger>
-              <SelectContent>
-                {retrospectives.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Board actions">
-                  <EllipsisIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={openCreateDialog}>
-                  <PlusIcon />
-                  Create New Retrospective
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={openEditDialog}>
-                  <PencilIcon />
-                  Edit Retrospective
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={copyRetrospectiveLink}>
-                  <LinkIcon />
-                  Copy Retrospective Link
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => setDeleteDialogOpen(true)}
-                >
-                  <TrashIcon />
-                  Delete Retrospective
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : null}
-      </div>
+      <RetrospectiveToolbar
+        team={team}
+        teams={teams}
+        isLoadingTeams={isLoadingTeams}
+        onSelectTeam={selectTeam}
+        retrospectives={retrospectives}
+        selectedRetrospectiveId={selected?.id}
+        onSelectRetrospective={(value) =>
+          navigate(`/projects/${projectId}/retrospectives/${value}`)
+        }
+        onCreateRetrospective={openCreateDialog}
+        onEditRetrospective={openEditDialog}
+        onDeleteRetrospective={() => setDeleteDialogOpen(true)}
+      />
 
       {retrospectivesQuery.isError ? (
         <ErrorState
@@ -247,26 +152,12 @@ export default function RetrospectivesPage() {
         />
       ) : null}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Retrospective</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this retrospective? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteRetrospective}
-              disabled={deleteMutation.isPending}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteRetrospectiveDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteRetrospective}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   )
 }
