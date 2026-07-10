@@ -7,9 +7,17 @@ import {
 } from "@tanstack/react-table"
 
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
-import { useOrganizationUsersQuery } from "@/queries/organizations"
+import { useCan } from "@/hooks/use-can"
+import {
+  useOrganizationUsersQuery,
+  useRemoveUserFromOrganizationMutation,
+} from "@/queries/organizations"
+import { useChangeOrganizationMemberRoleMutation } from "@/queries/roles"
 import { InviteUserDialog } from "@/components/organizations/invite-user-dialog"
+import { MemberRoleSelect } from "@/components/authorization/member-role-select"
+import { RemoveMemberButton } from "@/components/authorization/remove-member-button"
 import type { OrganizationUserResponse } from "@/types/organizations"
+import { Permission, RoleScope } from "@/types/roles"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,36 +33,72 @@ import { getErrorMessage, getInitials } from "@/lib/utils"
 
 const PAGE_SIZE = 10
 
-const columns: ColumnDef<OrganizationUserResponse>[] = [
-  {
-    accessorKey: "fullName",
-    header: "Member",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Avatar className="size-7">
-          <AvatarImage
-            src={getAvatarUrl(row.original.imageUrl)}
-            alt={row.original.fullName}
-          />
-          <AvatarFallback>{getInitials(row.original.fullName)}</AvatarFallback>
-        </Avatar>
-        <span className="font-medium">{row.original.fullName}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "lastActiveAtUtc",
-    header: "Last active",
-    cell: ({ row }) =>
-      row.original.lastActiveAtUtc
-        ? new Date(row.original.lastActiveAtUtc).toLocaleDateString()
-        : "—",
-  },
-]
+function buildColumns(
+  canManageMembers: boolean,
+  onChangeRole: (userId: string, roleId: string) => void,
+  onRemove: (userId: string) => void
+): ColumnDef<OrganizationUserResponse>[] {
+  const columns: ColumnDef<OrganizationUserResponse>[] = [
+    {
+      accessorKey: "fullName",
+      header: "Member",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Avatar className="size-7">
+            <AvatarImage
+              src={getAvatarUrl(row.original.imageUrl)}
+              alt={row.original.fullName}
+            />
+            <AvatarFallback>
+              {getInitials(row.original.fullName)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{row.original.fullName}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "lastActiveAtUtc",
+      header: "Last active",
+      cell: ({ row }) =>
+        row.original.lastActiveAtUtc
+          ? new Date(row.original.lastActiveAtUtc).toLocaleDateString()
+          : "—",
+    },
+    {
+      accessorKey: "roleName",
+      header: "Role",
+      cell: ({ row }) => (
+        <MemberRoleSelect
+          scope={RoleScope.Organization}
+          roleId={row.original.roleId}
+          roleName={row.original.roleName}
+          canManage={canManageMembers}
+          onChange={(roleId) => onChangeRole(row.original.id, roleId)}
+        />
+      ),
+    },
+  ]
+
+  if (canManageMembers) {
+    columns.push({
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <RemoveMemberButton
+          memberName={row.original.fullName}
+          onConfirm={() => onRemove(row.original.id)}
+        />
+      ),
+    })
+  }
+
+  return columns
+}
 
 export default function OrganizationSettingsPage() {
   const { organizationId, organization } = useCurrentOrganization()
@@ -67,6 +111,24 @@ export default function OrganizationSettingsPage() {
       sort: "",
       searchTerm: "",
     })
+
+  const canManageMembers = useCan(
+    RoleScope.Organization,
+    organizationId,
+    Permission.OrganizationManageMembers
+  )
+  const changeRoleMutation = useChangeOrganizationMemberRoleMutation(
+    organizationId!
+  )
+  const removeMemberMutation = useRemoveUserFromOrganizationMutation(
+    organizationId!
+  )
+
+  const columns = buildColumns(
+    canManageMembers,
+    (userId, roleId) => changeRoleMutation.mutate({ userId, roleId }),
+    (userId) => removeMemberMutation.mutate(userId)
+  )
 
   const table = useReactTable({
     data: data?.items ?? [],

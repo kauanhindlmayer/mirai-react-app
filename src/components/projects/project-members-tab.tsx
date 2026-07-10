@@ -1,11 +1,17 @@
 import { useState } from "react"
 
+import { useCan } from "@/hooks/use-can"
 import { useOrganizationUsersQuery } from "@/queries/organizations"
 import {
   useAddUserToProjectMutation,
   useProjectUsersQuery,
+  useRemoveUserFromProjectMutation,
 } from "@/queries/projects"
+import { useChangeProjectMemberRoleMutation } from "@/queries/roles"
 import { ErrorState } from "@/components/common/error-state"
+import { MemberRoleSelect } from "@/components/authorization/member-role-select"
+import { RemoveMemberButton } from "@/components/authorization/remove-member-button"
+import { Permission, RoleScope } from "@/types/roles"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -39,6 +45,20 @@ export function ProjectMembersTab({
     "",
     page,
     MEMBERS_PAGE_SIZE
+  )
+
+  const canManageMembers = useCan(
+    RoleScope.Project,
+    projectId,
+    Permission.ProjectManageMembers
+  )
+  const changeRoleMutation = useChangeProjectMemberRoleMutation(
+    organizationId,
+    projectId
+  )
+  const removeMemberMutation = useRemoveUserFromProjectMutation(
+    organizationId,
+    projectId
   )
 
   return (
@@ -75,12 +95,27 @@ export function ProjectMembersTab({
                 />
                 <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
               </Avatar>
-              <div className="flex flex-col">
+              <div className="flex flex-1 flex-col">
                 <span className="font-medium">{member.fullName}</span>
                 <span className="text-xs text-muted-foreground">
                   {member.email}
                 </span>
               </div>
+              <MemberRoleSelect
+                scope={RoleScope.Project}
+                roleId={member.roleId}
+                roleName={member.roleName}
+                canManage={canManageMembers}
+                onChange={(roleId) =>
+                  changeRoleMutation.mutate({ userId: member.id, roleId })
+                }
+              />
+              {canManageMembers ? (
+                <RemoveMemberButton
+                  memberName={member.fullName}
+                  onConfirm={() => removeMemberMutation.mutate(member.id)}
+                />
+              ) : null}
             </li>
           ))}
         </ul>

@@ -1,9 +1,18 @@
 import { useState } from "react"
 
+import { useCan } from "@/hooks/use-can"
 import { useProjectUsersQuery } from "@/queries/projects"
-import { useAddUserToTeamMutation, useTeamMembersQuery } from "@/queries/teams"
+import {
+  useAddUserToTeamMutation,
+  useRemoveUserFromTeamMutation,
+  useTeamMembersQuery,
+} from "@/queries/teams"
+import { useChangeTeamMemberRoleMutation } from "@/queries/roles"
 import { ErrorState } from "@/components/common/error-state"
+import { MemberRoleSelect } from "@/components/authorization/member-role-select"
+import { RemoveMemberButton } from "@/components/authorization/remove-member-button"
 import type { Team } from "@/types/teams"
+import { Permission, RoleScope } from "@/types/roles"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -55,6 +64,20 @@ export function TeamMembersDialog({
     MEMBERS_PAGE_SIZE
   )
 
+  const canManageMembers = useCan(
+    RoleScope.Team,
+    team.id,
+    Permission.TeamManageMembers
+  )
+  const changeRoleMutation = useChangeTeamMemberRoleMutation(
+    projectId,
+    team.id
+  )
+  const removeMemberMutation = useRemoveUserFromTeamMutation(
+    projectId,
+    team.id
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -95,7 +118,27 @@ export function TeamMembersDialog({
                         {getInitials(member.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{member.name}</span>
+                    <span className="flex-1 font-medium">{member.name}</span>
+                    <MemberRoleSelect
+                      scope={RoleScope.Team}
+                      roleId={member.roleId}
+                      roleName={member.roleName}
+                      canManage={canManageMembers}
+                      onChange={(roleId) =>
+                        changeRoleMutation.mutate({
+                          userId: member.id,
+                          roleId,
+                        })
+                      }
+                    />
+                    {canManageMembers ? (
+                      <RemoveMemberButton
+                        memberName={member.name}
+                        onConfirm={() =>
+                          removeMemberMutation.mutate(member.id)
+                        }
+                      />
+                    ) : null}
                   </li>
                 ))}
               </ul>

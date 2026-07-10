@@ -22,12 +22,19 @@ import OrganizationSettingsPage from "@/pages/organizations/OrganizationSettings
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
 
+const roles = [
+  { id: "role-admin", name: "Admin", scope: "Organization" },
+  { id: "role-member", name: "Member", scope: "Organization" },
+]
+
 function mockMembers(
   items: {
     id: string
     fullName: string
     email: string
     lastActiveAtUtc?: string
+    roleId?: string
+    roleName?: string
   }[]
 ) {
   server.use(
@@ -45,8 +52,18 @@ function mockMembers(
   )
 }
 
+function mockPermissions(permissions: string[]) {
+  server.use(
+    http.get("*/api/organizations/org-1/effective-permissions", () =>
+      HttpResponse.json(permissions)
+    ),
+    http.get("*/api/roles", () => HttpResponse.json(roles))
+  )
+}
+
 describe("OrganizationSettingsPage", () => {
   it("renders the organization's name in the heading", () => {
+    mockPermissions([])
     mockMembers([])
     renderWithProviders(<OrganizationSettingsPage />)
 
@@ -54,6 +71,7 @@ describe("OrganizationSettingsPage", () => {
   })
 
   it("lists members with their email and last-active date", async () => {
+    mockPermissions([])
     mockMembers([
       {
         id: "user-1",
@@ -72,6 +90,7 @@ describe("OrganizationSettingsPage", () => {
   })
 
   it("shows an em dash when a member has never been active", async () => {
+    mockPermissions([])
     mockMembers([
       { id: "user-1", fullName: "John Doe", email: "john@mirai.com" },
     ])
@@ -81,6 +100,7 @@ describe("OrganizationSettingsPage", () => {
   })
 
   it("shows an empty state when there are no members", async () => {
+    mockPermissions([])
     mockMembers([])
     renderWithProviders(<OrganizationSettingsPage />)
 
@@ -88,6 +108,7 @@ describe("OrganizationSettingsPage", () => {
   })
 
   it("invites a member by email and closes the dialog", async () => {
+    mockPermissions([])
     mockMembers([])
     let requestBody: unknown
     server.use(
@@ -111,6 +132,7 @@ describe("OrganizationSettingsPage", () => {
   })
 
   it("shows a validation error for an invalid email", async () => {
+    mockPermissions([])
     mockMembers([])
     const user = userEvent.setup()
     renderWithProviders(<OrganizationSettingsPage />)
@@ -122,5 +144,90 @@ describe("OrganizationSettingsPage", () => {
     expect(
       await screen.findByText("Enter a valid email address.")
     ).toBeInTheDocument()
+  })
+
+  it("shows a read-only role badge and no remove action for a caller who cannot manage members", async () => {
+    mockPermissions(["OrganizationView"])
+    mockMembers([
+      {
+        id: "user-1",
+        fullName: "John Doe",
+        email: "john@mirai.com",
+        roleId: "role-member",
+        roleName: "Contributor",
+      },
+    ])
+    renderWithProviders(<OrganizationSettingsPage />)
+
+    await screen.findByText("John Doe")
+
+    expect(screen.getByText("Contributor")).toBeInTheDocument()
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /remove john doe/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it("allows a caller with ManageMembers to change a member's role", async () => {
+    mockPermissions(["OrganizationManageMembers"])
+    mockMembers([
+      {
+        id: "user-1",
+        fullName: "John Doe",
+        email: "john@mirai.com",
+        roleId: "role-member",
+        roleName: "Member",
+      },
+    ])
+    let requestBody: unknown
+    server.use(
+      http.put(
+        "*/api/organizations/org-1/users/user-1/role",
+        async ({ request }) => {
+          requestBody = await request.json()
+          return new HttpResponse(null, { status: 204 })
+        }
+      )
+    )
+
+    const user = userEvent.setup()
+    renderWithProviders(<OrganizationSettingsPage />)
+
+    await user.click(await screen.findByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: "Admin" }))
+
+    await waitFor(() =>
+      expect(requestBody).toEqual({ roleId: "role-admin" })
+    )
+  })
+
+  it("allows a caller with ManageMembers to remove a member", async () => {
+    mockPermissions(["OrganizationManageMembers"])
+    mockMembers([
+      {
+        id: "user-1",
+        fullName: "John Doe",
+        email: "john@mirai.com",
+        roleId: "role-member",
+        roleName: "Member",
+      },
+    ])
+    let removeRequested = false
+    server.use(
+      http.delete("*/api/organizations/org-1/users/user-1", () => {
+        removeRequested = true
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderWithProviders(<OrganizationSettingsPage />)
+
+    await user.click(
+      await screen.findByRole("button", { name: /remove john doe/i })
+    )
+    await user.click(screen.getByRole("button", { name: /^remove$/i }))
+
+    await waitFor(() => expect(removeRequested).toBe(true))
   })
 })
