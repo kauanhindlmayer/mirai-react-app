@@ -5,7 +5,8 @@ import { useProjectQuery } from "@/queries/projects"
 export function useCurrentProject() {
   const { projectId } = useParams<{ projectId: string }>()
 
-  const { data, isLoading, isError, error, refetch } = useProjectQuery(projectId)
+  const { data, isLoading, isError, error, refetch } =
+    useProjectQuery(projectId)
 
   return {
     projectId,

@@ -125,7 +125,10 @@ export default function ProjectSummaryPage() {
             membersQuery.data.items.map((member) => (
               <div key={member.id} className="flex items-center gap-3">
                 <Avatar className="size-8">
-                  <AvatarImage src={getAvatarUrl(member.imageUrl)} alt={member.fullName} />
+                  <AvatarImage
+                    src={getAvatarUrl(member.imageUrl)}
+                    alt={member.fullName}
+                  />
                   <AvatarFallback>
                     {getInitials(member.fullName)}
                   </AvatarFallback>

@@ -45,18 +45,21 @@ export default function GitHubInstallationCallbackPage() {
   const installationId = Number(searchParams.get("installation_id"))
   const decodedState = useMemo(() => decodeState(state), [state])
   const isValidRequest =
-    decodedState !== null && Number.isInteger(installationId) && installationId > 0
+    decodedState !== null &&
+    Number.isInteger(installationId) &&
+    installationId > 0
 
   const organizationId = decodedState?.organizationId ?? ""
   const projectId = decodedState?.projectId ?? ""
 
-  const { data: repositories, isError } = useGitHubInstallationRepositoriesQuery(
-    organizationId,
-    projectId,
-    installationId,
-    state,
-    { enabled: isValidRequest }
-  )
+  const { data: repositories, isError } =
+    useGitHubInstallationRepositoriesQuery(
+      organizationId,
+      projectId,
+      installationId,
+      state,
+      { enabled: isValidRequest }
+    )
 
   const { mutate: connect, isPending: isConnecting } =
     useConnectGitHubRepositoryMutation(organizationId, projectId)
@@ -90,7 +93,9 @@ export default function GitHubInstallationCallbackPage() {
     if (hasAutoConnected.current || !repositories) return
 
     if (repositories.length === 0) {
-      showInstallationError("No repositories are accessible to this installation.")
+      showInstallationError(
+        "No repositories are accessible to this installation."
+      )
       navigate(`/projects/${projectId}/settings?tab=github`)
       return
     }
@@ -124,8 +129,8 @@ export default function GitHubInstallationCallbackPage() {
       <div className="flex flex-col items-center gap-1 text-center">
         <h1 className="text-lg font-semibold">Choose a repository</h1>
         <p className="text-sm text-muted-foreground">
-          This installation has access to multiple repositories. Pick the one
-          to connect to this project.
+          This installation has access to multiple repositories. Pick the one to
+          connect to this project.
         </p>
       </div>
       <Command className="w-full max-w-sm rounded-md border">

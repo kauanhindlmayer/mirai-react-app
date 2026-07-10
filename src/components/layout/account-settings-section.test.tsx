@@ -179,7 +179,10 @@ describe("AccountSettingsSection", () => {
   it("calls onSaved after a successful save", async () => {
     signIn()
     server.use(
-      http.put("*/api/users/profile", () => new HttpResponse(null, { status: 204 }))
+      http.put(
+        "*/api/users/profile",
+        () => new HttpResponse(null, { status: 204 })
+      )
     )
     const onSaved = vi.fn()
 

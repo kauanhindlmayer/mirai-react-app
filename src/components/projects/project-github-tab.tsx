@@ -37,7 +37,10 @@ export function ProjectGitHubTab({
           connection={connection}
         />
       ) : (
-        <NotConnectedState organizationId={organizationId} projectId={projectId} />
+        <NotConnectedState
+          organizationId={organizationId}
+          projectId={projectId}
+        />
       )}
     </div>
   )
@@ -63,8 +66,8 @@ function NotConnectedState({
   return (
     <>
       <p className="text-sm text-muted-foreground">
-        Connect this project to a GitHub repository to automatically link
-        pull requests to work items.
+        Connect this project to a GitHub repository to automatically link pull
+        requests to work items.
       </p>
       <Button
         variant="outline"

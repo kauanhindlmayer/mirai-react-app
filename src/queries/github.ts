@@ -32,9 +32,7 @@ export function useGetGitHubInstallUrlMutation(
 ) {
   return useMutation({
     mutationFn: () => getGitHubInstallUrl(organizationId, projectId),
-    onError: createErrorToastHandler(
-      "Failed to start the GitHub connection."
-    ),
+    onError: createErrorToastHandler("Failed to start the GitHub connection."),
   })
 }
 
