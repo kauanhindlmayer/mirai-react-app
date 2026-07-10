@@ -14,6 +14,8 @@ import {
   ZapIcon,
 } from "lucide-react"
 
+import { useCan } from "@/hooks/use-can"
+import { Permission, RoleScope } from "@/types/roles"
 import type { NavMainItem } from "@/components/layout/nav-main"
 
 export type NavMainSection = {
@@ -31,6 +33,17 @@ export function useNavMainItems(): NavMainItems {
     organizationId?: string
     projectId?: string
   }>()
+
+  const canManageProject = useCan(
+    RoleScope.Project,
+    projectId,
+    Permission.ProjectManage
+  )
+  const canManageOrganization = useCan(
+    RoleScope.Organization,
+    organizationId,
+    Permission.OrganizationManage
+  )
 
   if (projectId) {
     return {
@@ -96,21 +109,20 @@ export function useNavMainItems(): NavMainItems {
           ],
         },
       ],
-      settingsItems: [
-        {
-          title: "Project Settings",
-          url: `/projects/${projectId}/settings`,
-          icon: <Settings2Icon />,
-        },
-      ],
+      settingsItems: canManageProject
+        ? [
+            {
+              title: "Project Settings",
+              url: `/projects/${projectId}/settings`,
+              icon: <Settings2Icon />,
+            },
+          ]
+        : [],
     }
   }
 
   const projectsUrl = organizationId
     ? `/organizations/${organizationId}/projects`
-    : "/organizations"
-  const settingsUrl = organizationId
-    ? `/organizations/${organizationId}/settings`
     : "/organizations"
 
   return {
@@ -120,12 +132,14 @@ export function useNavMainItems(): NavMainItems {
         items: [{ title: "Projects", url: projectsUrl, icon: <FolderIcon /> }],
       },
     ],
-    settingsItems: [
-      {
-        title: "Organization Settings",
-        url: settingsUrl,
-        icon: <Settings2Icon />,
-      },
-    ],
+    settingsItems: canManageOrganization
+      ? [
+          {
+            title: "Organization Settings",
+            url: `/organizations/${organizationId}/settings`,
+            icon: <Settings2Icon />,
+          },
+        ]
+      : [],
   }
 }
