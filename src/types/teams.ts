@@ -15,6 +15,8 @@ export type Team = {
 export type TeamMember = {
   id: string
   name: string
+  roleId: string
+  roleName: string
 }
 
 export type BacklogResponse = {

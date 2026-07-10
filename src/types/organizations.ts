@@ -21,4 +21,6 @@ export type OrganizationUserResponse = {
   email: string
   imageUrl?: string
   lastActiveAtUtc?: string
+  roleId: string
+  roleName: string
 }

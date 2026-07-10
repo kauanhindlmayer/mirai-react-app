@@ -87,6 +87,8 @@ export type ProjectUserResponse = {
   fullName: string
   email: string
   imageUrl?: string
+  roleId: string
+  roleName: string
 }
 
 export const WorkItemStatus = {
