@@ -6,6 +6,7 @@ import {
   createOrganization,
   getOrganizationUsers,
   listOrganizations,
+  removeUserFromOrganization,
 } from "@/api/organizations"
 import { createErrorToastHandler } from "@/lib/query-helpers"
 import type {
@@ -75,6 +76,21 @@ export function useAddUserToOrganizationMutation(organizationId: string) {
         queryKey: organizationUsersQueryKey(organizationId),
       })
       toast.success("Member invited.")
+    },
+  })
+}
+
+export function useRemoveUserFromOrganizationMutation(organizationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) =>
+      removeUserFromOrganization(organizationId, userId),
+    onError: createErrorToastHandler("Failed to remove member."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: organizationUsersQueryKey(organizationId),
+      })
+      toast.success("Member removed.")
     },
   })
 }

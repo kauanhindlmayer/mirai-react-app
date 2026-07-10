@@ -1,4 +1,4 @@
-import { get, post } from "@/lib/api-client"
+import { del, get, post } from "@/lib/api-client"
 import type { PaginatedList } from "@/types/common"
 import type {
   BacklogLevel,
@@ -36,6 +36,14 @@ export function addUserToTeam(
   userId: string
 ): Promise<void> {
   return post(`/projects/${projectId}/teams/${teamId}/members`, { userId })
+}
+
+export function removeUserFromTeam(
+  projectId: string,
+  teamId: string,
+  userId: string
+): Promise<void> {
+  return del(`/projects/${projectId}/teams/${teamId}/members/${userId}`)
 }
 
 export function getBacklog(

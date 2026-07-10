@@ -1,4 +1,4 @@
-import { get, post } from "@/lib/api-client"
+import { del, get, post } from "@/lib/api-client"
 import type { PaginatedList, PaginationFilter } from "@/types/common"
 import type {
   AddUserToOrganizationRequest,
@@ -37,4 +37,11 @@ export function addUserToOrganization(
   request: AddUserToOrganizationRequest
 ): Promise<void> {
   return post(`/organizations/${organizationId}/users`, request)
+}
+
+export function removeUserFromOrganization(
+  organizationId: string,
+  userId: string
+): Promise<void> {
+  return del(`/organizations/${organizationId}/users/${userId}`)
 }

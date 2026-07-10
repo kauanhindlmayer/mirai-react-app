@@ -8,6 +8,7 @@ import {
   getProject,
   getProjectUsers,
   listProjects,
+  removeUserFromProject,
   updateProject,
 } from "@/api/projects"
 import { createErrorToastHandler } from "@/lib/query-helpers"
@@ -40,7 +41,10 @@ export function useProjectsQuery(organizationId: string | undefined) {
   })
 }
 
-export function projectUsersQueryKey(organizationId: string, projectId: string) {
+export function projectUsersQueryKey(
+  organizationId: string,
+  projectId: string
+) {
   return ["project-users", organizationId, projectId]
 }
 
@@ -60,7 +64,13 @@ export function useProjectUsersQuery(
       pageSize,
     ],
     queryFn: () =>
-      getProjectUsers(organizationId ?? "", projectId ?? "", searchTerm, page, pageSize),
+      getProjectUsers(
+        organizationId ?? "",
+        projectId ?? "",
+        searchTerm,
+        page,
+        pageSize
+      ),
     enabled: options?.enabled ?? (!!organizationId && !!projectId),
     staleTime: options?.staleTime ?? 60_000,
     placeholderData: (previous) => previous,
@@ -135,6 +145,24 @@ export function useAddUserToProjectMutation(
         queryKey: projectUsersQueryKey(organizationId, projectId),
       })
       toast.success("User added to project.")
+    },
+  })
+}
+
+export function useRemoveUserFromProjectMutation(
+  organizationId: string,
+  projectId: string
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) =>
+      removeUserFromProject(organizationId, projectId, userId),
+    onError: createErrorToastHandler("Failed to remove member."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectUsersQueryKey(organizationId, projectId),
+      })
+      toast.success("Member removed.")
     },
   })
 }

@@ -57,3 +57,13 @@ export function addUserToProject(
     userId,
   })
 }
+
+export function removeUserFromProject(
+  organizationId: string,
+  projectId: string,
+  userId: string
+): Promise<void> {
+  return del(
+    `/organizations/${organizationId}/projects/${projectId}/users/${userId}`
+  )
+}

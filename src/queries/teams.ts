@@ -7,6 +7,7 @@ import {
   getBacklog,
   getTeamMembers,
   listTeams,
+  removeUserFromTeam,
 } from "@/api/teams"
 import { createErrorToastHandler } from "@/lib/query-helpers"
 import type { BacklogLevel, CreateTeamRequest } from "@/types/teams"
@@ -72,6 +73,25 @@ export function useAddUserToTeamMutation(projectId: string, teamId: string) {
       })
       queryClient.invalidateQueries({ queryKey: teamsQueryKey(projectId) })
       toast.success("User added to team.")
+    },
+  })
+}
+
+export function useRemoveUserFromTeamMutation(
+  projectId: string,
+  teamId: string
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) =>
+      removeUserFromTeam(projectId, teamId, userId),
+    onError: createErrorToastHandler("Failed to remove member."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teamMembersQueryKey(projectId, teamId),
+      })
+      queryClient.invalidateQueries({ queryKey: teamsQueryKey(projectId) })
+      toast.success("Member removed.")
     },
   })
 }
