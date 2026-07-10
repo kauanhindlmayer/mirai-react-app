@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "shadcn": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/curated/shadcn/SKILL.md",
+      "computedHash": "b36f61bf889daf6a19593293377649a10d4ac9484215f8a3312d3ce386aab584"
+    }
+  }
+}
