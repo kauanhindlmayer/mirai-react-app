@@ -2,6 +2,7 @@ import { useLocation } from "react-router"
 
 import { useCurrentOrganization } from "@/hooks/use-current-organization"
 import { useCurrentProject } from "@/hooks/use-current-project"
+import { useRetrospectiveQuery } from "@/queries/retrospectives"
 import { useWikiPageQuery } from "@/queries/wiki-pages"
 
 const PAGE_LABELS: Record<string, string> = {
@@ -49,9 +50,16 @@ export function useBreadcrumbs(): Breadcrumb[] {
   const wikiPageId = isWikiPageDetailRoute ? lastSegment : undefined
   const { data: wikiPage } = useWikiPageQuery(projectId, wikiPageId)
 
+  const isRetrospectiveDetailRoute =
+    segments[segments.length - 2] === "retrospectives"
+  const retrospectiveId = isRetrospectiveDetailRoute ? lastSegment : undefined
+  const { data: retrospective } = useRetrospectiveQuery(retrospectiveId)
+
   const lastSegmentLabel = wikiPageId
     ? (wikiPage?.title ?? "Wiki Page")
-    : labelFor(lastSegment)
+    : retrospectiveId
+      ? (retrospective?.title ?? "Retrospective")
+      : labelFor(lastSegment)
 
   if (projectId) {
     return [

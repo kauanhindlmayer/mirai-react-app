@@ -175,4 +175,47 @@ describe("useBreadcrumbs", () => {
 
     expect(result.current.at(-1)).toEqual({ label: "New" })
   })
+
+  it("uses the retrospective's title instead of its id for a retrospective detail route", async () => {
+    mockContext({ projectId: "project-1", project })
+    server.use(
+      http.get("*/api/retrospectives/retro-1", () =>
+        HttpResponse.json({
+          id: "retro-1",
+          title: "Sprint 12 Retro",
+          maxVotesPerUser: 3,
+          template: "Classic",
+          columns: [],
+        })
+      )
+    )
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/retrospectives/retro-1",
+    })
+
+    await waitFor(() =>
+      expect(result.current.at(-1)).toEqual({ label: "Sprint 12 Retro" })
+    )
+  })
+
+  it("shows a placeholder label while the retrospective title is still loading", () => {
+    mockContext({ projectId: "project-1", project })
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/retrospectives/retro-1",
+    })
+
+    expect(result.current.at(-1)).toEqual({ label: "Retrospective" })
+  })
+
+  it("labels the retrospectives list route as Retrospectives rather than fetching a title", () => {
+    mockContext({ projectId: "project-1", project })
+
+    const { result } = renderHookWithProviders(() => useBreadcrumbs(), {
+      route: "/projects/project-1/retrospectives",
+    })
+
+    expect(result.current.at(-1)).toEqual({ label: "Retrospectives" })
+  })
 })
