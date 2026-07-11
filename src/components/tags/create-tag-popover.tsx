@@ -30,7 +30,7 @@ const tagSchema = z.object({
 type TagFormValues = z.infer<typeof tagSchema>
 
 export function CreateTagPopover({ projectId }: { projectId: string }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const form = useForm<TagFormValues>({
     defaultValues: { name: "", description: "", color: "#2a78d6" },
     resolver: zodResolver(tagSchema),
@@ -39,7 +39,7 @@ export function CreateTagPopover({ projectId }: { projectId: string }) {
   const mutation = useCreateTagMutation(projectId)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button size="sm">
           <PlusIcon />
@@ -53,7 +53,7 @@ export function CreateTagPopover({ projectId }: { projectId: string }) {
             mutation.mutate(values, {
               onSuccess: () => {
                 form.reset()
-                setOpen(false)
+                setIsOpen(false)
               },
             })
           )}

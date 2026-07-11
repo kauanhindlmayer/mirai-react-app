@@ -35,10 +35,10 @@ const personaSchema = z.object({
 type PersonaFormValues = z.infer<typeof personaSchema>
 
 export function CreatePersonaSheet({ projectId }: { projectId: string }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button>
           <PlusIcon />
@@ -46,10 +46,10 @@ export function CreatePersonaSheet({ projectId }: { projectId: string }) {
         </Button>
       </SheetTrigger>
       <SheetContent>
-        {open ? (
+        {isOpen ? (
           <CreatePersonaForm
             projectId={projectId}
-            onDone={() => setOpen(false)}
+            onDone={() => setIsOpen(false)}
           />
         ) : null}
       </SheetContent>

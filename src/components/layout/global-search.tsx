@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/command"
 
 export function GlobalSearch() {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState("")
   const debouncedQuery = useDebouncedValue(query)
   const navigate = useNavigate()
@@ -28,14 +28,14 @@ export function GlobalSearch() {
 
   const { data } = useWorkItemsSearchQuery(projectId ?? "", debouncedQuery, {
     pageSize: 5,
-    enabled: open && !!projectId && !!debouncedQuery.trim(),
+    enabled: isOpen && !!projectId && !!debouncedQuery.trim(),
   })
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
-        setOpen((prev) => !prev)
+        setIsOpen((prev) => !prev)
       }
     }
 
@@ -44,7 +44,7 @@ export function GlobalSearch() {
   }, [])
 
   function handleNavigate(url: string) {
-    setOpen(false)
+    setIsOpen(false)
     setQuery("")
     navigate(url)
   }
@@ -64,13 +64,13 @@ export function GlobalSearch() {
         variant="outline"
         size="sm"
         className="text-muted-foreground"
-        onClick={() => setOpen(true)}
+        onClick={() => setIsOpen(true)}
       >
         <SearchIcon />
         Search...
         <kbd className="ml-4 text-xs">⌘K</kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
         <CommandInput
           placeholder="Search pages and work items, or ask a question..."
           value={query}

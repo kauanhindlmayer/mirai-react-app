@@ -37,10 +37,10 @@ export function BoardSettingsSheet({
   boardId,
   columns,
 }: BoardSettingsSheetProps) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm">
           <SettingsIcon />

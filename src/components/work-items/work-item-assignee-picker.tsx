@@ -35,7 +35,7 @@ export function WorkItemAssigneePicker({
   assignee,
 }: WorkItemAssigneePickerProps) {
   const { projectId, workItemId } = useWorkItemContext()
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search)
   const { project } = useCurrentProject()
@@ -48,7 +48,7 @@ export function WorkItemAssigneePicker({
     debouncedSearch,
     undefined,
     undefined,
-    { enabled: open && !!project, staleTime: 30_000 }
+    { enabled: isOpen && !!project, staleTime: 30_000 }
   )
 
   function handleSelect(user?: ProjectUserResponse) {
@@ -57,11 +57,11 @@ export function WorkItemAssigneePicker({
     } else {
       unassignWorkItem.mutate()
     }
-    setOpen(false)
+    setIsOpen(false)
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"

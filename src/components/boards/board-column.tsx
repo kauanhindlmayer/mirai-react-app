@@ -140,7 +140,7 @@ function QuickAddWorkItem({
   teamId: string
   boardId: string
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const form = useForm<QuickAddValues>({
     defaultValues: { title: "", type: WorkItemType.UserStory },
@@ -156,14 +156,14 @@ function QuickAddWorkItem({
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: boardQueryKey(boardId) })
           form.reset()
-          setOpen(false)
+          setIsOpen(false)
         },
       }
     )
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="w-full">
           <PlusIcon />

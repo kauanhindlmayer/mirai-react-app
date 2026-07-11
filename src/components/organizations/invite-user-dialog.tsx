@@ -34,18 +34,18 @@ type InviteUserDialogProps = {
 }
 
 export function InviteUserDialog({ organizationId }: InviteUserDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm">Invite member</Button>
       </DialogTrigger>
       <DialogContent>
-        {open ? (
+        {isOpen ? (
           <InviteUserForm
             organizationId={organizationId}
-            onDone={() => setOpen(false)}
+            onDone={() => setIsOpen(false)}
           />
         ) : null}
       </DialogContent>

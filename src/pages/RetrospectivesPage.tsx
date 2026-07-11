@@ -63,18 +63,18 @@ export default function RetrospectivesPage() {
   )
   useSignalR("/hubs/retrospective", signalREvents)
 
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create")
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   function openCreateDialog() {
     setDialogMode("create")
-    setDialogOpen(true)
+    setIsDialogOpen(true)
   }
 
   function openEditDialog() {
     setDialogMode("edit")
-    setDialogOpen(true)
+    setIsDialogOpen(true)
   }
 
   const deleteMutation = useDeleteRetrospectiveMutation()
@@ -82,7 +82,7 @@ export default function RetrospectivesPage() {
   function handleDeleteRetrospective() {
     deleteMutation.mutate(retrospectiveId!, {
       onSuccess: () => {
-        setDeleteDialogOpen(false)
+        setIsDeleteDialogOpen(false)
         navigate(`/projects/${projectId}/retrospectives`, { replace: true })
       },
     })
@@ -102,7 +102,7 @@ export default function RetrospectivesPage() {
         }
         onCreateRetrospective={openCreateDialog}
         onEditRetrospective={openEditDialog}
-        onDeleteRetrospective={() => setDeleteDialogOpen(true)}
+        onDeleteRetrospective={() => setIsDeleteDialogOpen(true)}
       />
 
       {retrospectivesQuery.isError ? (
@@ -142,8 +142,8 @@ export default function RetrospectivesPage() {
 
       {team ? (
         <RetrospectiveDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
           teamId={team.id}
           retrospective={dialogMode === "edit" ? retrospective : undefined}
           onCreated={(newId) =>
@@ -153,8 +153,8 @@ export default function RetrospectivesPage() {
       ) : null}
 
       <DeleteRetrospectiveDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteRetrospective}
         isPending={deleteMutation.isPending}
       />

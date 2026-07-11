@@ -34,10 +34,10 @@ const organizationSchema = z.object({
 type OrganizationFormValues = z.infer<typeof organizationSchema>
 
 export function CreateOrganizationSheet() {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button>
           <PlusIcon />
@@ -45,7 +45,9 @@ export function CreateOrganizationSheet() {
         </Button>
       </SheetTrigger>
       <SheetContent>
-        {open ? <CreateOrganizationForm onDone={() => setOpen(false)} /> : null}
+        {isOpen ? (
+          <CreateOrganizationForm onDone={() => setIsOpen(false)} />
+        ) : null}
       </SheetContent>
     </Sheet>
   )

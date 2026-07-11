@@ -30,14 +30,14 @@ type WorkItemTagsEditorProps = {
 
 export function WorkItemTagsEditor({ tags }: WorkItemTagsEditorProps) {
   const { projectId, workItemId } = useWorkItemContext()
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const addTag = useAddWorkItemTagMutation(projectId, workItemId)
   const removeTag = useRemoveWorkItemTagMutation(projectId, workItemId)
 
   const { data } = useTagsQuery(
     projectId,
     { page: 1, pageSize: 100, sort: "", searchTerm: "" },
-    { enabled: open, staleTime: 60_000 }
+    { enabled: isOpen, staleTime: 60_000 }
   )
 
   const tagNames = new Set(tags.map((tag) => tag.name))
@@ -60,7 +60,7 @@ export function WorkItemTagsEditor({ tags }: WorkItemTagsEditorProps) {
           </button>
         </Badge>
       ))}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

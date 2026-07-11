@@ -47,17 +47,17 @@ export function ProjectFormSheet({
   project,
   trigger,
 }: ProjectFormSheetProps) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent>
-        {open ? (
+        {isOpen ? (
           <ProjectForm
             organizationId={organizationId}
             project={project}
-            onDone={() => setOpen(false)}
+            onDone={() => setIsOpen(false)}
           />
         ) : null}
       </SheetContent>

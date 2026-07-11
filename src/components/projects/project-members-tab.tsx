@@ -158,7 +158,7 @@ function AddProjectMemberDialog({
   organizationId: string
   projectId: string
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search)
 
@@ -168,21 +168,21 @@ function AddProjectMemberDialog({
     organizationId,
     { page: 1, pageSize: 10, sort: "", searchTerm: debouncedSearch },
     projectId,
-    { enabled: open }
+    { enabled: isOpen }
   )
 
   function handleSelect(userId: string) {
-    mutation.mutate(userId, { onSuccess: () => setOpen(false) })
+    mutation.mutate(userId, { onSuccess: () => setIsOpen(false) })
   }
 
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)}>
+      <Button size="sm" onClick={() => setIsOpen(true)}>
         Add member
       </Button>
       <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+        open={isOpen}
+        onOpenChange={setIsOpen}
         title="Add member"
         description="Search organization members to add to this project."
       >

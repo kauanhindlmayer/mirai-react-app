@@ -38,10 +38,10 @@ const sprintSchema = z
 type SprintFormValues = z.infer<typeof sprintSchema>
 
 export function CreateSprintDialog({ teamId }: { teamId: string }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <PlusIcon />
@@ -49,8 +49,8 @@ export function CreateSprintDialog({ teamId }: { teamId: string }) {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        {open ? (
-          <CreateSprintForm teamId={teamId} onDone={() => setOpen(false)} />
+        {isOpen ? (
+          <CreateSprintForm teamId={teamId} onDone={() => setIsOpen(false)} />
         ) : null}
       </DialogContent>
     </Dialog>

@@ -70,14 +70,8 @@ export function TeamMembersDialog({
     team.id,
     Permission.TeamManageMembers
   )
-  const changeRoleMutation = useChangeTeamMemberRoleMutation(
-    projectId,
-    team.id
-  )
-  const removeMemberMutation = useRemoveUserFromTeamMutation(
-    projectId,
-    team.id
-  )
+  const changeRoleMutation = useChangeTeamMemberRoleMutation(projectId, team.id)
+  const removeMemberMutation = useRemoveUserFromTeamMutation(projectId, team.id)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,9 +129,7 @@ export function TeamMembersDialog({
                     {canManageMembers ? (
                       <RemoveMemberButton
                         memberName={member.name}
-                        onConfirm={() =>
-                          removeMemberMutation.mutate(member.id)
-                        }
+                        onConfirm={() => removeMemberMutation.mutate(member.id)}
                       />
                     ) : null}
                   </li>
@@ -185,7 +177,7 @@ function AddTeamMemberDialog({
   projectId: string
   teamId: string
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search)
 
@@ -197,17 +189,17 @@ function AddTeamMemberDialog({
     debouncedSearch,
     1,
     10,
-    { enabled: open }
+    { enabled: isOpen }
   )
 
   const candidates = data?.items ?? []
 
   function handleSelect(userId: string) {
-    mutation.mutate(userId, { onSuccess: () => setOpen(false) })
+    mutation.mutate(userId, { onSuccess: () => setIsOpen(false) })
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button size="sm">Add member</Button>
       </PopoverTrigger>

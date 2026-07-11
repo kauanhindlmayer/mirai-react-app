@@ -93,7 +93,7 @@ export function WorkItemLinks({
 
 function AddLinkPopover() {
   const { projectId, workItemId } = useWorkItemContext()
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search)
   const [linkType, setLinkType] = useState<WorkItemLinkType>(
@@ -103,11 +103,11 @@ function AddLinkPopover() {
 
   const { data } = useWorkItemsSearchQuery(projectId, debouncedSearch, {
     pageSize: 10,
-    enabled: open,
+    enabled: isOpen,
   })
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="w-fit gap-1">
           <PlusIcon className="size-3.5" />
@@ -151,7 +151,7 @@ function AddLinkPopover() {
                         targetWorkItemId: item.id!,
                         linkType,
                       })
-                      setOpen(false)
+                      setIsOpen(false)
                     }}
                   >
                     #{item.code} {item.title}

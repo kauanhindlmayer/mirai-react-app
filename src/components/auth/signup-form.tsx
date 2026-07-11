@@ -68,7 +68,7 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<"form">) {
   const navigate = useNavigate()
-  const [passwordFocused, setPasswordFocused] = useState(false)
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false)
   const form = useForm<SignupFormValues>({
     defaultValues: {
       confirmPassword: "",
@@ -183,14 +183,14 @@ export function SignupForm({
             className="bg-background"
             aria-invalid={!!form.formState.errors.password}
             {...form.register("password")}
-            onFocus={() => setPasswordFocused(true)}
+            onFocus={() => setIsPasswordFocused(true)}
             onBlur={(event) => {
               form.register("password").onBlur(event)
-              setPasswordFocused(false)
+              setIsPasswordFocused(false)
             }}
           />
           <FieldError errors={[form.formState.errors.password]} />
-          {passwordFocused || password ? (
+          {isPasswordFocused || password ? (
             <ul className="flex flex-col gap-0.5">
               {passwordRules.map((rule) => (
                 <li

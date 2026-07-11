@@ -36,16 +36,19 @@ type CreateTeamDialogProps = {
 }
 
 export function CreateTeamDialog({ projectId }: CreateTeamDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm">New Team</Button>
       </DialogTrigger>
       <DialogContent>
-        {open ? (
-          <CreateTeamForm projectId={projectId} onDone={() => setOpen(false)} />
+        {isOpen ? (
+          <CreateTeamForm
+            projectId={projectId}
+            onDone={() => setIsOpen(false)}
+          />
         ) : null}
       </DialogContent>
     </Dialog>

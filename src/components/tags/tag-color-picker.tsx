@@ -28,14 +28,14 @@ export function TagColorPicker({
   color: string
   onChange: (color: string) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [hexDraft, setHexDraft] = useState(color)
 
   return (
     <Popover
-      open={open}
+      open={isOpen}
       onOpenChange={(next) => {
-        setOpen(next)
+        setIsOpen(next)
         if (next) setHexDraft(color)
       }}
     >
@@ -57,7 +57,7 @@ export function TagColorPicker({
               style={{ backgroundColor: preset }}
               onClick={() => {
                 onChange(preset)
-                setOpen(false)
+                setIsOpen(false)
               }}
               aria-label={preset}
             />
@@ -73,7 +73,7 @@ export function TagColorPicker({
             size="sm"
             onClick={() => {
               onChange(hexDraft)
-              setOpen(false)
+              setIsOpen(false)
             }}
           >
             Apply
