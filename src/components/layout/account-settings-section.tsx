@@ -1,9 +1,11 @@
 import { useRef, useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { updateAvatar, updateUserProfile } from "@/api/users"
-import { CURRENT_USER_QUERY_KEY, useCurrentUserQuery } from "@/hooks/use-auth"
+import { useCurrentUserQuery } from "@/hooks/use-auth"
+import {
+  useUpdateAvatarMutation,
+  useUpdateUserProfileMutation,
+} from "@/queries/users"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
 import type { User } from "@/types/users"
@@ -40,7 +42,6 @@ type AccountFormProps = {
 }
 
 function AccountForm({ user, onSaved }: AccountFormProps) {
-  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [firstName, setFirstName] = useState(user.firstName)
@@ -53,25 +54,8 @@ function AccountForm({ user, onSaved }: AccountFormProps) {
     lastName !== user.lastName ||
     avatarFile !== null
 
-  const profileMutation = useMutation({
-    mutationFn: updateUserProfile,
-    onError: (error) => {
-      toast.error("Failed to update profile.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-  })
-
-  const avatarMutation = useMutation({
-    mutationFn: updateAvatar,
-    onError: (error) => {
-      toast.error("Failed to update avatar.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-  })
+  const profileMutation = useUpdateUserProfileMutation()
+  const avatarMutation = useUpdateAvatarMutation()
 
   async function handleSave() {
     try {
@@ -84,7 +68,6 @@ function AccountForm({ user, onSaved }: AccountFormProps) {
     } catch {
       return
     }
-    await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY })
     toast.success("Profile updated.")
     onSaved?.()
   }

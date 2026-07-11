@@ -1,13 +1,12 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { useMutation } from "@tanstack/react-query"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { CheckIcon, CircleIcon } from "lucide-react"
 import { z } from "zod"
 
-import { registerUser } from "@/api/users"
+import { useRegisterMutation } from "@/queries/users"
 import type { RegisterRequest } from "@/types/users"
 import { getGitHubSignInUrl } from "@/lib/github-oauth"
 import { cn } from "@/lib/utils"
@@ -81,19 +80,7 @@ export function SignupForm({
     resolver: zodResolver(signupSchema),
   })
 
-  const signupMutation = useMutation({
-    mutationFn: registerUser,
-    onError: (error) => {
-      toast.error("Sign up failed.", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-      })
-    },
-    onSuccess: () => {
-      toast.success("Account created successfully. Please log in.")
-      navigate("/login")
-    },
-  })
+  const signupMutation = useRegisterMutation()
 
   const password = form.watch("password")
   const passwordRules = [
@@ -103,20 +90,18 @@ export function SignupForm({
     { label: "One number", met: /[0-9]/.test(password) },
   ]
 
-  async function handleSubmit(values: SignupFormValues) {
+  function handleSubmit(values: SignupFormValues) {
     const { email, firstName, lastName, password, hasAcceptedTerms } = values
 
-    try {
-      await signupMutation.mutateAsync({
-        email,
-        firstName,
-        lastName,
-        password,
-        hasAcceptedTerms,
-      })
-    } catch {
-      // handled by signupMutation's onError
-    }
+    signupMutation.mutate(
+      { email, firstName, lastName, password, hasAcceptedTerms },
+      {
+        onSuccess: () => {
+          toast.success("Account created successfully. Please log in.")
+          navigate("/login")
+        },
+      }
+    )
   }
 
   return (
