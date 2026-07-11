@@ -188,7 +188,10 @@ describe("WorkItemComments", () => {
       )
     )
 
-    const user = userEvent.setup()
+    // No artificial per-keystroke delay: under CI/system load, a slower
+    // wall-clock gap between keystrokes gives Tiptap/React's async render
+    // cycle a chance to interleave with in-progress typing.
+    const user = userEvent.setup({ delay: null })
     renderComments(
       <WorkItemComments
         comments={[

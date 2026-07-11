@@ -204,7 +204,11 @@ describe("WikiPageComments", () => {
   it("cancels editing without saving changes", async () => {
     signInAs("user-1")
 
-    const user = userEvent.setup()
+    // No artificial per-keystroke delay: under CI/system load, a slower
+    // wall-clock gap between keystrokes gives Tiptap/React's async render
+    // cycle a chance to interleave with in-progress typing (see the
+    // MentionableEditor content-sync effect this typing risks racing with).
+    const user = userEvent.setup({ delay: null })
     renderComments([buildComment({ content: "Original content" })])
 
     await user.click(await screen.findByRole("button", { name: "Edit" }))
@@ -231,7 +235,11 @@ describe("WikiPageComments", () => {
       )
     )
 
-    const user = userEvent.setup()
+    // No artificial per-keystroke delay: under CI/system load, a slower
+    // wall-clock gap between keystrokes gives Tiptap/React's async render
+    // cycle a chance to interleave with in-progress typing (see the
+    // MentionableEditor content-sync effect this typing risks racing with).
+    const user = userEvent.setup({ delay: null })
     renderComments([buildComment({ content: "Original content" })])
 
     await user.click(await screen.findByRole("button", { name: "Edit" }))

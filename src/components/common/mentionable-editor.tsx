@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 type MentionableEditorProps = {
   content: string
   onChange?: (html: string) => void
+  onBlur?: () => void
   editable?: boolean
   placeholder?: string
   ariaLabel?: string
@@ -17,6 +18,7 @@ type MentionableEditorProps = {
 export function MentionableEditor({
   content,
   onChange,
+  onBlur,
   editable = true,
   placeholder,
   ariaLabel,
@@ -32,6 +34,7 @@ export function MentionableEditor({
     content,
     editable,
     onUpdate: ({ editor }) => onChange?.(editor.getHTML()),
+    onBlur: () => onBlur?.(),
     editorProps: {
       attributes: {
         class: cn("tiptap-content text-sm focus:outline-none"),

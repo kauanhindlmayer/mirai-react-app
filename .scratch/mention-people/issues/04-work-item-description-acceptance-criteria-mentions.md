@@ -18,9 +18,9 @@ together) before merging.
 
 **Status:** ready-for-agent
 
-- [ ] The work item description field supports `@mention` using the shared extension from ticket 01
-- [ ] The work item acceptance criteria field supports `@mention` using the same editor
-- [ ] Neither field gains a formatting toolbar — mention support only
-- [ ] Saving either field persists mentions correctly and they render on reload
-- [ ] Existing descriptions/acceptance criteria with no mentions render exactly as they did before this change, assuming the backend content backfill described above
-- [ ] The commit-on-blur-only-if-changed behavior these fields currently have is preserved
+- [x] The work item description field supports `@mention` using the shared extension from ticket 01
+- [x] The work item acceptance criteria field supports `@mention` using the same editor
+- [x] Neither field gains a formatting toolbar — mention support only
+- [x] Saving either field persists mentions correctly and they render on reload
+- [x] Existing descriptions/acceptance criteria with no mentions render exactly as they did before this change, assuming the backend content backfill described above
+- [x] The commit-on-blur-only-if-changed behavior these fields currently have is preserved

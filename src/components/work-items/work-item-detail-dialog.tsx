@@ -14,6 +14,7 @@ import {
   WORK_ITEM_TYPE_ICONS,
 } from "@/lib/work-item-colors"
 import { cn } from "@/lib/utils"
+import { MentionableEditor } from "@/components/common/mentionable-editor"
 import { WorkItemAssigneePicker } from "@/components/work-items/work-item-assignee-picker"
 import { WorkItemAttachments } from "@/components/work-items/work-item-attachments"
 import { WorkItemComments } from "@/components/work-items/work-item-comments"
@@ -50,7 +51,6 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Textarea } from "@/components/ui/textarea"
 
 export function WorkItemDetailDialog() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -294,7 +294,7 @@ function WorkItemDetailContent({
   )
 }
 
-function WorkItemMainFields({ workItem }: { workItem: WorkItem }) {
+export function WorkItemMainFields({ workItem }: { workItem: WorkItem }) {
   const { projectId, workItemId } = useWorkItemContext()
   const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
 
@@ -321,27 +321,29 @@ function WorkItemMainFields({ workItem }: { workItem: WorkItem }) {
       />
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs text-muted-foreground">Description</Label>
-        <Textarea
-          value={descriptionField.draft}
-          onChange={(event) => descriptionField.setDraft(event.target.value)}
-          onBlur={descriptionField.commit}
-          placeholder="Add a description..."
-          className="min-h-28"
-        />
+        <div className="min-h-28 rounded-md border px-3 py-2">
+          <MentionableEditor
+            content={descriptionField.draft}
+            onChange={descriptionField.setDraft}
+            onBlur={descriptionField.commit}
+            placeholder="Add a description..."
+            ariaLabel="Description"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs text-muted-foreground">
           Acceptance criteria
         </Label>
-        <Textarea
-          value={acceptanceCriteriaField.draft}
-          onChange={(event) =>
-            acceptanceCriteriaField.setDraft(event.target.value)
-          }
-          onBlur={acceptanceCriteriaField.commit}
-          placeholder="Add acceptance criteria..."
-          className="min-h-20"
-        />
+        <div className="min-h-20 rounded-md border px-3 py-2">
+          <MentionableEditor
+            content={acceptanceCriteriaField.draft}
+            onChange={acceptanceCriteriaField.setDraft}
+            onBlur={acceptanceCriteriaField.commit}
+            placeholder="Add acceptance criteria..."
+            ariaLabel="Acceptance criteria"
+          />
+        </div>
       </div>
     </div>
   )
