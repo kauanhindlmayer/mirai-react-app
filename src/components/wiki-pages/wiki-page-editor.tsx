@@ -10,13 +10,9 @@ import {
   QuoteIcon,
 } from "lucide-react"
 
-import { createMentionExtension } from "@/components/common/mention/create-mention-extension"
-import { useCurrentProject } from "@/hooks/use-current-project"
-import { useMentionableProjectUsers } from "@/hooks/use-mentionable-project-users"
+import { useProjectMentionExtension } from "@/hooks/use-project-mention-extension"
 import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
-
-const MENTION_SUGGESTION_DEBOUNCE_MS = 300
 
 type WikiPageEditorProps = {
   content: string
@@ -29,21 +25,10 @@ export function WikiPageEditor({
   onChange,
   editable = true,
 }: WikiPageEditorProps) {
-  const { projectId, project } = useCurrentProject()
-  const { fetchSuggestions, useResolveMention } = useMentionableProjectUsers(
-    project?.organizationId,
-    projectId
-  )
+  const mentionExtension = useProjectMentionExtension()
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      createMentionExtension({
-        fetchSuggestions,
-        useResolveMention,
-        debounceMs: MENTION_SUGGESTION_DEBOUNCE_MS,
-      }),
-    ],
+    extensions: [StarterKit, mentionExtension],
     content,
     editable,
     onUpdate: ({ editor }) => {

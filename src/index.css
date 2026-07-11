@@ -190,3 +190,10 @@
   background: none;
   padding: 0;
 }
+.tiptap-content p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

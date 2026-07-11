@@ -1,13 +1,21 @@
 import { http, HttpResponse } from "msw"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactElement } from "react"
+
+vi.mock("@/hooks/use-current-project", () => ({
+  useCurrentProject: () => ({
+    projectId: "project-1",
+    project: { id: "project-1", organizationId: "org-1" },
+  }),
+}))
 
 import { WorkItemComments } from "@/components/work-items/work-item-comments"
 import { WorkItemProvider } from "@/components/work-items/work-item-context"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
+import { mockProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import type { Comment } from "@/types/common"
 
@@ -77,8 +85,9 @@ describe("WorkItemComments", () => {
     const submit = screen.getByRole("button", { name: "Comment" })
     expect(submit).toBeDisabled()
 
+    await user.click(screen.getByRole("textbox", { name: "Add a comment" }))
     await user.type(
-      screen.getByPlaceholderText("Add a comment..."),
+      screen.getByRole("textbox", { name: "Add a comment" }),
       "A new comment"
     )
     expect(submit).toBeEnabled()
@@ -95,11 +104,122 @@ describe("WorkItemComments", () => {
     const user = userEvent.setup()
     renderComments(<WorkItemComments comments={[]} />)
 
-    const textarea = screen.getByPlaceholderText("Add a comment...")
-    await user.type(textarea, "A new comment")
+    const composer = screen.getByRole("textbox", { name: "Add a comment" })
+    await user.click(composer)
+    await user.type(composer, "A new comment")
     await user.click(screen.getByRole("button", { name: "Comment" }))
 
-    await waitFor(() => expect(textarea).toHaveValue(""))
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", { name: "Add a comment" })
+      ).toHaveTextContent("")
+    )
+  })
+
+  it("mentions a project member in a new comment", async () => {
+    mockProjectUsers()
+    let requestBody: unknown
+    server.use(
+      http.post(
+        "*/api/projects/project-1/work-items/work-item-1/comments",
+        async ({ request }) => {
+          requestBody = await request.json()
+          return new HttpResponse(null, { status: 204 })
+        }
+      )
+    )
+
+    const user = userEvent.setup()
+    renderComments(<WorkItemComments comments={[]} />)
+
+    const composer = screen.getByRole("textbox", { name: "Add a comment" })
+    await user.click(composer)
+    await user.type(composer, "@jane")
+
+    expect(await screen.findByText("Jane Smith")).toBeInTheDocument()
+    await user.keyboard("{Enter}")
+
+    await waitFor(() =>
+      expect(
+        composer.querySelector("[data-mention-user-id='user-2']")
+      ).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole("button", { name: "Comment" }))
+
+    await waitFor(() =>
+      expect(requestBody).toEqual({
+        content: expect.stringContaining('data-id="user-2"'),
+      })
+    )
+  })
+
+  it("renders an existing mention in a saved comment on reload", async () => {
+    mockProjectUsers()
+    renderComments(
+      <WorkItemComments
+        comments={[
+          buildComment({
+            content:
+              'Thanks <span data-type="mention" data-id="user-2" data-label="Jane Smith">@Jane Smith</span>',
+          }),
+        ]}
+      />
+    )
+
+    await waitFor(() =>
+      expect(
+        document.querySelector("[data-mention-user-id='user-2']")
+      ).toHaveTextContent("Jane Smith")
+    )
+  })
+
+  it("adds a mention while editing an existing comment", async () => {
+    signInAs("user-1")
+    mockProjectUsers()
+    let requestBody: unknown
+    server.use(
+      http.put(
+        "*/api/projects/project-1/work-items/work-item-1/comments/comment-1",
+        async ({ request }) => {
+          requestBody = await request.json()
+          return new HttpResponse(null, { status: 204 })
+        }
+      )
+    )
+
+    const user = userEvent.setup()
+    renderComments(
+      <WorkItemComments
+        comments={[
+          buildComment({
+            author: { id: "user-1", name: "John Doe", imageUrl: "" },
+            content: "Original content",
+          }),
+        ]}
+      />
+    )
+
+    await user.click(await screen.findByRole("button", { name: "Edit" }))
+    const editBox = screen.getByRole("textbox", { name: "Edit comment" })
+    await user.click(editBox)
+    await user.type(editBox, " @jane")
+
+    expect(await screen.findByText("Jane Smith")).toBeInTheDocument()
+    await user.keyboard("{Enter}")
+    await waitFor(() =>
+      expect(
+        editBox.querySelector("[data-mention-user-id='user-2']")
+      ).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole("button", { name: "Save" }))
+
+    await waitFor(() =>
+      expect(requestBody).toEqual({
+        content: expect.stringContaining('data-id="user-2"'),
+      })
+    )
   })
 
   it("shows edit/delete controls only for the current user's own comment", async () => {

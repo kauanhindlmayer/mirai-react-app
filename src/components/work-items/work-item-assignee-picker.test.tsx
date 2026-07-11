@@ -13,6 +13,7 @@ vi.mock("@/hooks/use-current-project", () => ({
 import { WorkItemAssigneePicker } from "@/components/work-items/work-item-assignee-picker"
 import { WorkItemProvider } from "@/components/work-items/work-item-context"
 import { server } from "@/test/mocks/server"
+import { mockProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import type { AssigneeResponse } from "@/types/work-items"
 
@@ -21,28 +22,6 @@ function renderPicker(assignee?: AssigneeResponse) {
     <WorkItemProvider projectId="project-1" workItemId="work-item-1">
       <WorkItemAssigneePicker assignee={assignee} />
     </WorkItemProvider>
-  )
-}
-
-function mockProjectUsers() {
-  server.use(
-    http.get("*/api/organizations/org-1/projects/project-1/users", () =>
-      HttpResponse.json({
-        items: [
-          {
-            id: "user-2",
-            fullName: "Jane Smith",
-            email: "jane.smith@mirai.com",
-          },
-        ],
-        totalCount: 1,
-        pageSize: 10,
-        page: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-      })
-    )
   )
 }
 

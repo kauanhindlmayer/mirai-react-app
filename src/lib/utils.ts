@@ -22,6 +22,13 @@ export function getInitials(name?: string): string {
   return (firstNameInitial + lastNameInitial).toUpperCase()
 }
 
+const EMPTY_EDITOR_HTML = "<p></p>"
+
+export function isEditorContentEmpty(html: string): boolean {
+  const trimmed = html.trim()
+  return trimmed === "" || trimmed === EMPTY_EDITOR_HTML
+}
+
 export function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false

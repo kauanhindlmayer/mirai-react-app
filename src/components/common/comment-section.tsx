@@ -2,8 +2,9 @@ import { type FormEvent, useState } from "react"
 import type { UseMutationResult } from "@tanstack/react-query"
 
 import { useCurrentUserQuery } from "@/hooks/use-auth"
+import { MentionableEditor } from "@/components/common/mentionable-editor"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
-import { getInitials } from "@/lib/utils"
+import { getInitials, isEditorContentEmpty } from "@/lib/utils"
 import type {
   AddCommentRequest,
   Comment,
@@ -12,7 +13,6 @@ import type {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { Textarea } from "@/components/ui/textarea"
 
 type UpdateCommentVariables = {
   commentId: string
@@ -34,11 +34,22 @@ export function CommentSection({
 }: CommentSectionProps) {
   const { data: currentUser } = useCurrentUserQuery()
   const [draft, setDraft] = useState("")
+  const [composerKey, setComposerKey] = useState(0)
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!draft.trim()) return
-    addComment.mutate({ content: draft }, { onSuccess: () => setDraft("") })
+    if (isEditorContentEmpty(draft)) return
+    addComment.mutate(
+      { content: draft },
+      {
+        onSuccess: () => {
+          setDraft("")
+          // Tiptap only reads `content` at mount, so clearing the draft
+          // state alone wouldn't visually clear the editor - remount it.
+          setComposerKey((key) => key + 1)
+        },
+      }
+    )
   }
 
   return (
@@ -59,16 +70,20 @@ export function CommentSection({
         )}
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <Textarea
-          placeholder="Add a comment..."
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-        />
+        <div className="rounded-md border px-3 py-2">
+          <MentionableEditor
+            key={composerKey}
+            content={draft}
+            onChange={setDraft}
+            placeholder="Add a comment..."
+            ariaLabel="Add a comment"
+          />
+        </div>
         <Button
           type="submit"
           size="sm"
           className="w-fit"
-          disabled={!draft.trim() || addComment.isPending}
+          disabled={isEditorContentEmpty(draft) || addComment.isPending}
         >
           {addComment.isPending ? <Spinner data-icon="inline-end" /> : null}
           Comment
@@ -95,7 +110,7 @@ function CommentItem({
   const [draft, setDraft] = useState(comment.content)
 
   function handleSave() {
-    if (!draft.trim()) return
+    if (isEditorContentEmpty(draft)) return
     updateComment.mutate(
       { commentId: comment.id, request: { content: draft } },
       { onSuccess: () => setIsEditing(false) }
@@ -120,10 +135,13 @@ function CommentItem({
         </div>
         {isEditing ? (
           <div className="flex flex-col gap-2">
-            <Textarea
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-            />
+            <div className="rounded-md border px-3 py-2">
+              <MentionableEditor
+                content={draft}
+                onChange={setDraft}
+                ariaLabel="Edit comment"
+              />
+            </div>
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -142,7 +160,10 @@ function CommentItem({
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+          // Rendered through Tiptap (not dangerouslySetInnerHTML) so mention
+          // chips go through their own node view and resolve live, rather
+          // than showing whatever name was frozen into the HTML at save time.
+          <MentionableEditor content={comment.content} editable={false} />
         )}
         {canEdit && !isEditing ? (
           <div className="flex gap-2">

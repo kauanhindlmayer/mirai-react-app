@@ -1,11 +1,19 @@
 import { http, HttpResponse } from "msw"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+
+vi.mock("@/hooks/use-current-project", () => ({
+  useCurrentProject: () => ({
+    projectId: "project-1",
+    project: { id: "project-1", organizationId: "org-1" },
+  }),
+}))
 
 import { WikiPageComments } from "@/components/wiki-pages/wiki-page-comments"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
+import { mockProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import type { Comment } from "@/types/common"
 
@@ -75,8 +83,9 @@ describe("WikiPageComments", () => {
     const submit = screen.getByRole("button", { name: "Comment" })
     expect(submit).toBeDisabled()
 
+    await user.click(screen.getByRole("textbox", { name: "Add a comment" }))
     await user.type(
-      screen.getByPlaceholderText("Add a comment..."),
+      screen.getByRole("textbox", { name: "Add a comment" }),
       "A new comment"
     )
     expect(submit).toBeEnabled()
@@ -93,11 +102,70 @@ describe("WikiPageComments", () => {
     const user = userEvent.setup()
     renderComments([])
 
-    const textarea = screen.getByPlaceholderText("Add a comment...")
-    await user.type(textarea, "A new comment")
+    const composer = screen.getByRole("textbox", { name: "Add a comment" })
+    await user.click(composer)
+    await user.type(composer, "A new comment")
     await user.click(screen.getByRole("button", { name: "Comment" }))
 
-    await waitFor(() => expect(textarea).toHaveValue(""))
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", { name: "Add a comment" })
+      ).toHaveTextContent("")
+    )
+  })
+
+  it("mentions a project member in a new comment", async () => {
+    mockProjectUsers()
+    let requestBody: unknown
+    server.use(
+      http.post(
+        "*/api/projects/project-1/wiki-pages/wiki-page-1/comments",
+        async ({ request }) => {
+          requestBody = await request.json()
+          return new HttpResponse(null, { status: 204 })
+        }
+      )
+    )
+
+    const user = userEvent.setup()
+    renderComments([])
+
+    const composer = screen.getByRole("textbox", { name: "Add a comment" })
+    await user.click(composer)
+    await user.type(composer, "@jane")
+
+    expect(await screen.findByText("Jane Smith")).toBeInTheDocument()
+    await user.keyboard("{Enter}")
+
+    await waitFor(() =>
+      expect(
+        composer.querySelector("[data-mention-user-id='user-2']")
+      ).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole("button", { name: "Comment" }))
+
+    await waitFor(() =>
+      expect(requestBody).toEqual({
+        content: expect.stringContaining('data-id="user-2"'),
+      })
+    )
+  })
+
+  it("renders an existing mention in a saved comment on reload", async () => {
+    mockProjectUsers()
+    renderComments([
+      buildComment({
+        content:
+          'Thanks <span data-type="mention" data-id="user-2" data-label="Jane Smith">@Jane Smith</span>',
+      }),
+    ])
+
+    await waitFor(() =>
+      expect(
+        document.querySelector("[data-mention-user-id='user-2']")
+      ).toHaveTextContent("Jane Smith")
+    )
   })
 
   it("shows edit/delete controls only for the current user's own comment", async () => {
@@ -127,7 +195,9 @@ describe("WikiPageComments", () => {
 
     await user.click(await screen.findByRole("button", { name: "Edit" }))
 
-    expect(screen.getByDisplayValue("Original content")).toBeInTheDocument()
+    expect(
+      screen.getByRole("textbox", { name: "Edit comment" })
+    ).toHaveTextContent("Original content")
     expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument()
   })
 
@@ -138,13 +208,13 @@ describe("WikiPageComments", () => {
     renderComments([buildComment({ content: "Original content" })])
 
     await user.click(await screen.findByRole("button", { name: "Edit" }))
-    const editTextarea = screen.getByDisplayValue("Original content")
-    await user.clear(editTextarea)
-    await user.type(editTextarea, "Changed content")
+    const editBox = screen.getByRole("textbox", { name: "Edit comment" })
+    await user.click(editBox)
+    await user.type(editBox, " - changed")
     await user.click(screen.getByRole("button", { name: "Cancel" }))
 
     expect(screen.getByText("Original content")).toBeInTheDocument()
-    expect(screen.queryByText("Changed content")).not.toBeInTheDocument()
+    expect(screen.queryByText(/changed/)).not.toBeInTheDocument()
   })
 
   it("saves an edited comment", async () => {
@@ -165,13 +235,15 @@ describe("WikiPageComments", () => {
     renderComments([buildComment({ content: "Original content" })])
 
     await user.click(await screen.findByRole("button", { name: "Edit" }))
-    const editTextarea = screen.getByDisplayValue("Original content")
-    await user.clear(editTextarea)
-    await user.type(editTextarea, "Updated content")
+    const editBox = screen.getByRole("textbox", { name: "Edit comment" })
+    await user.click(editBox)
+    await user.type(editBox, " - updated")
     await user.click(screen.getByRole("button", { name: "Save" }))
 
     await waitFor(() =>
-      expect(requestBody).toEqual({ content: "Updated content" })
+      expect(requestBody).toEqual({
+        content: "<p>Original content - updated</p>",
+      })
     )
   })
 

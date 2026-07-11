@@ -20,8 +20,8 @@ scheduled to land together) before merging.
 
 **Status:** ready-for-agent
 
-- [ ] The comment editor (used by both work items and wiki pages) supports `@mention` using the shared extension from ticket 01
-- [ ] The comment editor has no formatting toolbar — mention support only, visual style otherwise unchanged
-- [ ] A saved comment renders its mentions correctly on reload, on both a work item and a wiki page
-- [ ] Existing comments with no mentions render exactly as they did before this change, assuming the backend content backfill described above
-- [ ] Adding, editing, and removing mentions in an existing comment works correctly
+- [x] The comment editor (used by both work items and wiki pages) supports `@mention` using the shared extension from ticket 01
+- [x] The comment editor has no formatting toolbar — mention support only, visual style otherwise unchanged
+- [x] A saved comment renders its mentions correctly on reload, on both a work item and a wiki page
+- [x] Existing comments with no mentions render exactly as they did before this change, assuming the backend content backfill described above
+- [x] Adding, editing, and removing mentions in an existing comment works correctly
