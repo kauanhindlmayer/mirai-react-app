@@ -19,19 +19,19 @@ type UpdateCommentVariables = {
   request: UpdateCommentRequest
 }
 
-type CommentThreadProps = {
+type CommentSectionProps = {
   comments: Comment[]
   addComment: UseMutationResult<void, unknown, AddCommentRequest>
   updateComment: UseMutationResult<void, unknown, UpdateCommentVariables>
   deleteComment: UseMutationResult<void, unknown, string>
 }
 
-export function CommentThread({
+export function CommentSection({
   comments,
   addComment,
   updateComment,
   deleteComment,
-}: CommentThreadProps) {
+}: CommentSectionProps) {
   const { data: currentUser } = useCurrentUserQuery()
   const [draft, setDraft] = useState("")
 

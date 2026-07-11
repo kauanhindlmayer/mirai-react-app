@@ -1,4 +1,4 @@
-import { CommentThread } from "@/components/common/comment-thread"
+import { CommentSection } from "@/components/common/comment-section"
 import {
   useAddWikiPageCommentMutation,
   useDeleteWikiPageCommentMutation,
@@ -20,7 +20,7 @@ export function WikiPageComments({
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-sm font-semibold">Comments</h2>
-      <CommentThread
+      <CommentSection
         comments={comments}
         addComment={useAddWikiPageCommentMutation(projectId, wikiPageId)}
         updateComment={useUpdateWikiPageCommentMutation(projectId, wikiPageId)}

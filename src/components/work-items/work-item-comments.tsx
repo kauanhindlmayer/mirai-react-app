@@ -1,4 +1,4 @@
-import { CommentThread } from "@/components/common/comment-thread"
+import { CommentSection } from "@/components/common/comment-section"
 import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import {
   useAddWorkItemCommentMutation,
@@ -15,7 +15,7 @@ export function WorkItemComments({ comments }: WorkItemCommentsProps) {
   const { projectId, workItemId } = useWorkItemContext()
 
   return (
-    <CommentThread
+    <CommentSection
       comments={comments}
       addComment={useAddWorkItemCommentMutation(projectId, workItemId)}
       updateComment={useUpdateWorkItemCommentMutation(projectId, workItemId)}
