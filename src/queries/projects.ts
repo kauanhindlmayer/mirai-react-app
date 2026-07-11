@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import {
@@ -74,6 +79,26 @@ export function useProjectUsersQuery(
     enabled: options?.enabled ?? (!!organizationId && !!projectId),
     staleTime: options?.staleTime ?? 60_000,
     placeholderData: (previous) => previous,
+  })
+}
+
+export function fetchProjectUsers(
+  queryClient: QueryClient,
+  organizationId: string,
+  projectId: string,
+  searchTerm?: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
+  return queryClient.fetchQuery({
+    queryKey: [
+      ...projectUsersQueryKey(organizationId, projectId),
+      searchTerm,
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      getProjectUsers(organizationId, projectId, searchTerm, page, pageSize),
   })
 }
 

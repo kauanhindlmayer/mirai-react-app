@@ -1,6 +1,6 @@
 import { EditorContent, useEditor, type Editor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import userEvent from "@testing-library/user-event"
 
 import { createMentionExtension } from "@/components/common/mention/create-mention-extension"
@@ -25,13 +25,23 @@ function useResolveMention(userId: string) {
 
 type TestMentionEditorProps = {
   onReady?: (editor: Editor) => void
+  fetchSuggestions?: (query: string) => MentionSuggestionItem[]
+  debounceMs?: number
 }
 
-function TestMentionEditor({ onReady }: TestMentionEditorProps) {
+function TestMentionEditor({
+  onReady,
+  fetchSuggestions: fetchSuggestionsOverride,
+  debounceMs,
+}: TestMentionEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      createMentionExtension({ fetchSuggestions, useResolveMention }),
+      createMentionExtension({
+        fetchSuggestions: fetchSuggestionsOverride ?? fetchSuggestions,
+        useResolveMention,
+        debounceMs,
+      }),
     ],
     content: "<p></p>",
     editorProps: {
@@ -183,5 +193,23 @@ describe("createMentionExtension", () => {
       ).not.toBeInTheDocument()
     )
     expect(editor).not.toHaveTextContent("Alice Anderson")
+  })
+
+  it("debounces fetchSuggestions when debounceMs is configured", async () => {
+    const spiedFetchSuggestions = vi.fn(fetchSuggestions)
+    const user = userEvent.setup({ delay: 1 })
+    render(
+      <TestMentionEditor
+        fetchSuggestions={spiedFetchSuggestions}
+        debounceMs={50}
+      />
+    )
+
+    const editor = await screen.findByRole("textbox", { name: "Editor" })
+    await user.click(editor)
+    await user.type(editor, "@alice")
+
+    expect(await screen.findByText("Alice Anderson")).toBeInTheDocument()
+    expect(spiedFetchSuggestions.mock.calls.length).toBeLessThan(6)
   })
 })

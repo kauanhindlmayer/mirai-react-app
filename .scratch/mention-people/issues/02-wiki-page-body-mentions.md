@@ -12,7 +12,7 @@ unaffected and stays exactly as it is today.
 
 **Status:** ready-for-agent
 
-- [ ] The wiki page body editor supports `@mention` using the shared extension from ticket 01
-- [ ] The existing formatting toolbar continues to work unchanged
-- [ ] A saved wiki page renders its mentions correctly on reload (chip with current display name/avatar)
-- [ ] Existing wiki pages with no mentions render exactly as they did before this change
+- [x] The wiki page body editor supports `@mention` using the shared extension from ticket 01
+- [x] The existing formatting toolbar continues to work unchanged
+- [x] A saved wiki page renders its mentions correctly on reload (chip with current display name/avatar)
+- [x] Existing wiki pages with no mentions render exactly as they did before this change

@@ -20,11 +20,13 @@ type CreateMentionExtensionOptions = {
     query: string
   ) => MentionSuggestionItem[] | Promise<MentionSuggestionItem[]>
   useResolveMention: (userId: string) => MentionSuggestionItem | undefined
+  debounceMs?: number
 }
 
 export function createMentionExtension({
   fetchSuggestions,
   useResolveMention,
+  debounceMs,
 }: CreateMentionExtensionOptions) {
   return Mention.extend({
     addNodeView() {
@@ -36,6 +38,7 @@ export function createMentionExtension({
       char: "@",
       items: ({ query }) => fetchSuggestions(query),
       render: createSuggestionRenderer,
+      ...(debounceMs ? { debounce: debounceMs } : {}),
     } satisfies Partial<SuggestionOptions<MentionSuggestionItem>>,
   })
 }

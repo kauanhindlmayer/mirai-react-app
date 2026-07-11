@@ -10,8 +10,13 @@ import {
   QuoteIcon,
 } from "lucide-react"
 
+import { createMentionExtension } from "@/components/common/mention/create-mention-extension"
+import { useCurrentProject } from "@/hooks/use-current-project"
+import { useMentionableProjectUsers } from "@/hooks/use-mentionable-project-users"
 import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
+
+const MENTION_SUGGESTION_DEBOUNCE_MS = 300
 
 type WikiPageEditorProps = {
   content: string
@@ -24,8 +29,21 @@ export function WikiPageEditor({
   onChange,
   editable = true,
 }: WikiPageEditorProps) {
+  const { projectId, project } = useCurrentProject()
+  const { fetchSuggestions, useResolveMention } = useMentionableProjectUsers(
+    project?.organizationId,
+    projectId
+  )
+
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      createMentionExtension({
+        fetchSuggestions,
+        useResolveMention,
+        debounceMs: MENTION_SUGGESTION_DEBOUNCE_MS,
+      }),
+    ],
     content,
     editable,
     onUpdate: ({ editor }) => {
@@ -37,6 +55,13 @@ export function WikiPageEditor({
           "tiptap-content focus:outline-none",
           editable && "min-h-48 rounded-md border px-3 py-2"
         ),
+        ...(editable
+          ? {
+              role: "textbox",
+              "aria-multiline": "true",
+              "aria-label": "Wiki page content",
+            }
+          : {}),
       },
     },
   })
