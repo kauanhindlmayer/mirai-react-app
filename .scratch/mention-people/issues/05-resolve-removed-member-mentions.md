@@ -1,11 +1,11 @@
 # 05 — Resolve mentions of removed project members
 
 **What to build:** A mention referencing someone who has since been removed
-from the project still resolves to their last-known display name (and
-avatar, if available) instead of showing a broken or empty reference. Today,
-mention chips resolve names via the current project members list
-(`useProjectUsersQuery`), which excludes anyone no longer on the project —
-this ticket adds the fallback path for that case.
+from the project still resolves to their last-known display name instead of
+showing a broken or empty reference (the chip is name-only, so there's no
+avatar to resolve). Today, mention chips resolve names via the current
+project members list (`useProjectUsersQuery`), which excludes anyone no
+longer on the project — this ticket adds the fallback path for that case.
 
 **Depends on (external, not a blocker in this repo):** this requires a new
 mirai-api endpoint that resolves a user by ID (or bulk-resolves a list of

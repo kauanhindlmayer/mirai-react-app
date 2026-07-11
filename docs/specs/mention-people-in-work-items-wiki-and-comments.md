@@ -18,10 +18,11 @@ was pointed at what.
 
 Let any project member be referenced inline, by name, at the exact point in
 the text that concerns them — typing `@` opens a picker scoped to the
-project's members, picking a name inserts a **Mention**: a chip that always
-resolves to that person's current display name and avatar. This works
-identically in work item descriptions, acceptance criteria, wiki page
-bodies, and comments (on either work items or wiki pages).
+project's members (showing each person's avatar in the picker), picking a
+name inserts a **Mention**: a name-only chip that always resolves to that
+person's current display name. This works identically in work item
+descriptions, acceptance criteria, wiki page bodies, and comments (on either
+work items or wiki pages).
 
 A mention is a one-time reference, not a subscription — it doesn't change
 who's watching the item going forward. It doesn't yet notify anyone (there's
@@ -40,7 +41,7 @@ from day one.
 7. As a project member, I want to mention someone inside a wiki page's body text, so that documentation can point at the person responsible for a section.
 8. As a project member, I want to mention someone inside a wiki page comment, so that wiki discussions work the same way as work item discussions.
 9. As a project member, I want the `@` picker to only ever offer people who are members of this project, so that I can't accidentally reference someone who has no access to what I'm writing.
-10. As a project member, I want a rendered mention to show the person's current display name and avatar, so that if they change their name later, old mentions of them still make sense.
+10. As a project member, I want a rendered mention to show the person's current display name, so that if they change their name later, old mentions of them still make sense.
 11. As a project member, I want a mention of someone who has since been removed from the project to still show a meaningful name (not a broken reference), so that historical context isn't lost when project membership changes.
 12. As a project member, I want to be able to mention myself, so that the editor doesn't need special-case behavior to block it, even though it's a no-op in terms of any future notification.
 13. As a project member, I want deleting the mention chip's text (e.g. selecting and backspacing over it) to remove it as a single unit, so that I can't leave a partially-edited, broken mention behind.
@@ -64,15 +65,15 @@ from day one.
   - Both editor configurations are built on the one shared mention seam described above, so mention behavior itself isn't duplicated between them.
 - **Content format migration**: `Comment.content`, `WorkItem.description`, and `WorkItem.acceptanceCriteria` change from plain string to HTML string (Tiptap's `getHTML()` output, matching how wiki page content already works). Existing rows are backfilled once — escaped and wrapped into equivalent HTML — so the frontend renderer only ever handles one content format, never branching between legacy plain-text and new HTML.
 - **Mentionable scope**: the picker is scoped to the current project's members via `getProjectUsers`/`useProjectUsersQuery` — the same access boundary that already governs who can see the work item or wiki page.
-- **Identity resolution**: a mention chip stores the mentioned person's user ID and resolves the displayed name/avatar live, not a name snapshotted at creation time — renames are reflected automatically wherever the mention is rendered.
+- **Identity resolution**: a mention chip stores the mentioned person's user ID and resolves the displayed name live, not a name snapshotted at creation time — renames are reflected automatically wherever the mention is rendered. The chip itself is name-only (`@Full Name`); an avatar is shown only in the `@`-mention picker, not in the rendered chip.
 - **Removed-member fallback**: resolving a mention of someone no longer on the project requires a new backend lookup not scoped to current project membership (`getProjectUsers` excludes them). This spec depends on mirai-api adding a user-by-ID (or bulk-resolve) endpoint; without it, such mentions cannot resolve to a real name.
 - **Durable mention record**: a new domain (`mentions`, following this repo's `api/` → `queries/` → `types` one-file-per-domain convention) persists each mention (mentioned user ID, source item/comment, timestamp) independently of rich-text parsing, so future features can query "where was I mentioned" without re-parsing content.
 - **Notification/subscription behavior**: creating a mention has no side effect on watcher/subscriber state, and triggers no delivery (email, in-app, or otherwise) in this pass — there is no notification center in this app yet. This spec only guarantees the data (who/where/when) exists for that future work.
 
 ## Testing Decisions
 
-- Tests assert observable behavior — what a user sees and can do (the `@` picker appearing, filtering as you type, a chip being inserted and rendering a name/avatar, a chip disappearing when deleted) — not Tiptap's or ProseMirror's internal document structure.
-- The shared Tiptap Mention extension + suggestion popover is the single seam under test: mount a host editor configured with it, type `@` plus a partial name, assert the filtered list of project members appears, assert arrow-key navigation and Enter/Tab selection insert the right chip, assert Escape dismisses without inserting, assert a rendered chip shows the current display name/avatar for a given user ID. Covering this once means the four call sites don't need their own copies of this test.
+- Tests assert observable behavior — what a user sees and can do (the `@` picker appearing with each person's avatar, filtering as you type, a chip being inserted and rendering a name, a chip disappearing when deleted) — not Tiptap's or ProseMirror's internal document structure.
+- The shared Tiptap Mention extension + suggestion popover is the single seam under test: mount a host editor configured with it, type `@` plus a partial name, assert the filtered list of project members appears, assert arrow-key navigation and Enter/Tab selection insert the right chip, assert Escape dismisses without inserting, assert a rendered chip shows the current display name for a given user ID. Covering this once means the four call sites don't need their own copies of this test.
 - Each of the four call sites (description field, acceptance criteria field, `CommentSection`, wiki body) gets a thin wiring test only — confirming the shared mention-capable editor is actually mounted and its `onChange`/save path receives HTML content — not a re-test of picker/keyboard/chip behavior.
 - Prior art: `src/components/wiki-pages/wiki-page-comments.test.tsx` and `src/components/work-items/work-item-comments.test.tsx` already exercise `CommentSection` through MSW-mocked mutations and are the template for the wiring tests at those two call sites; `src/hooks/use-draft-field.ts`'s tests are the template for a hook-level test if the minimal editor's commit-on-blur logic is factored into a hook.
 - Content-migration backfill itself is a backend/mirai-api concern and isn't covered by this repo's test suite; this repo's tests only need to confirm the renderer correctly displays HTML content (with and without mention chips), per the "no legacy plain-text branch" decision above.

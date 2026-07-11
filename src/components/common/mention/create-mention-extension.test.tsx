@@ -84,7 +84,7 @@ describe("createMentionExtension", () => {
     expect(editor).toHaveTextContent("@al")
   })
 
-  it("inserts a mention chip resolving the current display name and avatar on Enter", async () => {
+  it("inserts a mention chip resolving the current display name on Enter", async () => {
     const user = userEvent.setup()
     render(<TestMentionEditor />)
 

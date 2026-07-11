@@ -9,8 +9,10 @@ project-member picker.
 
 A mention is a **one-time reference**, not an ongoing subscription — it does
 not change the mentioned person's watcher/subscriber state on the item.
-Rendered as a chip that resolves the person's current display name/avatar by
-user ID (not a name frozen at the time the mention was created).
+Rendered as a chip that resolves the person's current display name by user
+ID (not a name frozen at the time the mention was created). The chip is
+name-only — the picker is the only place a mentionable person's avatar
+appears.
 
 Not to be confused with **Tag** (below) — the shared word "tag" in this
 codebase always means the colored topical label, never a person reference.
