@@ -72,7 +72,7 @@ describe("useDraftField", () => {
     expect(result.current.draft).toBe("hello from the server")
   })
 
-  it("does not resync the draft when value changes externally without reset", () => {
+  it("does not resync the draft when value changes externally after a local edit", () => {
     let value = "hello"
     const { result, rerender } = renderHook(() => useDraftField(value, vi.fn()))
 
@@ -84,5 +84,31 @@ describe("useDraftField", () => {
     rerender()
 
     expect(result.current.draft).toBe("edited")
+  })
+
+  it("resyncs the draft when value changes externally and the field is untouched", () => {
+    let value = "hello"
+    const { result, rerender } = renderHook(() => useDraftField(value, vi.fn()))
+
+    value = "changed elsewhere"
+    rerender()
+
+    expect(result.current.draft).toBe("changed elsewhere")
+  })
+
+  it("does not call onCommit on blur after an untouched field resynced externally", () => {
+    let value = "hello"
+    const onCommit = vi.fn()
+    const { result, rerender } = renderHook(() =>
+      useDraftField(value, onCommit)
+    )
+
+    value = "changed elsewhere"
+    rerender()
+    act(() => {
+      result.current.commit()
+    })
+
+    expect(onCommit).not.toHaveBeenCalled()
   })
 })
