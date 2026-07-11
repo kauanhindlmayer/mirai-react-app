@@ -7,6 +7,7 @@ import {
   useWorkItemsSearchQuery,
 } from "@/queries/work-items"
 import { WorkItemLinkType, type WorkItemLink } from "@/types/work-items"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useWorkItemContext } from "@/components/work-items/work-item-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -94,12 +95,13 @@ function AddLinkPopover() {
   const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search)
   const [linkType, setLinkType] = useState<WorkItemLinkType>(
     WorkItemLinkType.Related
   )
   const createLink = useCreateWorkItemLinkMutation(projectId, workItemId)
 
-  const { data } = useWorkItemsSearchQuery(projectId, search, {
+  const { data } = useWorkItemsSearchQuery(projectId, debouncedSearch, {
     pageSize: 10,
     enabled: open,
   })

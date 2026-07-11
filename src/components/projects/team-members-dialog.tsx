@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import { useCan } from "@/hooks/use-can"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useProjectUsersQuery } from "@/queries/projects"
 import {
   useAddUserToTeamMutation,
@@ -186,13 +187,14 @@ function AddTeamMemberDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search)
 
   const mutation = useAddUserToTeamMutation(projectId, teamId)
 
   const { data } = useProjectUsersQuery(
     organizationId,
     projectId,
-    search,
+    debouncedSearch,
     1,
     10,
     { enabled: open }

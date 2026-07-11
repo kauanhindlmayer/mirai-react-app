@@ -7,6 +7,7 @@ import {
   useUnassignWorkItemMutation,
 } from "@/queries/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
 import { getInitials } from "@/lib/utils"
@@ -36,6 +37,7 @@ export function WorkItemAssigneePicker({
   const { projectId, workItemId } = useWorkItemContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search)
   const { project } = useCurrentProject()
   const assignWorkItem = useAssignWorkItemMutation(projectId, workItemId)
   const unassignWorkItem = useUnassignWorkItemMutation(projectId, workItemId)
@@ -43,7 +45,7 @@ export function WorkItemAssigneePicker({
   const { data } = useProjectUsersQuery(
     project?.organizationId,
     projectId,
-    search,
+    debouncedSearch,
     undefined,
     undefined,
     { enabled: open && !!project, staleTime: 30_000 }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router"
 import { SearchIcon } from "lucide-react"
 
 import { useNavMainItems } from "@/hooks/use-nav-main-items"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useWorkItemsSearchQuery } from "@/queries/work-items"
 import { cn } from "@/lib/utils"
 import { WORK_ITEM_STATUS_COLORS } from "@/lib/work-item-colors"
@@ -20,13 +21,14 @@ import {
 export function GlobalSearch() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
+  const debouncedQuery = useDebouncedValue(query)
   const navigate = useNavigate()
   const { projectId } = useParams<{ projectId?: string }>()
   const { sections, settingsItems } = useNavMainItems()
 
-  const { data } = useWorkItemsSearchQuery(projectId ?? "", query, {
+  const { data } = useWorkItemsSearchQuery(projectId ?? "", debouncedQuery, {
     pageSize: 5,
-    enabled: open && !!projectId && !!query.trim(),
+    enabled: open && !!projectId && !!debouncedQuery.trim(),
   })
 
   useEffect(() => {

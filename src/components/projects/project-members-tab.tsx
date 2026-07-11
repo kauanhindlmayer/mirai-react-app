@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import { useCan } from "@/hooks/use-can"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useOrganizationUsersQuery } from "@/queries/organizations"
 import {
   useAddUserToProjectMutation,
@@ -159,12 +160,13 @@ function AddProjectMemberDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search)
 
   const mutation = useAddUserToProjectMutation(organizationId, projectId)
 
   const { data } = useOrganizationUsersQuery(
     organizationId,
-    { page: 1, pageSize: 10, sort: "", searchTerm: search },
+    { page: 1, pageSize: 10, sort: "", searchTerm: debouncedSearch },
     projectId,
     { enabled: open }
   )
