@@ -35,6 +35,9 @@ beforeAll(() => {
   // Tiptap/ProseMirror's cursor-position calculations).
   Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
   Range.prototype.getBoundingClientRect ??= stubDOMRect
+  // ProseMirror's mousedown handler calls this to resolve a click position;
+  // jsdom has no layout engine to back a real implementation.
+  document.elementFromPoint ??= () => null
   window.matchMedia ??= (query: string) => ({
     matches: false,
     media: query,
