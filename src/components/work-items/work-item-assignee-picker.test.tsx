@@ -65,12 +65,12 @@ describe("WorkItemAssigneePicker", () => {
 
   it("assigns a user selected from the search popover", async () => {
     mockProjectUsers()
-    let updateRequestBody: unknown
+    let assignRequestBody: unknown
     server.use(
-      http.put(
-        "*/api/projects/project-1/work-items/work-item-1",
+      http.patch(
+        "*/api/projects/project-1/work-items/work-item-1/assign",
         async ({ request }) => {
-          updateRequestBody = await request.json()
+          assignRequestBody = await request.json()
           return new HttpResponse(null, { status: 204 })
         }
       )
@@ -83,18 +83,18 @@ describe("WorkItemAssigneePicker", () => {
     await user.click(await screen.findByText("Jane Smith"))
 
     await waitFor(() =>
-      expect(updateRequestBody).toEqual({ assigneeId: "user-2" })
+      expect(assignRequestBody).toEqual({ assigneeId: "user-2" })
     )
   })
 
   it("unassigns when Unassign is selected", async () => {
     mockProjectUsers()
-    let updateRequestBody: unknown
+    let unassignRequested = false
     server.use(
-      http.put(
-        "*/api/projects/project-1/work-items/work-item-1",
-        async ({ request }) => {
-          updateRequestBody = await request.json()
+      http.delete(
+        "*/api/projects/project-1/work-items/work-item-1/assign",
+        () => {
+          unassignRequested = true
           return new HttpResponse(null, { status: 204 })
         }
       )
@@ -110,6 +110,6 @@ describe("WorkItemAssigneePicker", () => {
     await user.click(screen.getByRole("button", { name: /John Doe/ }))
     await user.click(await screen.findByText("Unassign"))
 
-    await waitFor(() => expect(updateRequestBody).toEqual({ assigneeId: null }))
+    await waitFor(() => expect(unassignRequested).toBe(true))
   })
 })

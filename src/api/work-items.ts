@@ -1,4 +1,4 @@
-import { del, get, post, put } from "@/lib/api-client"
+import { del, get, patch, post, put } from "@/lib/api-client"
 import type {
   AddCommentRequest,
   PaginatedList,
@@ -107,14 +107,26 @@ export function deleteWorkItemComment(
 export function updateWorkItem(
   projectId: string,
   workItemId: string,
-  request: Partial<WorkItem>
+  request: Omit<Partial<WorkItem>, "assignee" | "assigneeId">
 ): Promise<void> {
-  const { assignee, ...rest } = request
-  const payload: Record<string, unknown> = { ...rest }
-  if ("assignee" in request) {
-    payload.assigneeId = assignee ? assignee.id : null
-  }
-  return put(`/projects/${projectId}/work-items/${workItemId}`, payload)
+  return put(`/projects/${projectId}/work-items/${workItemId}`, request)
+}
+
+export function assignWorkItem(
+  projectId: string,
+  workItemId: string,
+  assigneeId: string
+): Promise<void> {
+  return patch(`/projects/${projectId}/work-items/${workItemId}/assign`, {
+    assigneeId,
+  })
+}
+
+export function unassignWorkItem(
+  projectId: string,
+  workItemId: string
+): Promise<void> {
+  return del(`/projects/${projectId}/work-items/${workItemId}/assign`)
 }
 
 export function addTagToWorkItem(

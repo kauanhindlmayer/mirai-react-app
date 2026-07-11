@@ -2,7 +2,10 @@ import { useState } from "react"
 import { UserIcon, XIcon } from "lucide-react"
 
 import { useProjectUsersQuery } from "@/queries/projects"
-import { useUpdateWorkItemMutation } from "@/queries/work-items"
+import {
+  useAssignWorkItemMutation,
+  useUnassignWorkItemMutation,
+} from "@/queries/work-items"
 import { useCurrentProject } from "@/hooks/use-current-project"
 import type { AssigneeResponse, ProjectUserResponse } from "@/types/work-items"
 import { getAvatarUrl } from "@/lib/get-avatar-url"
@@ -34,7 +37,8 @@ export function WorkItemAssigneePicker({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const { project } = useCurrentProject()
-  const updateWorkItem = useUpdateWorkItemMutation(projectId, workItemId)
+  const assignWorkItem = useAssignWorkItemMutation(projectId, workItemId)
+  const unassignWorkItem = useUnassignWorkItemMutation(projectId, workItemId)
 
   const { data } = useProjectUsersQuery(
     project?.organizationId,
@@ -46,7 +50,11 @@ export function WorkItemAssigneePicker({
   )
 
   function handleSelect(user?: ProjectUserResponse) {
-    updateWorkItem.mutate({ assignee: user })
+    if (user) {
+      assignWorkItem.mutate(user.id)
+    } else {
+      unassignWorkItem.mutate()
+    }
     setOpen(false)
   }
 

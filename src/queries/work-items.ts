@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import {
   addTagToWorkItem,
   addWorkItemComment,
+  assignWorkItem,
   createWorkItem,
   createWorkItemLink,
   deleteWorkItem,
@@ -17,6 +18,7 @@ import {
   listWorkItems,
   removePullRequestLink,
   removeTagFromWorkItem,
+  unassignWorkItem,
   updateWorkItem,
   updateWorkItemComment,
   uploadWorkItemAttachment,
@@ -163,9 +165,34 @@ export function useUpdateWorkItemMutation(
 ) {
   const invalidate = useInvalidateWorkItem(projectId, workItemId)
   return useMutation({
-    mutationFn: (request: Partial<WorkItem>) =>
+    mutationFn: (request: Omit<Partial<WorkItem>, "assignee" | "assigneeId">) =>
       updateWorkItem(projectId, workItemId, request),
     onError: createErrorToastHandler("Failed to update work item."),
+    onSuccess: invalidate,
+  })
+}
+
+export function useAssignWorkItemMutation(
+  projectId: string,
+  workItemId: string
+) {
+  const invalidate = useInvalidateWorkItem(projectId, workItemId)
+  return useMutation({
+    mutationFn: (assigneeId: string) =>
+      assignWorkItem(projectId, workItemId, assigneeId),
+    onError: createErrorToastHandler("Failed to assign work item."),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUnassignWorkItemMutation(
+  projectId: string,
+  workItemId: string
+) {
+  const invalidate = useInvalidateWorkItem(projectId, workItemId)
+  return useMutation({
+    mutationFn: () => unassignWorkItem(projectId, workItemId),
+    onError: createErrorToastHandler("Failed to unassign work item."),
     onSuccess: invalidate,
   })
 }
