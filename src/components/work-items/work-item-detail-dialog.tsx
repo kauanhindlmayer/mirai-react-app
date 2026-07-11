@@ -231,6 +231,10 @@ function WorkItemDetailContent({
               <Label>Comments</Label>
               <WorkItemComments comments={workItem.comments} />
             </div>
+
+            <Separator />
+
+            <WorkItemHistory />
           </div>
         </div>
 
@@ -283,8 +287,6 @@ function WorkItemDetailContent({
                 </span>
               ) : null}
             </div>
-
-            <WorkItemHistory />
           </div>
         </div>
       </div>
