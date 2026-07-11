@@ -12,6 +12,7 @@ import { RetrospectiveToolbar } from "@/components/retrospectives/retrospective-
 import { useSignalR } from "@/hooks/use-signalr"
 import { useCurrentTeam } from "@/hooks/use-current-team"
 import {
+  retrospectiveQueryKey,
   useDeleteRetrospectiveMutation,
   useRetrospectiveQuery,
   useRetrospectivesQuery,
@@ -51,11 +52,11 @@ export default function RetrospectivesPage() {
         ? [
             {
               event: "send-retrospective-item",
-              queryKey: ["retrospective", retrospectiveId],
+              queryKey: retrospectiveQueryKey(retrospectiveId),
             },
             {
               event: "delete-retrospective-item",
-              queryKey: ["retrospective", retrospectiveId],
+              queryKey: retrospectiveQueryKey(retrospectiveId),
             },
           ]
         : [],
