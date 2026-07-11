@@ -1,4 +1,5 @@
 import type { HubConnection } from "@microsoft/signalr"
+import type { QueryKey } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { waitFor } from "@testing-library/react"
 
@@ -63,6 +64,37 @@ describe("useSignalR", () => {
 
     await waitFor(() =>
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["work-items"] })
+    )
+  })
+
+  it("subscribes to events that only become known after the initial render", async () => {
+    const { connection, trigger } = buildConnection()
+    vi.mocked(createHubConnection).mockReturnValue(connection)
+    const queryClient = createTestQueryClient()
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries")
+
+    type Props = { events: { event: string; queryKey: QueryKey }[] }
+    const initialProps: Props = { events: [] }
+    const { rerender } = renderHookWithProviders(
+      ({ events }: Props) => useSignalR("/hubs/retrospective", events),
+      { queryClient, initialProps }
+    )
+
+    rerender({
+      events: [
+        {
+          event: "send-retrospective-item",
+          queryKey: ["retrospective", "abc"],
+        },
+      ],
+    })
+
+    trigger("send-retrospective-item")
+
+    await waitFor(() =>
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["retrospective", "abc"],
+      })
     )
   })
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import type { HubConnection } from "@microsoft/signalr"
 import { useQueryClient, type QueryKey } from "@tanstack/react-query"
 
@@ -24,12 +24,16 @@ export function useSignalR(hub: string, events: EventInvalidation[]) {
     eventsRef.current = events
   })
 
+  const eventNames = useMemo(
+    () => [...new Set(events.map((e) => e.event))].sort().join(","),
+    [events]
+  )
+
   useEffect(() => {
     const connection = createHubConnection(hub)
     connectionRef.current = connection
 
-    const eventNames = new Set(eventsRef.current.map((e) => e.event))
-    for (const eventName of eventNames) {
+    for (const eventName of eventNames ? eventNames.split(",") : []) {
       connection.on(eventName, () => {
         for (const { event, queryKey } of eventsRef.current) {
           if (event === eventName) {
@@ -47,7 +51,7 @@ export function useSignalR(hub: string, events: EventInvalidation[]) {
       void connection.stop()
       connectionRef.current = null
     }
-  }, [hub, queryClient])
+  }, [hub, queryClient, eventNames])
 
   function invoke(method: string, ...args: unknown[]) {
     return connectionRef.current?.invoke(method, ...args)
