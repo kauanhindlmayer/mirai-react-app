@@ -11,6 +11,7 @@ import {
   deleteWorkItemComment,
   deleteWorkItemLink,
   getWorkItem,
+  getWorkItemHistory,
   getWorkItemsStats,
   linkPullRequestToWorkItem,
   listWorkItems,
@@ -59,6 +60,30 @@ export function useWorkItemsQuery(
     enabled: !!projectId,
     staleTime: 60_000,
     placeholderData: (previous) => previous,
+  })
+}
+
+export function workItemHistoryQueryKey(
+  projectId: string,
+  workItemId: string,
+  pageSize: number
+) {
+  return ["work-item-history", projectId, workItemId, pageSize]
+}
+
+export function useWorkItemHistoryQuery(
+  projectId: string,
+  workItemId: string,
+  options: { pageSize: number; enabled: boolean }
+) {
+  return useQuery({
+    queryKey: workItemHistoryQueryKey(projectId, workItemId, options.pageSize),
+    queryFn: () =>
+      getWorkItemHistory(projectId, workItemId, {
+        page: 1,
+        pageSize: options.pageSize,
+      }),
+    enabled: options.enabled,
   })
 }
 

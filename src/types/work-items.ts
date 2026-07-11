@@ -189,3 +189,22 @@ export type WorkItemPullRequestLink = {
 export type LinkPullRequestRequest = {
   pullRequestNumber: number
 }
+
+export type WorkItemChangeSet = {
+  id: string
+  changedBy?: WorkItemChangeActor
+  systemActor?: string
+  changes: WorkItemChange[]
+  createdAtUtc: string
+}
+
+export type WorkItemChangeActor = {
+  id: string
+  name: string
+}
+
+export type WorkItemChange = {
+  fieldName: string
+  oldValue?: string
+  newValue?: string
+}

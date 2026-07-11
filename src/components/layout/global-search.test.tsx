@@ -30,6 +30,26 @@ function renderInProject(projectId = "project-1") {
   )
 }
 
+function renderInOrganization(organizationId = "org-1") {
+  return renderWithProviders(
+    <Routes>
+      <Route
+        path="/organizations/:organizationId/projects"
+        element={<GlobalSearch />}
+      />
+    </Routes>,
+    { route: `/organizations/${organizationId}/projects` }
+  )
+}
+
+function mockOrganizationPermissions(permissions: string[]) {
+  server.use(
+    http.get("*/api/organizations/org-1/effective-permissions", () =>
+      HttpResponse.json(permissions)
+    )
+  )
+}
+
 describe("GlobalSearch", () => {
   it("renders a Search trigger button", () => {
     renderWithProviders(<GlobalSearch />)
@@ -55,23 +75,25 @@ describe("GlobalSearch", () => {
   })
 
   it("opens the command dialog and lists page items when clicked", async () => {
+    mockOrganizationPermissions(["OrganizationManage"])
     const user = userEvent.setup()
-    renderWithProviders(<GlobalSearch />, { route: "/organizations" })
+    renderInOrganization()
 
     await user.click(screen.getByRole("button", { name: /search/i }))
 
     expect(screen.getByPlaceholderText(SEARCH_PLACEHOLDER)).toBeInTheDocument()
-    expect(screen.getByText("Organization Settings")).toBeInTheDocument()
+    expect(await screen.findByText("Organization Settings")).toBeInTheDocument()
   })
 
   it("navigates to a page item when selected", async () => {
+    mockOrganizationPermissions(["OrganizationManage"])
     const user = userEvent.setup()
-    renderWithProviders(<GlobalSearch />, { route: "/organizations" })
+    renderInOrganization()
 
     await user.click(screen.getByRole("button", { name: /search/i }))
-    await user.click(screen.getByText("Organization Settings"))
+    await user.click(await screen.findByText("Organization Settings"))
 
-    expect(navigate).toHaveBeenCalledWith("/organizations")
+    expect(navigate).toHaveBeenCalledWith("/organizations/org-1/settings")
   })
 
   it("prompts to open a project when searching outside of a project", async () => {

@@ -10,6 +10,7 @@ import type {
   CreateWorkItemRequest,
   LinkPullRequestRequest,
   WorkItem,
+  WorkItemChangeSet,
   WorkItemsStats,
   WorkItemSummary,
 } from "@/types/work-items"
@@ -57,6 +58,19 @@ export function getWorkItem(
   return get(`/projects/${projectId}/work-items/${workItemId}`)
 }
 
+export function getWorkItemHistory(
+  projectId: string,
+  workItemId: string,
+  filters: { page: number; pageSize: number }
+): Promise<PaginatedList<WorkItemChangeSet>> {
+  return get(`/projects/${projectId}/work-items/${workItemId}/history`, {
+    params: {
+      page: filters.page.toString(),
+      pageSize: filters.pageSize.toString(),
+    },
+  })
+}
+
 export function addWorkItemComment(
   projectId: string,
   workItemId: string,
@@ -96,9 +110,9 @@ export function updateWorkItem(
   request: Partial<WorkItem>
 ): Promise<void> {
   const { assignee, ...rest } = request
-  const payload = {
-    ...rest,
-    assigneeId: assignee ? assignee.id : null,
+  const payload: Record<string, unknown> = { ...rest }
+  if ("assignee" in request) {
+    payload.assigneeId = assignee ? assignee.id : null
   }
   return put(`/projects/${projectId}/work-items/${workItemId}`, payload)
 }

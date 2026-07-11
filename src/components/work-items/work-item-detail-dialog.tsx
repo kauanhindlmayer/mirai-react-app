@@ -21,6 +21,7 @@ import {
   useWorkItemContext,
   WorkItemProvider,
 } from "@/components/work-items/work-item-context"
+import { WorkItemHistory } from "@/components/work-items/work-item-history"
 import { WorkItemLinks } from "@/components/work-items/work-item-links"
 import { WorkItemPullRequestLinks } from "@/components/work-items/work-item-pull-request-links"
 import { WorkItemTagsEditor } from "@/components/work-items/work-item-tags-editor"
@@ -282,6 +283,8 @@ function WorkItemDetailContent({
                 </span>
               ) : null}
             </div>
+
+            <WorkItemHistory />
           </div>
         </div>
       </div>
