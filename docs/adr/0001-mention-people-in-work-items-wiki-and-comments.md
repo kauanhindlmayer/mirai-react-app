@@ -88,7 +88,10 @@ project-scoped member lists.
   acceptance criteria, and comment editors.
 - mirai-api needs a new user-by-ID (or bulk) lookup endpoint that isn't
   scoped to current project membership, purely so historical mentions of
-  since-removed members can still resolve to a name.
+  since-removed members can still resolve to a name. **Resolved**: added as
+  `GET /organizations/{organizationId}/projects/{projectId}/users/resolve`
+  in mirai-api, scoped to the project's organization membership rather than
+  current project membership (see ticket 05).
 - Building an actual notification center (bell icon, read/unread feed,
   delivery) is explicitly deferred; this ADR only guarantees the data model
   will have what that future project needs (who was mentioned, where, when).

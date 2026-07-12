@@ -1,7 +1,10 @@
 import { del, get, post, put } from "@/lib/api-client"
 import type { PaginatedList } from "@/types/common"
 import type { Project } from "@/types/projects"
-import type { ProjectUserResponse } from "@/types/work-items"
+import type {
+  ProjectUserResponse,
+  ResolvedUserResponse,
+} from "@/types/work-items"
 
 export function createProject(project: Partial<Project>): Promise<string> {
   return post(`/organizations/${project.organizationId}/projects`, project)
@@ -46,6 +49,18 @@ export function getProjectUsers(
   return get(`/organizations/${organizationId}/projects/${projectId}/users`, {
     params,
   })
+}
+
+export function resolveProjectUsers(
+  organizationId: string,
+  projectId: string,
+  userIds: string[]
+): Promise<ResolvedUserResponse[]> {
+  const params = new URLSearchParams()
+  userIds.forEach((userId) => params.append("userIds", userId))
+  return get(
+    `/organizations/${organizationId}/projects/${projectId}/users/resolve?${params.toString()}`
+  )
 }
 
 export function addUserToProject(

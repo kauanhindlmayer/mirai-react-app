@@ -14,6 +14,7 @@ import {
   getProjectUsers,
   listProjects,
   removeUserFromProject,
+  resolveProjectUsers,
   updateProject,
 } from "@/api/projects"
 import { createErrorToastHandler } from "@/lib/query-helpers"
@@ -99,6 +100,35 @@ export function fetchProjectUsers(
     ],
     queryFn: () =>
       getProjectUsers(organizationId, projectId, searchTerm, page, pageSize),
+  })
+}
+
+export function resolveProjectUsersQueryKey(
+  organizationId: string,
+  projectId: string,
+  userIds: string[]
+) {
+  return ["resolved-project-users", organizationId, projectId, ...userIds]
+}
+
+export function useResolveProjectUsersQuery(
+  organizationId: string | undefined,
+  projectId: string | undefined,
+  userIds: string[],
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: resolveProjectUsersQueryKey(
+      organizationId ?? "",
+      projectId ?? "",
+      userIds
+    ),
+    queryFn: () =>
+      resolveProjectUsers(organizationId ?? "", projectId ?? "", userIds),
+    enabled:
+      options?.enabled ??
+      (!!organizationId && !!projectId && userIds.length > 0),
+    staleTime: 60_000,
   })
 }
 
