@@ -17,6 +17,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.7)
+      '@floating-ui/dom':
+        specifier: 1.7.6
+        version: 1.7.6
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8

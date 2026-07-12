@@ -63,7 +63,7 @@ export const MentionSuggestionList = forwardRef<
   }
 
   return (
-    <div className="flex w-64 flex-col gap-0.5 rounded-md border bg-popover p-1 shadow-md">
+    <div className="flex max-h-64 w-64 flex-col gap-0.5 overflow-y-auto rounded-md border bg-popover p-1 shadow-md">
       {items.map((item, index) => (
         <button
           key={item.id}

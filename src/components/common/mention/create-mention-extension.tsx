@@ -1,3 +1,4 @@
+import { shift } from "@floating-ui/dom"
 import Mention from "@tiptap/extension-mention"
 import {
   ReactNodeViewRenderer,
@@ -38,6 +39,7 @@ export function createMentionExtension({
       char: "@",
       items: ({ query }) => fetchSuggestions(query),
       render: createSuggestionRenderer,
+      floatingUi: { middleware: [shift({ padding: 8 })] },
       ...(debounceMs ? { debounce: debounceMs } : {}),
     } satisfies Partial<SuggestionOptions<MentionSuggestionItem>>,
   })
