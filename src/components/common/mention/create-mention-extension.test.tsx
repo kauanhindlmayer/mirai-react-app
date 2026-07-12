@@ -67,6 +67,20 @@ describe("createMentionExtension", () => {
     expect(screen.queryByText("Carol Chen")).not.toBeInTheDocument()
   })
 
+  it("mounts the popover interactive and above any surrounding overlay", async () => {
+    const user = userEvent.setup()
+    render(<TestMentionEditor />)
+
+    const editor = await screen.findByRole("textbox", { name: "Editor" })
+    await user.click(editor)
+    await user.type(editor, "@al")
+    await screen.findByText("Alice Anderson")
+
+    const popover = document.querySelector(".react-renderer") as HTMLElement
+    expect(Number(popover.style.zIndex)).toBeGreaterThan(50)
+    expect(popover.style.pointerEvents).toBe("auto")
+  })
+
   it("dismisses the popover on Escape without inserting a mention", async () => {
     const user = userEvent.setup()
     render(<TestMentionEditor />)

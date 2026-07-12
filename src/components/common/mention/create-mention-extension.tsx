@@ -67,6 +67,17 @@ const createSuggestionRenderer: NonNullable<
         props,
         editor: props.editor,
       })
+      // This element is appended straight to document.body, bypassing Radix's
+      // portal/isolation machinery - matching the app's z-50 overlay
+      // convention isn't enough, since Radix Dialog's overlay establishes its
+      // own isolated stacking context and wins z-50-vs-z-50 ties. A mention
+      // popup must outrank whatever surface it was triggered from, so this
+      // uses a value clearly above every existing z-50 overlay instead.
+      component.element.style.zIndex = "9999"
+      // While a Dialog is open, Radix's scroll lock sets body { pointer-events:
+      // none } so only the dialog itself stays interactive - which this
+      // element, as a direct child of body, would otherwise silently inherit.
+      component.element.style.pointerEvents = "auto"
       unmount = props.mount(component.element)
     },
     onUpdate(props) {
