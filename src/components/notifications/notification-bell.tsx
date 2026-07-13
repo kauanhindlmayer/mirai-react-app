@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import { BellIcon } from "lucide-react"
 
+import { useNotificationRealtimeUpdates } from "@/hooks/use-notification-realtime-updates"
 import {
   useMarkAllNotificationsAsReadMutation,
   useMarkNotificationAsReadMutation,
@@ -47,6 +48,7 @@ export function NotificationBell() {
   )
   const markAsRead = useMarkNotificationAsReadMutation()
   const markAllAsRead = useMarkAllNotificationsAsReadMutation()
+  useNotificationRealtimeUpdates()
 
   const unreadCount = unreadData?.totalCount ?? 0
   const notifications = data?.items ?? []
