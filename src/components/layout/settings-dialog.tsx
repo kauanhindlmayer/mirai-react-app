@@ -1,4 +1,5 @@
 import { AccountSettingsSection } from "@/components/layout/account-settings-section"
+import { NotificationPreferencesSection } from "@/components/notifications/notification-preferences-section"
 import {
   Dialog,
   DialogContent,
@@ -6,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { FieldSeparator } from "@/components/ui/field"
 
 type SettingsDialogProps = {
   open: boolean
@@ -23,6 +25,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <AccountSettingsSection onSaved={() => onOpenChange(false)} />
+        <FieldSeparator />
+        <NotificationPreferencesSection />
       </DialogContent>
     </Dialog>
   )
