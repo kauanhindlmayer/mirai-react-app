@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 
 import { SettingsDialog } from "@/components/layout/settings-dialog"
@@ -40,5 +41,27 @@ describe("SettingsDialog", () => {
 
     expect(screen.getByText("Settings")).toBeInTheDocument()
     expect(await screen.findByLabelText("First Name")).toHaveValue("John")
+  })
+
+  it("switches to the notifications pane when its nav item is selected", async () => {
+    signIn()
+    server.use(
+      http.get("*/api/notifications/preferences", () =>
+        HttpResponse.json({
+          mentionsEnabled: true,
+          assignedWorkItemChangesEnabled: false,
+          workItemCommentsEnabled: true,
+          membershipEnabled: true,
+        })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderWithProviders(<SettingsDialog open={true} onOpenChange={vi.fn()} />)
+
+    await user.click(screen.getByRole("tab", { name: "Notifications" }))
+
+    expect(await screen.findByLabelText("Mentions")).toBeChecked()
+    expect(screen.queryByLabelText("First Name")).not.toBeInTheDocument()
   })
 })

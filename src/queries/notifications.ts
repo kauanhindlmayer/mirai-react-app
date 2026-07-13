@@ -60,14 +60,38 @@ export function useNotificationPreferencesQuery() {
   })
 }
 
+const showUpdatePreferencesError = createErrorToastHandler(
+  "Failed to update notification preferences."
+)
+
 export function useUpdateNotificationPreferencesMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (preferences: NotificationPreferences) =>
       updateNotificationPreferences(preferences),
-    onError: createErrorToastHandler("Failed to update notification preferences."),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationPreferencesQueryKey() })
+    onMutate: async (preferences) => {
+      await queryClient.cancelQueries({
+        queryKey: notificationPreferencesQueryKey(),
+      })
+      const previous = queryClient.getQueryData<NotificationPreferences>(
+        notificationPreferencesQueryKey()
+      )
+      queryClient.setQueryData(notificationPreferencesQueryKey(), preferences)
+      return { previous }
+    },
+    onError: (error, _preferences, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          notificationPreferencesQueryKey(),
+          context.previous
+        )
+      }
+      showUpdatePreferencesError(error)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationPreferencesQueryKey(),
+      })
     },
   })
 }

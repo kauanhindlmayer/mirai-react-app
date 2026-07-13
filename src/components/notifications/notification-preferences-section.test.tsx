@@ -16,8 +16,12 @@ function buildToken(payload: Record<string, unknown>): string {
   return `header.${btoa(JSON.stringify(payload))}.signature`
 }
 
-function mockPreferences(preferences: NotificationPreferences) {
+function signIn() {
   setAccessToken(buildToken({ exp: Math.floor(Date.now() / 1000) + 3600 }))
+}
+
+function mockPreferences(preferences: NotificationPreferences) {
+  signIn()
   server.use(
     http.get("*/api/notifications/preferences", () =>
       HttpResponse.json(preferences)
@@ -39,28 +43,15 @@ beforeEach(() => {
 })
 
 describe("NotificationPreferencesSection", () => {
-  it("shows the toggles pre-filled with the current preferences", async () => {
+  it("shows the switches reflecting the current preferences", async () => {
     mockPreferences({ ...allEnabled, mentionsEnabled: false })
     renderWithProviders(<NotificationPreferencesSection />)
 
-    expect(
-      await screen.findByLabelText("Mentions in comments")
-    ).not.toBeChecked()
-    expect(
-      screen.getByLabelText("Changes to work items assigned to me")
-    ).toBeChecked()
+    expect(await screen.findByLabelText("Mentions")).not.toBeChecked()
+    expect(screen.getByLabelText("Assigned work items")).toBeChecked()
   })
 
-  it("disables Save until a toggle is changed", async () => {
-    mockPreferences(allEnabled)
-    renderWithProviders(<NotificationPreferencesSection />)
-
-    await screen.findByLabelText("Mentions in comments")
-
-    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled()
-  })
-
-  it("toggles a preference and sends the updated preferences on save", async () => {
+  it("persists a toggled preference immediately without a save button", async () => {
     mockPreferences(allEnabled)
     let requestBody: unknown
     server.use(
@@ -73,16 +64,17 @@ describe("NotificationPreferencesSection", () => {
     const user = userEvent.setup()
     renderWithProviders(<NotificationPreferencesSection />)
 
-    const mentionsCheckbox = await screen.findByLabelText("Mentions in comments")
-    await user.click(mentionsCheckbox)
-    await user.click(screen.getByRole("button", { name: "Save changes" }))
+    await user.click(await screen.findByLabelText("Mentions"))
 
+    expect(
+      screen.queryByRole("button", { name: /save/i })
+    ).not.toBeInTheDocument()
     await waitFor(() =>
       expect(requestBody).toEqual({ ...allEnabled, mentionsEnabled: false })
     )
   })
 
-  it("shows an error toast when saving fails", async () => {
+  it("rolls back the toggle and shows an error toast when saving fails", async () => {
     mockPreferences(allEnabled)
     server.use(
       http.put("*/api/notifications/preferences", () => HttpResponse.error())
@@ -91,9 +83,8 @@ describe("NotificationPreferencesSection", () => {
     const user = userEvent.setup()
     renderWithProviders(<NotificationPreferencesSection />)
 
-    const mentionsCheckbox = await screen.findByLabelText("Mentions in comments")
-    await user.click(mentionsCheckbox)
-    await user.click(screen.getByRole("button", { name: "Save changes" }))
+    const mentionsSwitch = await screen.findByLabelText("Mentions")
+    await user.click(mentionsSwitch)
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
@@ -101,5 +92,22 @@ describe("NotificationPreferencesSection", () => {
         expect.anything()
       )
     )
+    await waitFor(() => expect(mentionsSwitch).toBeChecked())
+  })
+
+  it("shows an error state with a retry action when preferences fail to load", async () => {
+    signIn()
+    server.use(
+      http.get("*/api/notifications/preferences", () => HttpResponse.error())
+    )
+
+    renderWithProviders(<NotificationPreferencesSection />)
+
+    expect(
+      await screen.findByText("Couldn't load notification preferences")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /try again/i })
+    ).toBeInTheDocument()
   })
 })

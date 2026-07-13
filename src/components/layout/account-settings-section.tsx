@@ -11,12 +11,7 @@ import { getInitials } from "@/lib/utils"
 import type { User } from "@/types/users"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -83,7 +78,6 @@ function AccountForm({ user, onSaved }: AccountFormProps) {
 
   return (
     <FieldGroup>
-      <FieldDescription>Update your name and profile picture.</FieldDescription>
       <Field>
         <button
           type="button"

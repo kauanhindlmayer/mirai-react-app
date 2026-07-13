@@ -1,31 +1,76 @@
-import { useState } from "react"
-import { toast } from "sonner"
-
 import {
   useNotificationPreferencesQuery,
   useUpdateNotificationPreferencesMutation,
 } from "@/queries/notifications"
 import type { NotificationPreferences } from "@/types/notifications"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
+import { ErrorState } from "@/components/common/error-state"
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 
-const CATEGORY_LABELS: Record<keyof NotificationPreferences, string> = {
-  mentionsEnabled: "Mentions in comments",
-  assignedWorkItemChangesEnabled: "Changes to work items assigned to me",
-  workItemCommentsEnabled: "Comments on work items assigned to me",
-  membershipEnabled: "Added to a project, team, or organization",
+type PreferenceCopy = {
+  label: string
+  description: string
 }
 
+const PREFERENCE_COPY: Record<keyof NotificationPreferences, PreferenceCopy> = {
+  mentionsEnabled: {
+    label: "Mentions",
+    description: "When someone @mentions you in a work item or wiki comment.",
+  },
+  assignedWorkItemChangesEnabled: {
+    label: "Assigned work items",
+    description: "When a work item assigned to you is changed.",
+  },
+  workItemCommentsEnabled: {
+    label: "Comments on your work items",
+    description: "When someone comments on a work item assigned to you.",
+  },
+  membershipEnabled: {
+    label: "Memberships",
+    description: "When you are added to a project, team, or organization.",
+  },
+}
+
+const PREFERENCE_KEYS = Object.keys(
+  PREFERENCE_COPY
+) as (keyof NotificationPreferences)[]
+
 export function NotificationPreferencesSection() {
-  const { data: preferences } = useNotificationPreferencesQuery()
+  const { data: preferences, isError, error, refetch } =
+    useNotificationPreferencesQuery()
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="Couldn't load notification preferences"
+        error={error}
+        onRetry={() => refetch()}
+      />
+    )
+  }
 
   if (!preferences) {
-    return null
+    return <NotificationPreferencesSkeleton />
   }
 
   return <NotificationPreferencesForm preferences={preferences} />
+}
+
+function NotificationPreferencesSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {PREFERENCE_KEYS.map((key) => (
+        <div key={key} className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-3.5 w-32" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+          <Skeleton className="h-[16.6px] w-7 rounded-full" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 type NotificationPreferencesFormProps = {
@@ -35,57 +80,36 @@ type NotificationPreferencesFormProps = {
 function NotificationPreferencesForm({
   preferences,
 }: NotificationPreferencesFormProps) {
-  const [draft, setDraft] = useState(preferences)
   const updateMutation = useUpdateNotificationPreferencesMutation()
 
-  const hasUnsavedChanges = (
-    Object.keys(draft) as (keyof NotificationPreferences)[]
-  ).some((key) => draft[key] !== preferences[key])
-
   function toggleCategory(category: keyof NotificationPreferences) {
-    setDraft((current) => ({ ...current, [category]: !current[category] }))
-  }
-
-  async function handleSave() {
-    try {
-      await updateMutation.mutateAsync(draft)
-    } catch {
-      return
-    }
-    toast.success("Notification preferences updated.")
+    updateMutation.mutate({
+      ...preferences,
+      [category]: !preferences[category],
+    })
   }
 
   return (
-    <FieldGroup>
-      <FieldDescription>
-        Choose which notifications you want to receive.
-      </FieldDescription>
-      {(Object.keys(CATEGORY_LABELS) as (keyof NotificationPreferences)[]).map(
-        (category) => (
+    <div className="flex flex-col gap-4">
+      {PREFERENCE_KEYS.map((category) => {
+        const { label, description } = PREFERENCE_COPY[category]
+        const inputId = `notification-preference-${category}`
+        return (
           <Field key={category} orientation="horizontal">
-            <Checkbox
-              id={`notification-preference-${category}`}
-              checked={draft[category]}
+            <FieldContent>
+              <FieldLabel htmlFor={inputId} className="font-medium">
+                {label}
+              </FieldLabel>
+              <p className="text-muted-foreground">{description}</p>
+            </FieldContent>
+            <Switch
+              id={inputId}
+              checked={preferences[category]}
               onCheckedChange={() => toggleCategory(category)}
             />
-            <FieldLabel
-              htmlFor={`notification-preference-${category}`}
-              className="font-normal"
-            >
-              {CATEGORY_LABELS[category]}
-            </FieldLabel>
           </Field>
         )
-      )}
-      <Field>
-        <Button
-          onClick={handleSave}
-          disabled={!hasUnsavedChanges || updateMutation.isPending}
-        >
-          {updateMutation.isPending ? <Spinner data-icon="inline-end" /> : null}
-          Save changes
-        </Button>
-      </Field>
-    </FieldGroup>
+      })}
+    </div>
   )
 }
