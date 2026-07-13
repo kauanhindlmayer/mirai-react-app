@@ -10,6 +10,7 @@ import {
   addUserToProject,
   createProject,
   deleteProject,
+  getMentionableProjectUsers,
   getProject,
   getProjectUsers,
   listProjects,
@@ -100,6 +101,68 @@ export function fetchProjectUsers(
     ],
     queryFn: () =>
       getProjectUsers(organizationId, projectId, searchTerm, page, pageSize),
+  })
+}
+
+export function mentionableProjectUsersQueryKey(
+  organizationId: string,
+  projectId: string
+) {
+  return ["mentionable-project-users", organizationId, projectId]
+}
+
+export function fetchMentionableProjectUsers(
+  queryClient: QueryClient,
+  organizationId: string,
+  projectId: string,
+  searchTerm?: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
+  return queryClient.fetchQuery({
+    queryKey: [
+      ...mentionableProjectUsersQueryKey(organizationId, projectId),
+      searchTerm,
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      getMentionableProjectUsers(
+        organizationId,
+        projectId,
+        searchTerm,
+        page,
+        pageSize
+      ),
+  })
+}
+
+export function useMentionableProjectUsersQuery(
+  organizationId: string | undefined,
+  projectId: string | undefined,
+  searchTerm?: string,
+  page: number = 1,
+  pageSize: number = 10,
+  options?: { enabled?: boolean; staleTime?: number }
+) {
+  return useQuery({
+    queryKey: [
+      ...mentionableProjectUsersQueryKey(organizationId ?? "", projectId ?? ""),
+      searchTerm,
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      getMentionableProjectUsers(
+        organizationId ?? "",
+        projectId ?? "",
+        searchTerm,
+        page,
+        pageSize
+      ),
+    enabled: options?.enabled ?? (!!organizationId && !!projectId),
+    staleTime: options?.staleTime ?? 60_000,
+    placeholderData: (previous) => previous,
   })
 }
 

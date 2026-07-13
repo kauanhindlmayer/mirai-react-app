@@ -6,20 +6,20 @@ import { useMentionableProjectUsers } from "@/hooks/use-mentionable-project-user
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
 
-function mockProjectMembers(
-  members: Array<{ id: string; fullName: string; email: string }>
-) {
+function mockMentionableUsers(members: Array<{ id: string; fullName: string }>) {
   server.use(
-    http.get("*/api/organizations/org-1/projects/project-1/users", () =>
-      HttpResponse.json({
-        items: members,
-        totalCount: members.length,
-        pageSize: 100,
-        page: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-      })
+    http.get(
+      "*/api/organizations/org-1/projects/project-1/users/mentionable",
+      () =>
+        HttpResponse.json({
+          items: members,
+          totalCount: members.length,
+          pageSize: 100,
+          page: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          totalPages: 1,
+        })
     )
   )
 }
@@ -45,9 +45,7 @@ function TestResolveMention({ userId }: { userId: string }) {
 
 describe("useMentionableProjectUsers", () => {
   it("resolves a current project member without calling the fallback endpoint", async () => {
-    mockProjectMembers([
-      { id: "user-1", fullName: "Jane Smith", email: "jane@mirai.com" },
-    ])
+    mockMentionableUsers([{ id: "user-1", fullName: "Jane Smith" }])
     const resolveHandler = mockResolvedUsers([])
 
     renderWithProviders(<TestResolveMention userId="user-1" />)
@@ -57,7 +55,7 @@ describe("useMentionableProjectUsers", () => {
   })
 
   it("falls back to the resolve endpoint for a user no longer on the project", async () => {
-    mockProjectMembers([])
+    mockMentionableUsers([])
     mockResolvedUsers([{ id: "user-2", fullName: "Former Member" }])
 
     renderWithProviders(<TestResolveMention userId="user-2" />)
@@ -66,7 +64,7 @@ describe("useMentionableProjectUsers", () => {
   })
 
   it("shows a generic placeholder when the user resolves nowhere", async () => {
-    mockProjectMembers([])
+    mockMentionableUsers([])
     mockResolvedUsers([])
 
     renderWithProviders(<TestResolveMention userId="user-404" />)

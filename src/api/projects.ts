@@ -2,6 +2,7 @@ import { del, get, post, put } from "@/lib/api-client"
 import type { PaginatedList } from "@/types/common"
 import type { Project } from "@/types/projects"
 import type {
+  MentionableProjectUserResponse,
   ProjectUserResponse,
   ResolvedUserResponse,
 } from "@/types/work-items"
@@ -49,6 +50,24 @@ export function getProjectUsers(
   return get(`/organizations/${organizationId}/projects/${projectId}/users`, {
     params,
   })
+}
+
+export function getMentionableProjectUsers(
+  organizationId: string,
+  projectId: string,
+  searchTerm?: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<PaginatedList<MentionableProjectUserResponse>> {
+  const params: Record<string, string> = {
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  }
+  if (searchTerm) params.q = searchTerm
+  return get(
+    `/organizations/${organizationId}/projects/${projectId}/users/mentionable`,
+    { params }
+  )
 }
 
 export function resolveProjectUsers(

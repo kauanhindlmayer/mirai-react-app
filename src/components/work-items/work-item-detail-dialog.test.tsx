@@ -13,7 +13,7 @@ vi.mock("@/hooks/use-current-project", () => ({
 import { WorkItemMainFields } from "@/components/work-items/work-item-detail-dialog"
 import { WorkItemProvider } from "@/components/work-items/work-item-context"
 import { server } from "@/test/mocks/server"
-import { mockProjectUsers } from "@/test/mocks/project-users"
+import { mockMentionableProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import { WorkItemStatus, WorkItemType, type WorkItem } from "@/types/work-items"
 
@@ -67,7 +67,7 @@ describe("WorkItemMainFields", () => {
   })
 
   it("mentions a project member in the description and persists it on blur", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     let requestBody: unknown
     server.use(
       http.put(
@@ -104,7 +104,7 @@ describe("WorkItemMainFields", () => {
   })
 
   it("mentions a project member in acceptance criteria and persists it on blur", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     let requestBody: unknown
     server.use(
       http.put(

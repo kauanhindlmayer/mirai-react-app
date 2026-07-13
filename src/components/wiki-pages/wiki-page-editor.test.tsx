@@ -16,18 +16,18 @@ import { renderWithProviders } from "@/test/test-utils"
 
 function mockProjectUsers() {
   server.use(
-    http.get("*/api/organizations/org-1/projects/project-1/users", () =>
-      HttpResponse.json({
-        items: [
-          { id: "user-2", fullName: "Jane Smith", email: "jane@mirai.com" },
-        ],
-        totalCount: 1,
-        pageSize: 10,
-        page: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-      })
+    http.get(
+      "*/api/organizations/org-1/projects/project-1/users/mentionable",
+      () =>
+        HttpResponse.json({
+          items: [{ id: "user-2", fullName: "Jane Smith" }],
+          totalCount: 1,
+          pageSize: 10,
+          page: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          totalPages: 1,
+        })
     )
   )
 }

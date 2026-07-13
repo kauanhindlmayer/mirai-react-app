@@ -15,7 +15,7 @@ import { WorkItemComments } from "@/components/work-items/work-item-comments"
 import { WorkItemProvider } from "@/components/work-items/work-item-context"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
-import { mockProjectUsers } from "@/test/mocks/project-users"
+import { mockMentionableProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import type { Comment } from "@/types/common"
 
@@ -117,7 +117,7 @@ describe("WorkItemComments", () => {
   })
 
   it("mentions a project member in a new comment", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     let requestBody: unknown
     server.use(
       http.post(
@@ -155,7 +155,7 @@ describe("WorkItemComments", () => {
   })
 
   it("renders an existing mention in a saved comment on reload", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     renderComments(
       <WorkItemComments
         comments={[
@@ -176,7 +176,7 @@ describe("WorkItemComments", () => {
 
   it("adds a mention while editing an existing comment", async () => {
     signInAs("user-1")
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     let requestBody: unknown
     server.use(
       http.put(

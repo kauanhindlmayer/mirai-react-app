@@ -13,7 +13,7 @@ vi.mock("@/hooks/use-current-project", () => ({
 import { WikiPageComments } from "@/components/wiki-pages/wiki-page-comments"
 import { setAccessToken } from "@/lib/auth-storage"
 import { server } from "@/test/mocks/server"
-import { mockProjectUsers } from "@/test/mocks/project-users"
+import { mockMentionableProjectUsers } from "@/test/mocks/project-users"
 import { renderWithProviders } from "@/test/test-utils"
 import type { Comment } from "@/types/common"
 
@@ -115,7 +115,7 @@ describe("WikiPageComments", () => {
   })
 
   it("mentions a project member in a new comment", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     let requestBody: unknown
     server.use(
       http.post(
@@ -153,7 +153,7 @@ describe("WikiPageComments", () => {
   })
 
   it("renders an existing mention in a saved comment on reload", async () => {
-    mockProjectUsers()
+    mockMentionableProjectUsers()
     renderComments([
       buildComment({
         content:

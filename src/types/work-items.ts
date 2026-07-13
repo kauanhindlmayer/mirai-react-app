@@ -97,6 +97,12 @@ export type ResolvedUserResponse = {
   imageUrl?: string
 }
 
+export type MentionableProjectUserResponse = {
+  id: string
+  fullName: string
+  imageUrl?: string
+}
+
 export const WorkItemStatus = {
   New: "New",
   Active: "Active",

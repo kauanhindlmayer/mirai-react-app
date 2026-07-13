@@ -2,12 +2,12 @@ import { useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import {
-  fetchProjectUsers,
-  useProjectUsersQuery,
+  fetchMentionableProjectUsers,
+  useMentionableProjectUsersQuery,
   useResolveProjectUsersQuery,
 } from "@/queries/projects"
 import type {
-  ProjectUserResponse,
+  MentionableProjectUserResponse,
   ResolvedUserResponse,
 } from "@/types/work-items"
 import type { MentionSuggestionItem } from "@/components/common/mention/mention-suggestion-item"
@@ -18,7 +18,7 @@ const UNKNOWN_MENTIONED_USER_NAME = "Unknown user"
 
 function toMentionSuggestionItem(
   user: Pick<
-    ProjectUserResponse | ResolvedUserResponse,
+    MentionableProjectUserResponse | ResolvedUserResponse,
     "id" | "fullName" | "imageUrl"
   >
 ): MentionSuggestionItem {
@@ -35,7 +35,7 @@ export function useMentionableProjectUsers(
     async (query: string) => {
       if (!organizationId || !projectId) return []
 
-      const result = await fetchProjectUsers(
+      const result = await fetchMentionableProjectUsers(
         queryClient,
         organizationId,
         projectId,
@@ -51,14 +51,15 @@ export function useMentionableProjectUsers(
   function useResolveMention(
     userId: string
   ): MentionSuggestionItem | undefined {
-    const { data, isFetched: isProjectMembersFetched } = useProjectUsersQuery(
-      organizationId,
-      projectId,
-      undefined,
-      1,
-      RESOLUTION_PAGE_SIZE,
-      { staleTime: 60_000 }
-    )
+    const { data, isFetched: isProjectMembersFetched } =
+      useMentionableProjectUsersQuery(
+        organizationId,
+        projectId,
+        undefined,
+        1,
+        RESOLUTION_PAGE_SIZE,
+        { staleTime: 60_000 }
+      )
     const projectMember = data?.items.find((item) => item.id === userId)
 
     // Most mentions resolve here (a current project member), so the

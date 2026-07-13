@@ -35,3 +35,25 @@ export function mockProjectUsers(
     )
   )
 }
+
+export function mockMentionableProjectUsers(
+  users: MockProjectUser[] = DEFAULT_USERS,
+  organizationId = DEFAULT_ORGANIZATION_ID,
+  projectId = DEFAULT_PROJECT_ID
+) {
+  server.use(
+    http.get(
+      `*/api/organizations/${organizationId}/projects/${projectId}/users/mentionable`,
+      () =>
+        HttpResponse.json({
+          items: users.map(({ id, fullName }) => ({ id, fullName })),
+          totalCount: users.length,
+          pageSize: 10,
+          page: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          totalPages: 1,
+        })
+    )
+  )
+}
