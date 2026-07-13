@@ -4,6 +4,7 @@ import { Outlet, Link } from "react-router"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { GlobalSearch } from "@/components/layout/global-search"
 import { RouteErrorBoundary } from "@/components/layout/route-error-boundary"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import {
   SidebarInset,
   SidebarProvider,
@@ -70,6 +71,7 @@ export default function RootLayout() {
             </div>
             <div className="flex items-center gap-2 px-4">
               <GlobalSearch />
+              <NotificationBell />
             </div>
           </header>
           <div className="flex flex-1 flex-col">
