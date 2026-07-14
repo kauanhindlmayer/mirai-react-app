@@ -5,6 +5,7 @@ import type {
   RegisterRequest,
   ResetPasswordRequest,
   User,
+  UserProfile,
 } from "@/types/users"
 
 export function registerUser(credentials: RegisterRequest): Promise<string> {
@@ -24,6 +25,13 @@ export function loginWithGitHub(
 
 export function getCurrentUser(): Promise<User> {
   return get("/users/me")
+}
+
+export function getUserProfile(
+  organizationId: string,
+  userId: string
+): Promise<UserProfile> {
+  return get(`/organizations/${organizationId}/users/${userId}/profile`)
 }
 
 export function forgotPassword(email: string): Promise<void> {

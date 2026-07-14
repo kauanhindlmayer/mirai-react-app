@@ -29,3 +29,25 @@ export type User = {
   fullName: string
   imageUrl: string
 }
+
+export type ProfileProject = {
+  id: string
+  name: string
+  roleName: string
+}
+
+export type ProfileTeam = {
+  id: string
+  name: string
+  projectName: string
+  roleName: string
+}
+
+export type UserProfile = {
+  id: string
+  fullName: string
+  email: string
+  avatarUrl?: string
+  projects: ProfileProject[]
+  teams: ProfileTeam[]
+}

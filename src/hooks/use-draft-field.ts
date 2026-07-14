@@ -5,9 +5,6 @@ export function useDraftField<T>(value: T, onCommit: (value: T) => void) {
   const [lastSyncedValue, setLastSyncedValue] = useState(value)
 
   if (value !== lastSyncedValue) {
-    // Only follow an externally changed value (e.g. a SignalR-triggered
-    // refetch) when the field hasn't diverged from what we last synced -
-    // otherwise an untouched field would silently commit stale text over it.
     if (draft === lastSyncedValue) {
       setDraft(value)
     }

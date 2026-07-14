@@ -28,6 +28,10 @@ export default [
       "organizations/:organizationId/settings",
       "./pages/organizations/OrganizationSettingsPage.tsx"
     ),
+    route(
+      "organizations/:organizationId/users/:userId",
+      "./pages/users/UserProfilePage.tsx"
+    ),
 
     route("projects/:projectId", "./components/layout/project-layout.tsx", [
       route("summary", "./pages/projects/ProjectSummaryPage.tsx"),
