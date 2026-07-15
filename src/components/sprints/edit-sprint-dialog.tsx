@@ -1,7 +1,5 @@
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { PlusIcon } from "lucide-react"
 
 import { SprintFormFields } from "@/components/sprints/sprint-form"
 import {
@@ -17,37 +15,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
-import { useCreateSprintMutation } from "@/queries/sprints"
+import { useUpdateSprintMutation } from "@/queries/sprints"
 import type { Sprint } from "@/types/sprints"
 
-type CreateSprintDialogProps = {
+type EditSprintDialogProps = {
   teamId: string
+  sprint: Sprint
   sprints: Sprint[]
+  isOpen: boolean
+  onOpenChange: (isOpen: boolean) => void
 }
 
-export function CreateSprintDialog({
+export function EditSprintDialog({
   teamId,
+  sprint,
   sprints,
-}: CreateSprintDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
-
+  isOpen,
+  onOpenChange,
+}: EditSprintDialogProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <PlusIcon />
-          New Sprint
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         {isOpen ? (
-          <CreateSprintForm
+          <EditSprintForm
             teamId={teamId}
+            sprint={sprint}
             sprints={sprints}
-            onDone={() => setIsOpen(false)}
+            onDone={() => onOpenChange(false)}
           />
         ) : null}
       </DialogContent>
@@ -55,51 +51,60 @@ export function CreateSprintDialog({
   )
 }
 
-function CreateSprintForm({
+function EditSprintForm({
   teamId,
+  sprint,
   sprints,
   onDone,
 }: {
   teamId: string
+  sprint: Sprint
   sprints: Sprint[]
   onDone: () => void
 }) {
   const form = useForm<SprintFormValues>({
-    defaultValues: { name: "", startDate: "", endDate: "" },
+    defaultValues: {
+      name: sprint.name,
+      startDate: sprint.startDate,
+      endDate: sprint.endDate,
+    },
     resolver: zodResolver(sprintSchema),
   })
 
-  const mutation = useCreateSprintMutation(teamId)
+  const mutation = useUpdateSprintMutation(teamId)
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Create sprint</DialogTitle>
+        <DialogTitle>Edit sprint</DialogTitle>
         <DialogDescription>
-          Sprints group work items into a time-boxed iteration. Days already
+          Change the sprint's name or the dates it runs between. Days already
           covered by another sprint cannot be picked.
         </DialogDescription>
       </DialogHeader>
       <form
-        id="create-sprint-form"
+        id="edit-sprint-form"
         onSubmit={form.handleSubmit((values) =>
-          mutation.mutate(values, { onSuccess: onDone })
+          mutation.mutate(
+            { sprintId: sprint.id, request: values },
+            { onSuccess: onDone }
+          )
         )}
       >
         <SprintFormFields
           form={form}
-          idPrefix="create-sprint"
-          unavailableRanges={toUnavailableRanges(sprints)}
+          idPrefix="edit-sprint"
+          unavailableRanges={toUnavailableRanges(sprints, sprint.id)}
         />
       </form>
       <DialogFooter>
         <Button
           type="submit"
-          form="create-sprint-form"
+          form="edit-sprint-form"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? <Spinner data-icon="inline-end" /> : null}
-          Create
+          Save
         </Button>
       </DialogFooter>
     </>

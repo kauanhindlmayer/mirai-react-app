@@ -49,17 +49,26 @@ function mockTeams() {
   )
 }
 
-function mockSprints() {
+function mockSprints(workItemCount = 0) {
   server.use(
     http.get("*/api/teams/team-1/sprints", () =>
       HttpResponse.json([
         {
           id: "sprint-1",
           name: "Sprint 1",
-          startDate: "2026-01-01T00:00:00Z",
-          endDate: "2026-01-14T00:00:00Z",
+          startDate: "2026-01-01",
+          endDate: "2026-01-14",
+          workItemCount,
         },
       ])
+    )
+  )
+}
+
+function mockTeamPermissions(permissions: string[]) {
+  server.use(
+    http.get("*/api/teams/team-1/effective-permissions", () =>
+      HttpResponse.json(permissions)
     )
   )
 }
@@ -96,16 +105,7 @@ describe("SprintsPage", () => {
     renderSprintsPage()
 
     expect(await screen.findByText("#42 Checkout redesign")).toBeInTheDocument()
-    const formatDate = (value: string) =>
-      new Date(value).toLocaleDateString(undefined, {
-        month: "long",
-        day: "numeric",
-      })
-    expect(
-      screen.getByText(
-        `${formatDate("2026-01-01T00:00:00Z")} – ${formatDate("2026-01-14T00:00:00Z")}`
-      )
-    ).toBeInTheDocument()
+    expect(screen.getByText("1 Jan 2026 – 14 Jan 2026")).toBeInTheDocument()
   })
 
   it("shows a placeholder when there are no sprints", async () => {
@@ -145,14 +145,67 @@ describe("SprintsPage", () => {
     expect(next.get("workItemId")).toBe("item-1")
   })
 
-  it("shows the New Sprint trigger once a team is loaded", async () => {
+  it("shows the New Sprint trigger to someone who can manage sprints", async () => {
     mockTeams()
     mockSprints()
     mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
     renderSprintsPage()
 
     expect(
       await screen.findByRole("button", { name: /new sprint/i })
+    ).toBeInTheDocument()
+  })
+
+  it("offers the sprint's overflow menu to someone who can manage sprints", async () => {
+    mockTeams()
+    mockSprints()
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    const user = userEvent.setup()
+    renderSprintsPage()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Sprint actions for Sprint 1" })
+    )
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Edit" })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("menuitem", { name: "Delete" })).toBeInTheDocument()
+  })
+
+  it("offers neither sprint action to someone without TeamManageSprints", async () => {
+    mockTeams()
+    mockSprints()
+    mockBacklog([])
+    mockTeamPermissions(["TeamView"])
+    renderSprintsPage()
+
+    expect(await screen.findByText("Sprint 1")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /sprint actions/i })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /new sprint/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it("warns how many work items return to the backlog before deleting a sprint", async () => {
+    mockTeams()
+    mockSprints(5)
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    const user = userEvent.setup()
+    renderSprintsPage()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Sprint actions for Sprint 1" })
+    )
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }))
+
+    expect(
+      await screen.findByText(/5 work items will be returned to the backlog/)
     ).toBeInTheDocument()
   })
 })

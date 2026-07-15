@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react"
 import { useParams, useSearchParams } from "react-router"
 
-import { Tree, type TreeNodeData } from "@/components/common/tree"
-import { CreateSprintDialog } from "@/components/sprints/create-sprint-dialog"
 import { ErrorState } from "@/components/common/error-state"
-import { useCurrentTeam } from "@/hooks/use-current-team"
-import { useSprintsQuery } from "@/queries/sprints"
-import { useBacklogQuery } from "@/queries/teams"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+import { type TreeNodeData } from "@/components/common/tree"
+import { CreateSprintDialog } from "@/components/sprints/create-sprint-dialog"
+import { DeleteSprintDialog } from "@/components/sprints/delete-sprint-dialog"
+import { EditSprintDialog } from "@/components/sprints/edit-sprint-dialog"
+import { SprintBacklogTree } from "@/components/sprints/sprint-backlog-tree"
+import { SprintPicker } from "@/components/sprints/sprint-picker"
 import {
   Select,
   SelectContent,
@@ -16,13 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import {
-  WORK_ITEM_STATUS_COLORS,
-  WORK_ITEM_TYPE_COLORS,
-} from "@/lib/work-item-colors"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useCan } from "@/hooks/use-can"
+import { useCurrentTeam } from "@/hooks/use-current-team"
+import { useSprintsQuery } from "@/queries/sprints"
+import { useBacklogQuery } from "@/queries/teams"
+import { Permission, RoleScope } from "@/types/roles"
+import type { Sprint } from "@/types/sprints"
 import { BacklogLevel, type BacklogResponse } from "@/types/teams"
-import type { WorkItemStatus, WorkItemType } from "@/types/work-items"
 
 function toTreeNodes(
   items: BacklogResponse[]
@@ -34,21 +34,21 @@ function toTreeNodes(
   }))
 }
 
-function formatDateRange(startDate: string, endDate: string): string {
-  const format = (value: string) =>
-    new Date(value).toLocaleDateString(undefined, {
-      month: "long",
-      day: "numeric",
-    })
-  return `${format(startDate)} – ${format(endDate)}`
-}
-
 export default function SprintsPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const [, setSearchParams] = useSearchParams()
   const { team, teams, isLoadingTeams, selectTeam } = useCurrentTeam(projectId)
+  const canManageSprints = useCan(
+    RoleScope.Team,
+    team?.id,
+    Permission.TeamManageSprints
+  )
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [sprintUnderEdit, setSprintUnderEdit] = useState<Sprint | null>(null)
+  const [sprintUnderDeletion, setSprintUnderDeletion] = useState<Sprint | null>(
+    null
+  )
 
   const sprintsQuery = useSprintsQuery(team?.id)
 
@@ -111,32 +111,39 @@ export default function SprintsPage() {
             ))}
           </SelectContent>
         </Select>
-        {team ? <CreateSprintDialog teamId={team.id} /> : null}
-      </div>
-
-      <div className="flex items-center justify-between">
-        <Select
-          value={sprint?.id}
-          onValueChange={setSelectedSprintId}
-          disabled={sprints.length === 0}
-        >
-          <SelectTrigger className="w-56">
-            <SelectValue placeholder="No sprints yet" />
-          </SelectTrigger>
-          <SelectContent>
-            {sprints.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {sprint ? (
-          <span className="text-xs text-muted-foreground">
-            {formatDateRange(sprint.startDate, sprint.endDate)}
-          </span>
+        {team && canManageSprints ? (
+          <CreateSprintDialog teamId={team.id} sprints={sprints} />
         ) : null}
       </div>
+
+      <SprintPicker
+        sprints={sprints}
+        selectedSprint={sprint}
+        canManageSprints={canManageSprints}
+        onSelect={setSelectedSprintId}
+        onEdit={setSprintUnderEdit}
+        onDelete={setSprintUnderDeletion}
+      />
+
+      {team && sprintUnderEdit ? (
+        <EditSprintDialog
+          teamId={team.id}
+          sprint={sprintUnderEdit}
+          sprints={sprints}
+          isOpen
+          onOpenChange={() => setSprintUnderEdit(null)}
+        />
+      ) : null}
+
+      {team && sprintUnderDeletion ? (
+        <DeleteSprintDialog
+          teamId={team.id}
+          sprint={sprintUnderDeletion}
+          isOpen
+          onOpenChange={() => setSprintUnderDeletion(null)}
+          onDeleted={() => setSelectedSprintId(null)}
+        />
+      ) : null}
 
       <div className="rounded-md border p-2">
         {sprintsQuery.isError ? (
@@ -158,44 +165,11 @@ export default function SprintsPage() {
             ))}
           </div>
         ) : nodes.length > 0 ? (
-          <Tree
+          <SprintBacklogTree
             nodes={nodes}
             expandedIds={expandedIds}
             onToggle={toggle}
-            renderLabel={(node) => (
-              <div className="flex flex-1 items-center gap-2 py-0.5 text-sm">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "shrink-0 border-transparent",
-                    WORK_ITEM_TYPE_COLORS[node.data.type as WorkItemType]
-                  )}
-                >
-                  {node.data.type}
-                </Badge>
-                <button
-                  type="button"
-                  className="flex-1 truncate text-left hover:underline"
-                  onClick={() => openWorkItem(node.data.id)}
-                >
-                  #{node.data.code} {node.data.title}
-                </button>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "shrink-0 border-transparent",
-                    WORK_ITEM_STATUS_COLORS[node.data.status as WorkItemStatus]
-                  )}
-                >
-                  {node.data.status}
-                </Badge>
-                {node.data.storyPoints != null ? (
-                  <span className="w-8 shrink-0 text-right text-xs text-muted-foreground">
-                    {node.data.storyPoints}
-                  </span>
-                ) : null}
-              </div>
-            )}
+            onOpenWorkItem={openWorkItem}
           />
         ) : (
           <p className="p-4 text-sm text-muted-foreground">

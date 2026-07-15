@@ -1,5 +1,9 @@
-import { get, post } from "@/lib/api-client"
-import type { CreateSprintRequest, Sprint } from "@/types/sprints"
+import { del, get, post, put } from "@/lib/api-client"
+import type {
+  CreateSprintRequest,
+  Sprint,
+  UpdateSprintRequest,
+} from "@/types/sprints"
 
 export function createSprint(
   teamId: string,
@@ -10,6 +14,18 @@ export function createSprint(
 
 export function listSprints(teamId: string): Promise<Sprint[]> {
   return get(`/teams/${teamId}/sprints`)
+}
+
+export function updateSprint(
+  teamId: string,
+  sprintId: string,
+  request: UpdateSprintRequest
+): Promise<void> {
+  return put(`/teams/${teamId}/sprints/${sprintId}`, request)
+}
+
+export function deleteSprint(teamId: string, sprintId: string): Promise<void> {
+  return del(`/teams/${teamId}/sprints/${sprintId}`)
 }
 
 export function addWorkItemToSprint(

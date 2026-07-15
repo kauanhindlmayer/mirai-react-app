@@ -1,9 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { addWorkItemToSprint, createSprint, listSprints } from "@/api/sprints"
+import {
+  addWorkItemToSprint,
+  createSprint,
+  deleteSprint,
+  listSprints,
+  updateSprint,
+} from "@/api/sprints"
 import { createErrorToastHandler } from "@/lib/query-helpers"
-import type { CreateSprintRequest } from "@/types/sprints"
+import { dashboardQueryKey } from "@/queries/dashboards"
+import { teamBacklogsQueryKey } from "@/queries/teams"
+import type { CreateSprintRequest, UpdateSprintRequest } from "@/types/sprints"
 
 export function sprintsQueryKey(teamId: string | undefined) {
   return ["sprints", teamId]
@@ -27,6 +35,38 @@ export function useCreateSprintMutation(teamId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sprintsQueryKey(teamId) })
       toast.success("Sprint created.")
+    },
+  })
+}
+
+export function useUpdateSprintMutation(teamId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      sprintId,
+      request,
+    }: {
+      sprintId: string
+      request: UpdateSprintRequest
+    }) => updateSprint(teamId, sprintId, request),
+    onError: createErrorToastHandler("Failed to update sprint."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sprintsQueryKey(teamId) })
+      toast.success("Sprint updated.")
+    },
+  })
+}
+
+export function useDeleteSprintMutation(teamId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (sprintId: string) => deleteSprint(teamId, sprintId),
+    onError: createErrorToastHandler("Failed to delete sprint."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sprintsQueryKey(teamId) })
+      queryClient.invalidateQueries({ queryKey: teamBacklogsQueryKey(teamId) })
+      queryClient.invalidateQueries({ queryKey: dashboardQueryKey(teamId) })
+      toast.success("Sprint deleted.")
     },
   })
 }

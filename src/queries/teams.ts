@@ -96,12 +96,16 @@ export function useRemoveUserFromTeamMutation(
   })
 }
 
+export function teamBacklogsQueryKey(teamId: string) {
+  return ["backlog", teamId]
+}
+
 export function backlogQueryKey(
   teamId: string,
   sprintId?: string,
   backlogLevel?: BacklogLevel
 ) {
-  return ["backlog", teamId, sprintId, backlogLevel]
+  return [...teamBacklogsQueryKey(teamId), sprintId, backlogLevel]
 }
 
 export function useBacklogQuery(
