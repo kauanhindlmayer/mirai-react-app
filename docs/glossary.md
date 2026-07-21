@@ -25,6 +25,21 @@ Deleting a sprint returns its work items to the **Backlog** (below) and is
 permanent. See
 [mirai-api ADR 0009](https://github.com/kauanhindlmayer/mirai-api/blob/main/docs/adr/0009-sprint-editing-deletion-and-non-overlap.md).
 
+## Sprint status
+
+Where a sprint is in its lifecycle: **Planned** (created, not yet begun),
+**Active** (someone started it), or **Completed**. It is stored, not inferred
+from today's date - a sprint is active because a scrum master started it, not
+because the calendar reached its start date.
+
+A team has at most one Active sprint. The API refuses to start a second and
+names the one already running; a filtered unique index makes that hold even for
+two simultaneous requests.
+
+The picker badges the Active and Completed sprints (Planned needs no badge, being
+the default), and the sprints page selects the active sprint by default, falling
+back to the most recent when none is active.
+
 ## Backlog
 
 The work items belonging to no sprint. Backlog membership is not a flag or a

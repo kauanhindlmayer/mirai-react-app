@@ -11,7 +11,7 @@ import { toast } from "sonner"
 import { EditSprintDialog } from "@/components/sprints/edit-sprint-dialog"
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
-import type { Sprint } from "@/types/sprints"
+import { SprintStatus, type Sprint } from "@/types/sprints"
 
 function buildSprint(overrides: Partial<Sprint> = {}): Sprint {
   return {
@@ -19,13 +19,17 @@ function buildSprint(overrides: Partial<Sprint> = {}): Sprint {
     name: "Sprint 1",
     startDate: "2026-01-05",
     endDate: "2026-01-16",
+    status: SprintStatus.Planned,
+    startedAtUtc: null,
     workItemCount: 0,
     ...overrides,
   }
 }
 
+// Not anchored: react-day-picker prefixes today's label ("Today, Thursday, …")
+// and suffixes a selected day (", selected"). The date itself is unique enough.
 function dayLabel(date: string) {
-  return new RegExp(`^${format(parseISO(date), "EEEE, MMMM do, yyyy")}`)
+  return new RegExp(format(parseISO(date), "EEEE, MMMM do, yyyy"))
 }
 
 function renderDialog(sprint: Sprint = buildSprint(), sprints?: Sprint[]) {

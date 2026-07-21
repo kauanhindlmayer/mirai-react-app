@@ -18,10 +18,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCan } from "@/hooks/use-can"
 import { useCurrentTeam } from "@/hooks/use-current-team"
-import { useSprintsQuery } from "@/queries/sprints"
+import { useSprintsQuery, useStartSprintMutation } from "@/queries/sprints"
 import { useBacklogQuery } from "@/queries/teams"
 import { Permission, RoleScope } from "@/types/roles"
-import type { Sprint } from "@/types/sprints"
+import { SprintStatus, type Sprint } from "@/types/sprints"
 import { BacklogLevel, type BacklogResponse } from "@/types/teams"
 
 function toTreeNodes(
@@ -53,8 +53,14 @@ export default function SprintsPage() {
   const sprintsQuery = useSprintsQuery(team?.id)
 
   const sprints = sprintsQuery.data ?? []
+  const activeSprint = sprints.find((s) => s.status === SprintStatus.Active)
   const sprint =
-    sprints.find((s) => s.id === selectedSprintId) ?? sprints[0] ?? null
+    sprints.find((s) => s.id === selectedSprintId) ??
+    activeSprint ??
+    sprints[0] ??
+    null
+
+  const startSprintMutation = useStartSprintMutation(team?.id ?? "")
 
   const backlogQuery = useBacklogQuery(
     team?.id ?? "",
@@ -78,6 +84,10 @@ export default function SprintsPage() {
       }
       return next
     })
+  }
+
+  function startSprint(sprintToStart: Sprint) {
+    startSprintMutation.mutate(sprintToStart.id)
   }
 
   function openWorkItem(workItemId: string) {
@@ -121,6 +131,7 @@ export default function SprintsPage() {
         selectedSprint={sprint}
         canManageSprints={canManageSprints}
         onSelect={setSelectedSprintId}
+        onStart={startSprint}
         onEdit={setSprintUnderEdit}
         onDelete={setSprintUnderDeletion}
       />

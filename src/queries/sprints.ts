@@ -6,6 +6,7 @@ import {
   createSprint,
   deleteSprint,
   listSprints,
+  startSprint,
   updateSprint,
 } from "@/api/sprints"
 import { createErrorToastHandler } from "@/lib/query-helpers"
@@ -67,6 +68,18 @@ export function useDeleteSprintMutation(teamId: string) {
       queryClient.invalidateQueries({ queryKey: teamBacklogsQueryKey(teamId) })
       queryClient.invalidateQueries({ queryKey: dashboardQueryKey(teamId) })
       toast.success("Sprint deleted.")
+    },
+  })
+}
+
+export function useStartSprintMutation(teamId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (sprintId: string) => startSprint(teamId, sprintId),
+    onError: createErrorToastHandler("Failed to start sprint."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sprintsQueryKey(teamId) })
+      toast.success("Sprint started.")
     },
   })
 }

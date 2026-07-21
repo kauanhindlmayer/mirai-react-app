@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { http, HttpResponse } from "msw"
-import { screen } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { Route, Routes } from "react-router"
 
@@ -13,6 +13,7 @@ import { useSearchParams } from "react-router"
 import SprintsPage from "@/pages/SprintsPage"
 import { server } from "@/test/mocks/server"
 import { renderWithProviders } from "@/test/test-utils"
+import { SprintStatus, type Sprint } from "@/types/sprints"
 import type { BacklogResponse } from "@/types/teams"
 
 const setSearchParams = vi.fn()
@@ -49,20 +50,27 @@ function mockTeams() {
   )
 }
 
-function mockSprints(workItemCount = 0) {
+function buildSprint(overrides: Partial<Sprint> = {}): Sprint {
+  return {
+    id: "sprint-1",
+    name: "Sprint 1",
+    startDate: "2026-01-01",
+    endDate: "2026-01-14",
+    status: SprintStatus.Planned,
+    startedAtUtc: null,
+    workItemCount: 0,
+    ...overrides,
+  }
+}
+
+function mockSprintList(sprints: Sprint[]) {
   server.use(
-    http.get("*/api/teams/team-1/sprints", () =>
-      HttpResponse.json([
-        {
-          id: "sprint-1",
-          name: "Sprint 1",
-          startDate: "2026-01-01",
-          endDate: "2026-01-14",
-          workItemCount,
-        },
-      ])
-    )
+    http.get("*/api/teams/team-1/sprints", () => HttpResponse.json(sprints))
   )
+}
+
+function mockSprints(workItemCount = 0) {
+  mockSprintList([buildSprint({ workItemCount })])
 }
 
 function mockTeamPermissions(permissions: string[]) {
@@ -207,5 +215,105 @@ describe("SprintsPage", () => {
     expect(
       await screen.findByText(/5 work items will be returned to the backlog/)
     ).toBeInTheDocument()
+  })
+
+  it("selects the active sprint by default rather than the first", async () => {
+    mockTeams()
+    mockSprintList([
+      buildSprint({ id: "sprint-2", name: "Later Planned" }),
+      buildSprint({
+        id: "sprint-1",
+        name: "Running Now",
+        status: "Active",
+        startedAtUtc: "2026-01-01T09:00:00Z",
+      }),
+    ])
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    renderSprintsPage()
+
+    const [, sprintPicker] = await screen.findAllByRole("combobox")
+    await waitFor(() => expect(sprintPicker).toHaveTextContent("Running Now"))
+  })
+
+  it("marks the active sprint in the picker", async () => {
+    mockTeams()
+    mockSprintList([
+      buildSprint({
+        status: "Active",
+        startedAtUtc: "2026-01-01T09:00:00Z",
+      }),
+    ])
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    renderSprintsPage()
+
+    const [, sprintPicker] = await screen.findAllByRole("combobox")
+    await waitFor(() => expect(sprintPicker).toHaveTextContent("Active"))
+  })
+
+  it("offers Start on a planned sprint", async () => {
+    mockTeams()
+    mockSprints()
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    const user = userEvent.setup()
+    renderSprintsPage()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Sprint actions for Sprint 1" })
+    )
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Start" })
+    ).toBeInTheDocument()
+  })
+
+  it("does not offer Start on a sprint that is already active", async () => {
+    mockTeams()
+    mockSprintList([
+      buildSprint({
+        status: "Active",
+        startedAtUtc: "2026-01-01T09:00:00Z",
+      }),
+    ])
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    const user = userEvent.setup()
+    renderSprintsPage()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Sprint actions for Sprint 1" })
+    )
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Edit" })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole("menuitem", { name: "Start" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("starts the sprint when Start is chosen", async () => {
+    const startRequest = vi.fn()
+    server.use(
+      http.post("*/api/teams/team-1/sprints/sprint-1/start", () => {
+        startRequest()
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    mockTeams()
+    mockSprints()
+    mockBacklog([])
+    mockTeamPermissions(["TeamManageSprints"])
+    const user = userEvent.setup()
+    renderSprintsPage()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Sprint actions for Sprint 1" })
+    )
+    await user.click(await screen.findByRole("menuitem", { name: "Start" }))
+
+    await waitFor(() => expect(startRequest).toHaveBeenCalled())
   })
 })

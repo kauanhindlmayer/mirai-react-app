@@ -4,7 +4,7 @@ import {
   isRangeAvailable,
   toUnavailableRanges,
 } from "@/components/sprints/sprint-dates"
-import type { Sprint } from "@/types/sprints"
+import { SprintStatus, type Sprint } from "@/types/sprints"
 
 function buildSprint(overrides: Partial<Sprint> = {}): Sprint {
   return {
@@ -12,6 +12,8 @@ function buildSprint(overrides: Partial<Sprint> = {}): Sprint {
     name: "Sprint 1",
     startDate: "2026-06-01",
     endDate: "2026-06-14",
+    status: SprintStatus.Planned,
+    startedAtUtc: null,
     workItemCount: 0,
     ...overrides,
   }
